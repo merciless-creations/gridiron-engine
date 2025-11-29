@@ -1,0 +1,22 @@
+@startuml
+title Gridiron.Engine - Containers
+caption Container view showing the major layers of the engine
+actor "Developer" <<Person>> as 2
+actor "Game Application" <<Person>> as 1
+component "Logging System" <<Software System>> as 4
+package Gridiron.Engine {
+  component "Api" <<Container>> as 8
+  component "Domain" <<Container>> as 9
+  component "Gridiron.Engine.Tests" <<Container>> as 11
+  component "Simulation" <<Container>> as 10
+}
+8 ..> 9 : Uses Game, Team entities
+8 ..> 10 : Orchestrates via GameFlow
+1 ..> 8 : Creates IGameEngine, calls SimulateGame()
+11 ..> 8 : Tests public API
+11 ..> 9 : Creates test scenarios
+11 ..> 10 : Tests game logic
+10 ..> 9 : Manipulates game state
+10 ..> 4 : Logs play-by-play
+@enduml
+
