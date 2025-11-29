@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>Gridiron.Engine</RootNamespace>
+
+    <!-- Package metadata -->
+    <PackageId>Gridiron.Engine</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>merciless-creations</Authors>
+    <Company>Merciless Creations</Company>
+    <Description>Football game simulation engine with statistical modeling and realistic game flow</Description>
+    <PackageTags>football;simulation;game-engine;sports;nfl</PackageTags>
+    <PackageProjectUrl>https://github.com/merciless-creations/gridiron-engine</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/merciless-creations/gridiron-engine</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Stateless" Version="5.20.0" />
+  </ItemGroup>
+
+  <!-- Allow tests to access internal members -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Gridiron.Engine.Tests" />
+  </ItemGroup>
+
+</Project>
