@@ -1,0 +1,23 @@
+@startuml
+title Gridiron.Engine - Simulation - Components
+caption Skills checks for realistic gameplay outcomes
+package Simulation {
+  component "ActionOccurredSkillsCheck" <<C# Class>> as 166
+  component "BigRunSkillsCheck" <<C# Class>> as 117
+  component "BlockingSuccessSkillsCheck" <<C# Class>> as 118
+  component "FairCatchOccurredSkillsCheck" <<C# Class>> as 119
+  component "FieldGoalBlockOccurredSkillsCheck" <<C# Class>> as 120
+  component "FieldGoalMakeOccurredSkillsCheck" <<C# Class>> as 121
+  component "FumbleOccurredSkillsCheck" <<C# Class>> as 122
+  component "InjuryOccurredSkillsCheck" <<C# Class>> as 123
+  component "InterceptionOccurredSkillsCheck" <<C# Class>> as 124
+  component "MuffedCatchOccurredSkillsCheck" <<C# Class>> as 125
+  component "PassCompletionSkillsCheck" <<C# Class>> as 126
+  component "PassProtectionSkillsCheck" <<C# Class>> as 127
+  component "PuntBlockOccurredSkillsCheck" <<C# Class>> as 128
+  component "QBPressureSkillsCheck" <<C# Class>> as 131
+  component "TackleBreakSkillsCheck" <<C# Class>> as 132
+  component "YardsAfterCatchSkillsCheck" <<C# Class>> as 133
+}
+@enduml
+

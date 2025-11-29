@@ -16,6 +16,8 @@ namespace Gridiron.Engine.Simulation.Calculators
         /// <summary>
         /// Calculates offensive pass blocking power based on O-Line, TEs, RBs, and FBs.
         /// </summary>
+        /// <param name="offensivePlayers">List of offensive players on the field</param>
+        /// <returns>Average blocking rating of all pass blockers, or default power if no blockers found</returns>
         public static double CalculatePassBlockingPower(List<Player> offensivePlayers)
         {
             var blockers = offensivePlayers.Where(p =>
@@ -34,6 +36,8 @@ namespace Gridiron.Engine.Simulation.Calculators
         /// <summary>
         /// Calculates defensive pass rush power based on DL and LBs.
         /// </summary>
+        /// <param name="defensivePlayers">List of defensive players on the field</param>
+        /// <returns>Average rush power based on tackling, speed, and strength attributes, or default power if no rushers found</returns>
         public static double CalculatePassRushPower(List<Player> defensivePlayers)
         {
             var rushers = defensivePlayers.Where(p =>
@@ -50,6 +54,8 @@ namespace Gridiron.Engine.Simulation.Calculators
         /// <summary>
         /// Calculates offensive run blocking power based on O-Line, TEs, and FBs.
         /// </summary>
+        /// <param name="offensivePlayers">List of offensive players on the field</param>
+        /// <returns>Average blocking rating of all run blockers, or default power if no blockers found</returns>
         public static double CalculateRunBlockingPower(List<Player> offensivePlayers)
         {
             var blockers = offensivePlayers.Where(p =>
@@ -67,6 +73,8 @@ namespace Gridiron.Engine.Simulation.Calculators
         /// <summary>
         /// Calculates defensive run stopping power based on DL and LBs.
         /// </summary>
+        /// <param name="defensivePlayers">List of defensive players on the field</param>
+        /// <returns>Average run defense power based on tackling, strength, and speed attributes, or default power if no defenders found</returns>
         public static double CalculateRunDefensePower(List<Player> defensivePlayers)
         {
             var defenders = defensivePlayers.Where(p =>
@@ -83,6 +91,8 @@ namespace Gridiron.Engine.Simulation.Calculators
         /// <summary>
         /// Calculates defensive coverage power based on DBs and LBs.
         /// </summary>
+        /// <param name="defensivePlayers">List of defensive players on the field</param>
+        /// <returns>Average coverage power based on coverage, speed, and awareness attributes, or default power if no defenders found</returns>
         public static double CalculateCoveragePower(List<Player> defensivePlayers)
         {
             var defenders = defensivePlayers.Where(p =>

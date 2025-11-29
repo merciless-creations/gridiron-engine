@@ -6,8 +6,14 @@ using System.Threading.Tasks;
 
 namespace Gridiron.Engine.Domain
 {
+    /// <summary>
+    /// Contains enumeration types for tracking various statistics in the football simulation.
+    /// </summary>
     public class StatTypes
     {
+        /// <summary>
+        /// Defines the types of statistics tracked for individual players.
+        /// </summary>
         public enum PlayerStatType
         {
             PassingYards,
@@ -45,6 +51,9 @@ namespace Gridiron.Engine.Domain
             PuntsInside20
         }
 
+        /// <summary>
+        /// Defines the types of statistics tracked for teams.
+        /// </summary>
         public enum TeamStatType
         {
             PointsScored,
@@ -66,6 +75,9 @@ namespace Gridiron.Engine.Domain
             Ties
         }
 
+        /// <summary>
+        /// Defines the types of statistics tracked for coaches.
+        /// </summary>
         public enum CoachStatType
         {
             Wins,
@@ -76,6 +88,9 @@ namespace Gridiron.Engine.Domain
             GamesCoached
         }
 
+        /// <summary>
+        /// Defines the types of statistics tracked for trainers and medical staff.
+        /// </summary>
         public enum TrainerStatType
         {
             InjuriesTreated,
@@ -85,6 +100,9 @@ namespace Gridiron.Engine.Domain
             PlayerReturnRate
         }
 
+        /// <summary>
+        /// Defines the types of statistics tracked for scouts.
+        /// </summary>
         public enum ScoutStatType
         {
             PlayersScouted,

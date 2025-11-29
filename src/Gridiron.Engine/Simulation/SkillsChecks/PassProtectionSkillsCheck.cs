@@ -13,11 +13,21 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
     {
         private ISeedableRandom _rng;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PassProtectionSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
         public PassProtectionSkillsCheck(ISeedableRandom rng)
         {
             _rng = rng;
         }
 
+        /// <summary>
+        /// Executes the pass protection check to determine if the offensive line protects the QB from being sacked.
+        /// Compares offensive line blocking against defensive pass rush to calculate protection success.
+        /// Sets the Margin property to indicate how decisively protection held or failed.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             var play = game.CurrentPlay;

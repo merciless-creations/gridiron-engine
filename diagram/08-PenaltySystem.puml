@@ -1,0 +1,20 @@
+@startuml
+title Gridiron.Engine - Simulation - Components
+caption Penalty checks and enforcement
+package Simulation {
+  component "BlockingPenaltyOccurredSkillsCheck" <<C# Class>> as 135
+  component "CoveragePenaltyOccurredSkillsCheck" <<C# Class>> as 136
+  component "DefensiveHoldingPenalty" <<C# Class>> as 45
+  component "DefensivePassInterferencePenalty" <<C# Class>> as 46
+  component "FalseStartPenalty" <<C# Class>> as 43
+  component "OffensiveHoldingPenalty" <<C# Class>> as 44
+  component "Penalty" <<C# Class>> as 39
+  component "PenaltyEffectSkillsCheckResult" <<C# Class>> as 151
+  component "PenaltyEnforcement" <<C# Class>> as 159
+  component "PenaltyRegistry" <<C# Class>> as 42
+  component "PostPlayPenaltyOccurredSkillsCheck" <<C# Class>> as 138
+  component "PreSnapPenaltyOccurredSkillsCheck" <<C# Class>> as 134
+  component "TacklePenaltyOccurredSkillsCheck" <<C# Class>> as 137
+}
+@enduml
+

@@ -1,0 +1,27 @@
+@startuml
+title Gridiron.Engine - Simulation - Components
+caption GameFlow state machine with actions and play execution
+package Simulation {
+  component "CoinToss (Action)" <<C# Class>> as 93
+  component "FieldGoal (Play)" <<C# Class>> as 110
+  component "FieldGoalResult" <<C# Class>> as 115
+  component "GameFlow" <<C# Class>> as 91
+  component "Halftime (Action)" <<C# Class>> as 97
+  component "Kickoff (Play)" <<C# Class>> as 108
+  component "KickoffResult" <<C# Class>> as 113
+  component "Pass (Play)" <<C# Class>> as 107
+  component "PassResult" <<C# Class>> as 112
+  component "PostGame (Action)" <<C# Class>> as 99
+  component "PostPlay (Action)" <<C# Class>> as 96
+  component "PreGame (Action)" <<C# Class>> as 92
+  component "PrePlay (Action)" <<C# Class>> as 94
+  component "Punt (Play)" <<C# Class>> as 109
+  component "PuntResult" <<C# Class>> as 114
+  component "QuarterExpired (Action)" <<C# Class>> as 98
+  component "Run (Play)" <<C# Class>> as 106
+  component "RunResult" <<C# Class>> as 111
+  component "Snap (Action)" <<C# Class>> as 95
+}
+94 ..> 95 : Executes snap
+@enduml
+

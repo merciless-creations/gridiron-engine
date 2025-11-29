@@ -5,14 +5,28 @@ using Gridiron.Engine.Simulation.Interfaces;
 
 namespace Gridiron.Engine.Simulation.Actions
 {
+    /// <summary>
+    /// Handles the snap of the ball from center to quarterback.
+    /// Determines whether the snap is clean or muffed.
+    /// </summary>
     public class Snap : IGameAction
     {
         private ISeedableRandom _rng;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Snap"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for snap quality determination.</param>
         public Snap(ISeedableRandom rng)
         {
             _rng = rng;
         }
 
+        /// <summary>
+        /// Executes the snap, determining if it was good or muffed.
+        /// A muffed snap has approximately 1% probability (except on kickoffs which cannot be muffed).
+        /// </summary>
+        /// <param name="game">The game containing the current play.</param>
         public void Execute(Game game)
         {
             var didItHappen = _rng.NextDouble();

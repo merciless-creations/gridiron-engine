@@ -25,6 +25,14 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         /// </summary>
         public PenaltyNames PenaltyThatOccurred { get; private set; } = PenaltyNames.NoPenalty;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PostPlayPenaltyOccurredSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="homePlayersOnField">The home team players on the field.</param>
+        /// <param name="awayPlayersOnField">The away team players on the field.</param>
+        /// <param name="bigPlayOccurred">Whether a big play occurred (increases celebration penalties).</param>
+        /// <param name="turnoverOccurred">Whether a turnover occurred (increases frustration penalties).</param>
         public PostPlayPenaltyOccurredSkillsCheck(
             ISeedableRandom rng,
             List<Player> homePlayersOnField,
@@ -39,6 +47,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             _turnoverOccurred = turnoverOccurred;
         }
 
+        /// <summary>
+        /// Executes the post-play penalty check to determine if a penalty occurs after the whistle.
+        /// Big plays and turnovers significantly increase penalty probability due to emotion.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Post-play penalties
@@ -96,6 +109,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             PenaltyThatOccurred = PenaltyNames.NoPenalty;
         }
 
+        /// <summary>
+        /// Calculates the adjusted penalty probability based on game context (big plays, turnovers).
+        /// </summary>
+        /// <param name="baseProbability">The base probability before adjustments.</param>
+        /// <returns>The adjusted probability.</returns>
         private double CalculateContextAdjustedProbability(double baseProbability)
         {
             var adjustmentFactor = 1.0;

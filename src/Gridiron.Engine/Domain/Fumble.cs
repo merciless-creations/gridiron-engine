@@ -1,5 +1,9 @@
 ﻿namespace Gridiron.Engine.Domain
 {
+    /// <summary>
+    /// Represents a fumble that occurred during a play, including details about
+    /// who fumbled, who recovered, and the resulting field position.
+    /// </summary>
     public class Fumble
     {
         /// <summary>

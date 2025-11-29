@@ -3,25 +3,72 @@ using Newtonsoft.Json;
 
 namespace Gridiron.Engine.Domain
 {
+    /// <summary>
+    /// Represents a penalty that can occur during a football play.
+    /// Contains both the penalty definition (odds, type) and instance data (player, yards).
+    /// </summary>
     public class Penalty
     {
+        /// <summary>
+        /// Gets or sets the name/type of the penalty.
+        /// </summary>
         public PenaltyNames Name { get; set; }
-        public float Odds { get; set; }
-        //public float HomeOdds { get; set; }
-        public float AwayOdds { get; set; }
-        public Possession CalledOn { get; set; }
-        public PenaltyOccuredWhen OccuredWhen { get; set; }
-        public Player? Player { get; set; }  // Nullable - penalty definitions don't have a specific player
 
-        // Additional properties for penalty instances
-        public Player? CommittedBy { get; set; }  // The actual player who committed this penalty
+        /// <summary>
+        /// Gets or sets the probability of this penalty occurring.
+        /// </summary>
+        public float Odds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the probability that this penalty is called on the away team.
+        /// </summary>
+        public float AwayOdds { get; set; }
+
+        /// <summary>
+        /// Gets or sets which team the penalty was called on.
+        /// </summary>
+        public Possession CalledOn { get; set; }
+
+        /// <summary>
+        /// Gets or sets when the penalty occurred (before, during, or after the play).
+        /// </summary>
+        public PenaltyOccuredWhen OccuredWhen { get; set; }
+
+        /// <summary>
+        /// Gets or sets the player associated with this penalty definition.
+        /// Null for penalty definitions that don't specify a player.
+        /// </summary>
+        public Player? Player { get; set; }
+
+        /// <summary>
+        /// Gets or sets the player who actually committed this penalty instance.
+        /// </summary>
+        public Player? CommittedBy { get; set; }
+
+        /// <summary>
+        /// Gets or sets the specific type of penalty for this instance.
+        /// </summary>
         public PenaltyNames PenaltyType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of yards assessed for this penalty.
+        /// </summary>
         public int Yards { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the penalty was accepted by the opposing team.
+        /// </summary>
         public bool Accepted { get; set; }
     }
 
+    /// <summary>
+    /// Provides static penalty data including probabilities for each penalty type.
+    /// </summary>
     public static class PenaltyData
     {
+        /// <summary>
+        /// Gets or sets the list of all possible penalties with their occurrence probabilities.
+        /// </summary>
         public static List<Penalty> List { get; set; }
 
         static PenaltyData()
@@ -83,6 +130,9 @@ namespace Gridiron.Engine.Domain
         }
     }
 
+    /// <summary>
+    /// Defines the types of penalties that can be called in a football game.
+    /// </summary>
     public enum PenaltyNames
     {
         NoPenalty,
@@ -138,11 +188,16 @@ namespace Gridiron.Engine.Domain
         Leverage
     }
 
-    //when did the penalty occur - before the snap, during or after the play
+    /// <summary>
+    /// Defines when a penalty occurred relative to the play.
+    /// </summary>
     public enum PenaltyOccuredWhen
     {
+        /// <summary>Penalty occurred before the snap.</summary>
         Before,
+        /// <summary>Penalty occurred during the play.</summary>
         During,
+        /// <summary>Penalty occurred after the play ended.</summary>
         After
     }
 }

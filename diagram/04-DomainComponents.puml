@@ -1,0 +1,75 @@
+@startuml
+title Gridiron.Engine - Domain - Components
+caption Domain entities, value objects, and helpers
+package Domain {
+  component "Coach" <<C# Class>> as 27
+  component "DefensiveHoldingPenalty" <<C# Class>> as 45
+  component "DefensivePassInterferencePenalty" <<C# Class>> as 46
+  component "DepthChart" <<C# Class>> as 50
+  component "DepthChartBuilder" <<C# Class>> as 51
+  component "Downs (enum)" <<Enum>> as 60
+  component "FalseStartPenalty" <<C# Class>> as 43
+  component "FieldGoalPlay" <<C# Class>> as 34
+  component "FieldPositionHelper" <<C# Class>> as 57
+  component "Fumble" <<C# Class>> as 48
+  component "Game" <<C# Class>> as 23
+  component "GameHelper" <<C# Class>> as 58
+  component "Half" <<C# Class>> as 52
+  component "Injury" <<C# Class>> as 47
+  component "Interception" <<C# Class>> as 49
+  component "IPenalty" <<Interface>> as 40
+  component "IPlay" <<Interface>> as 28
+  component "IPlaySegment" <<Interface>> as 35
+  component "KickoffPlay" <<C# Class>> as 32
+  component "OffensiveHoldingPenalty" <<C# Class>> as 44
+  component "PassPlay" <<C# Class>> as 30
+  component "PassSegment" <<C# Class>> as 36
+  component "Penalty" <<C# Class>> as 39
+  component "PenaltyBase" <<C# Class>> as 41
+  component "PenaltyRegistry" <<C# Class>> as 42
+  component "Person" <<C# Class>> as 26
+  component "Play" <<C# Class>> as 29
+  component "Player" <<C# Class>> as 24
+  component "PlayType (enum)" <<Enum>> as 62
+  component "Positions (enum)" <<Enum>> as 59
+  component "Possession (enum)" <<Enum>> as 61
+  component "PuntPlay" <<C# Class>> as 33
+  component "Quarter" <<C# Class>> as 53
+  component "ReplayLog" <<C# Class>> as 56
+  component "ReplaySeedableRandom" <<C# Class>> as 55
+  component "ReturnSegment" <<C# Class>> as 38
+  component "RunPlay" <<C# Class>> as 31
+  component "RunSegment" <<C# Class>> as 37
+  component "SeedableRandom" <<C# Class>> as 54
+  component "Team" <<C# Class>> as 25
+}
+27 ..> 26 : Extends
+45 ..> 41 : Extends
+46 ..> 41 : Extends
+51 ..> 50 : Builds
+43 ..> 41 : Extends
+34 ..> 28 : Implements
+23 ..> 52 : Tracks current half
+23 ..> 28 : Contains list of plays
+23 ..> 53 : Tracks current quarter
+23 ..> 25 : Has home and away teams
+28 ..> 48 : Can have fumbles
+28 ..> 47 : Can have injuries
+28 ..> 39 : Can have penalties
+32 ..> 28 : Implements
+32 ..> 38 : Contains return
+44 ..> 41 : Extends
+30 ..> 28 : Implements
+30 ..> 36 : Contains segments
+41 ..> 40 : Implements
+42 ..> 40 : Contains all penalties
+24 ..> 26 : Extends
+33 ..> 28 : Implements
+33 ..> 38 : Contains return
+31 ..> 28 : Implements
+31 ..> 37 : Contains segments
+25 ..> 27 : Has coaching staff
+25 ..> 50 : Has 8 depth charts
+25 ..> 24 : Has roster of players
+@enduml
+

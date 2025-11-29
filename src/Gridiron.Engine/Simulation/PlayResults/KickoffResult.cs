@@ -11,6 +11,11 @@ namespace Gridiron.Engine.Simulation.PlayResults
     /// </summary>
     public class KickoffResult : IGameAction
     {
+        /// <summary>
+        /// Executes the kickoff result, updating game state including field position, possession, and score.
+        /// Handles various outcomes such as touchbacks, onside kicks, returns, muffed catches, and out of bounds kicks.
+        /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
         public void Execute(Game game)
         {
             var play = (KickoffPlay)game.CurrentPlay;
@@ -158,6 +163,12 @@ namespace Gridiron.Engine.Simulation.PlayResults
             StatsAccumulator.AccumulateKickoffStats(play);
         }
 
+        /// <summary>
+        /// Handles penalty enforcement for kickoff plays, including offsetting penalties and rekicks.
+        /// Adjusts field position based on accepted penalties.
+        /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
+        /// <param name="play">The kickoff play that contains the penalties.</param>
         private void HandlePenalties(Game game, KickoffPlay play)
         {
             // Check if there are any penalties on the play
@@ -254,7 +265,11 @@ namespace Gridiron.Engine.Simulation.PlayResults
         /// <summary>
         /// Applies smart acceptance/decline logic to all penalties on the play.
         /// Skips penalties that already have an explicit Accepted value set.
+        /// Determines whether each penalty should be accepted or declined based on game situation and which team benefits.
         /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
+        /// <param name="play">The kickoff play that contains the penalties.</param>
+        /// <param name="enforcement">The penalty enforcement service that evaluates whether penalties should be accepted.</param>
         private void ApplyPenaltyAcceptanceLogic(Game game, KickoffPlay play, PenaltyEnforcement enforcement)
         {
             if (play.Penalties == null || !play.Penalties.Any())

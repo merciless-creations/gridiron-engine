@@ -1,0 +1,12 @@
+@startuml
+title Gridiron.Engine - System Context
+caption System context showing Gridiron.Engine as a consumable library
+actor "Developer" <<Person>> as 2
+actor "Game Application" <<Person>> as 1
+component "Gridiron.Engine" <<Software System>> as 3
+component "Logging System" <<Software System>> as 4
+2 ..> 3 : Integrates, configures, extends
+1 ..> 3 : Simulates games using
+3 ..> 4 : Outputs play-by-play logs via
+@enduml
+

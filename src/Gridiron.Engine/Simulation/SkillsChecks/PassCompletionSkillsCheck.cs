@@ -16,6 +16,13 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         private Player _receiver;
         private bool _underPressure;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PassCompletionSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="qb">The quarterback throwing the pass.</param>
+        /// <param name="receiver">The intended receiver.</param>
+        /// <param name="underPressure">Whether the quarterback is under pressure.</param>
         public PassCompletionSkillsCheck(ISeedableRandom rng, Player qb, Player receiver, bool underPressure)
         {
             _rng = rng;
@@ -24,6 +31,12 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             _underPressure = underPressure;
         }
 
+        /// <summary>
+        /// Executes the pass completion check to determine if the pass is completed.
+        /// Combines QB passing and receiver catching skills against defensive coverage.
+        /// Pressure on the QB significantly reduces completion probability.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             var play = game.CurrentPlay;

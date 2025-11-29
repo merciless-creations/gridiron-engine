@@ -6,19 +6,30 @@ using System;
 namespace Gridiron.Engine.Simulation.SkillsCheckResults
 {
     /// <summary>
-    /// Calculates kickoff distance based on kicker skill
+    /// Calculates kickoff distance based on kicker skill.
+    /// Base distance ranges from 40-70 yards with variance, clamped to 30-80 yards.
     /// </summary>
     public class KickoffDistanceSkillsCheckResult : SkillsCheckResult<double>
     {
         private readonly ISeedableRandom _rng;
         private readonly Player _kicker;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KickoffDistanceSkillsCheckResult"/> class.
+        /// </summary>
+        /// <param name="rng">Random number generator for determining distance variance.</param>
+        /// <param name="kicker">The kicker performing the kickoff.</param>
         public KickoffDistanceSkillsCheckResult(ISeedableRandom rng, Player kicker)
         {
             _rng = rng;
             _kicker = kicker;
         }
 
+        /// <summary>
+        /// Executes the calculation to determine kickoff distance.
+        /// Kicker's skill (0-100) affects base distance, with random variance applied.
+        /// </summary>
+        /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
         {
             // Base kickoff distance: 50-70 yards for average kicker

@@ -7,8 +7,17 @@ using System.Linq;
 
 namespace Gridiron.Engine.Simulation.PlayResults
 {
+    /// <summary>
+    /// Processes punt play results including blocked punts, returns, fair catches, touchbacks, and muffed catches.
+    /// Handles field position updates, possession changes, and scoring for special teams punt plays.
+    /// </summary>
     public class PuntResult : IGameAction
     {
+        /// <summary>
+        /// Executes the punt play result, updating game state including field position, possession, and score.
+        /// Handles various outcomes such as blocked punts, punt returns, fair catches, touchbacks, downed punts, and muffed catches.
+        /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
         public void Execute(Game game)
         {
             var play = game.CurrentPlay as PuntPlay;
@@ -96,6 +105,12 @@ namespace Gridiron.Engine.Simulation.PlayResults
             StatsAccumulator.AccumulatePuntStats(play);
         }
 
+        /// <summary>
+        /// Handles penalty enforcement for punt plays, including offsetting penalties and automatic first downs.
+        /// Adjusts field position and down/distance based on accepted penalties.
+        /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
+        /// <param name="play">The punt play that contains the penalties.</param>
         private void HandlePenalties(Game game, PuntPlay play)
         {
             // Check if there are any penalties on the play
@@ -204,7 +219,11 @@ namespace Gridiron.Engine.Simulation.PlayResults
 
         /// <summary>
         /// Applies smart acceptance/decline logic to all penalties on the play.
+        /// Determines whether each penalty should be accepted or declined based on game situation and which team benefits.
         /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
+        /// <param name="play">The punt play that contains the penalties.</param>
+        /// <param name="enforcement">The penalty enforcement service that evaluates whether penalties should be accepted.</param>
         private void ApplyPenaltyAcceptanceLogic(Game game, PuntPlay play, PenaltyEnforcement enforcement)
         {
             if (play.Penalties == null || !play.Penalties.Any())
@@ -235,6 +254,11 @@ namespace Gridiron.Engine.Simulation.PlayResults
             }
         }
 
+        /// <summary>
+        /// Formats a down enumeration value to its display string representation (1st, 2nd, 3rd, 4th).
+        /// </summary>
+        /// <param name="down">The down to format.</param>
+        /// <returns>The formatted down string.</returns>
         private string FormatDown(Downs down)
         {
             return down switch
@@ -247,6 +271,12 @@ namespace Gridiron.Engine.Simulation.PlayResults
             };
         }
 
+        /// <summary>
+        /// Handles the recovery of a blocked punt, determining possession and scoring based on who recovered the ball.
+        /// Can result in touchdowns, safeties, or possession changes.
+        /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
+        /// <param name="play">The punt play with a blocked punt recovery.</param>
         private void HandleBlockedPuntRecovery(Game game, PuntPlay play)
         {
             var newFieldPosition = game.FieldPosition + play.YardsGained;
@@ -294,6 +324,11 @@ namespace Gridiron.Engine.Simulation.PlayResults
             }
         }
 
+        /// <summary>
+        /// Handles the recovery of a muffed punt catch, determining possession based on who recovered the ball.
+        /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
+        /// <param name="play">The punt play with a muffed catch recovery.</param>
         private void HandleMuffedCatchRecovery(Game game, PuntPlay play)
         {
             var newFieldPosition = game.FieldPosition + play.YardsGained;
@@ -317,6 +352,11 @@ namespace Gridiron.Engine.Simulation.PlayResults
             }
         }
 
+        /// <summary>
+        /// Handles punt return plays, updating field position and checking for return touchdowns.
+        /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
+        /// <param name="play">The punt play with a return.</param>
         private void HandlePuntReturn(Game game, PuntPlay play)
         {
             var newFieldPosition = game.FieldPosition + play.YardsGained;
@@ -345,6 +385,10 @@ namespace Gridiron.Engine.Simulation.PlayResults
             }
         }
 
+        /// <summary>
+        /// Logs a summary of the punt play result including punter, punt distance, and return information.
+        /// </summary>
+        /// <param name="play">The punt play to summarize.</param>
         private void LogPuntSummary(PuntPlay play)
         {
             if (play.Punter != null)

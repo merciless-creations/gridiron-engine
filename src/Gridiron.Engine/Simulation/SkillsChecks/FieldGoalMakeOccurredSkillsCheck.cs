@@ -16,6 +16,12 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         private readonly Player _kicker;
         private readonly int _attemptDistance;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldGoalMakeOccurredSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="kicker">The kicker attempting the field goal.</param>
+        /// <param name="attemptDistance">The distance of the field goal attempt in yards.</param>
         public FieldGoalMakeOccurredSkillsCheck(
             ISeedableRandom rng,
             Player kicker,
@@ -26,6 +32,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             _attemptDistance = attemptDistance;
         }
 
+        /// <summary>
+        /// Executes the field goal make check to determine if the attempt is successful.
+        /// Success probability decreases with distance and increases with kicker skill.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Calculate base make probability based on distance

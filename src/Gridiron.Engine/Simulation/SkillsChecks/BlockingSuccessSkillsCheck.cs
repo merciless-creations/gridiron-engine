@@ -13,11 +13,20 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
     {
         private ISeedableRandom _rng;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockingSuccessSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
         public BlockingSuccessSkillsCheck(ISeedableRandom rng)
         {
             _rng = rng;
         }
 
+        /// <summary>
+        /// Executes the blocking success check to determine if the offensive line creates a running lane.
+        /// Compares offensive blocking power against defensive line power to calculate success probability.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             var play = game.CurrentPlay;

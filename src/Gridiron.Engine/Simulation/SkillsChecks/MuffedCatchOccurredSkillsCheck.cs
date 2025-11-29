@@ -15,6 +15,12 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         private readonly Player _returner;
         private readonly double _hangTime;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MuffedCatchOccurredSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="returner">The player attempting to catch the punt.</param>
+        /// <param name="hangTime">The hang time of the punt in seconds.</param>
         public MuffedCatchOccurredSkillsCheck(
             ISeedableRandom rng,
             Player returner,
@@ -25,6 +31,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             _hangTime = hangTime;
         }
 
+        /// <summary>
+        /// Executes the muffed catch check to determine if the returner drops the punt.
+        /// Probability decreases with higher catching skill and increases with longer hang time (more pressure).
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Muff probability based on:

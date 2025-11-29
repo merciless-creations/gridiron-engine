@@ -1,0 +1,13 @@
+@startuml
+title Gridiron.Engine - Api - Components
+caption Public API surface for game simulation
+component "Domain" <<Container>> as 9
+component "Simulation" <<Container>> as 10
+package Api {
+  component "GameEngine" <<C# Class>> as 21
+  component "IGameEngine" <<Interface>> as 20
+}
+21 ..> 20 : Implements
+10 ..> 9 : Manipulates game state
+@enduml
+

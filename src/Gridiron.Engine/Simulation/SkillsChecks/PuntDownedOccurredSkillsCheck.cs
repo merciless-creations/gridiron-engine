@@ -15,6 +15,12 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         private readonly int _puntLandingSpot;
         private readonly double _hangTime;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PuntDownedOccurredSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="puntLandingSpot">The yard line where the punt lands.</param>
+        /// <param name="hangTime">The hang time of the punt in seconds.</param>
         public PuntDownedOccurredSkillsCheck(
             ISeedableRandom rng,
             int puntLandingSpot,
@@ -25,6 +31,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             _hangTime = hangTime;
         }
 
+        /// <summary>
+        /// Executes the punt downed check to determine if the punting team downs the punt before it's returned.
+        /// More likely when the punt lands deep in opponent territory or has good hang time.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Punt more likely to be downed when:

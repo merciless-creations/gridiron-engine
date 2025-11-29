@@ -32,6 +32,14 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         /// </summary>
         public IPenalty PenaltyInstance { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CoveragePenaltyOccurredSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="receiver">The receiver being covered.</param>
+        /// <param name="defensiveBacks">The defensive backs in coverage.</param>
+        /// <param name="passCompleted">Whether the pass was completed.</param>
+        /// <param name="airYards">The distance the pass traveled in the air.</param>
         public CoveragePenaltyOccurredSkillsCheck(
             ISeedableRandom rng,
             Player receiver,
@@ -46,6 +54,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             _airYards = airYards;
         }
 
+        /// <summary>
+        /// Executes the coverage penalty check to determine if a penalty occurs and which specific penalty.
+        /// Considers defensive back coverage skill, receiver ability, pass completion status, and air yards.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Coverage penalties that can occur during pass plays
@@ -121,6 +134,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             PenaltyInstance = null;
         }
 
+        /// <summary>
+        /// Calculates the adjusted penalty probability based on defensive back coverage skills, receiver ability, and air yards.
+        /// </summary>
+        /// <param name="baseProbability">The base probability before adjustments.</param>
+        /// <returns>The adjusted probability.</returns>
         private double CalculateContextAdjustedProbability(double baseProbability)
         {
             var adjustmentFactor = 1.0;
@@ -153,6 +171,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             return baseProbability * adjustmentFactor;
         }
 
+        /// <summary>
+        /// Calculates individual penalty probabilities based on context (pass completion, air yards, etc.).
+        /// </summary>
+        /// <param name="penalties">The eligible penalties.</param>
+        /// <returns>A dictionary mapping penalty names to their adjusted probabilities.</returns>
         private Dictionary<PenaltyNames, double> CalculateIndividualPenaltyProbabilities(PenaltyNames[] penalties)
         {
             var probabilities = new Dictionary<PenaltyNames, double>();

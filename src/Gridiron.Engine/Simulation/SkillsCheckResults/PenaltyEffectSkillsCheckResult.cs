@@ -21,6 +21,16 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
         private readonly Possession _offense;
         private readonly int _currentFieldPosition;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PenaltyEffectSkillsCheckResult"/> class.
+        /// </summary>
+        /// <param name="rng">Random number generator for determining penalty details.</param>
+        /// <param name="penaltyName">The type of penalty that occurred.</param>
+        /// <param name="occurredWhen">When during the play the penalty occurred.</param>
+        /// <param name="homePlayersOnField">Home team players on the field.</param>
+        /// <param name="awayPlayersOnField">Away team players on the field.</param>
+        /// <param name="offense">Which team has offensive possession.</param>
+        /// <param name="currentFieldPosition">Current field position for distance calculations.</param>
         public PenaltyEffectSkillsCheckResult(
             ISeedableRandom rng,
             PenaltyNames penaltyName,
@@ -39,6 +49,11 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             _currentFieldPosition = currentFieldPosition;
         }
 
+        /// <summary>
+        /// Executes the penalty effect calculation: determines which team committed the penalty,
+        /// which player is responsible (weighted by discipline), yardage assessment, and acceptance.
+        /// </summary>
+        /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
         {
             // Get the base penalty definition from the static list
@@ -96,6 +111,8 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
         /// Players with lower discipline are more likely to commit penalties.
         /// Uses Next() for compatibility with existing tests.
         /// </summary>
+        /// <param name="eligiblePlayers">List of players who could have committed the penalty.</param>
+        /// <returns>The player who committed the penalty.</returns>
         private Player SelectPlayerByDiscipline(List<Player> eligiblePlayers)
         {
             // If only one player, return them
@@ -139,6 +156,12 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             return eligiblePlayers[eligiblePlayers.Count - 1];
         }
 
+        /// <summary>
+        /// Determines the yardage penalty based on NFL rules for the specific penalty type.
+        /// </summary>
+        /// <param name="penaltyName">The type of penalty.</param>
+        /// <param name="fieldPosition">Current field position for spot foul calculations.</param>
+        /// <returns>The number of yards to assess for the penalty.</returns>
         private int DeterminePenaltyYards(PenaltyNames penaltyName, int fieldPosition)
         {
             // Standard penalty yardages based on NFL rules
@@ -215,6 +238,13 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             }
         }
 
+        /// <summary>
+        /// Determines whether the penalty is accepted or declined.
+        /// Currently always accepts penalties; future implementation will consider game context.
+        /// </summary>
+        /// <param name="calledOn">Which team committed the penalty.</param>
+        /// <param name="yards">Yardage assessment for the penalty.</param>
+        /// <returns>True if the penalty is accepted; otherwise, false.</returns>
         private bool DetermineAcceptance(Possession calledOn, int yards)
         {
             // For now, always accept penalties
