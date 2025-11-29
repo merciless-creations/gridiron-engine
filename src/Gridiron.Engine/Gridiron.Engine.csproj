@@ -12,13 +12,23 @@
     <Version>0.1.0</Version>
     <Authors>merciless-creations</Authors>
     <Company>Merciless Creations</Company>
-    <Description>Football game simulation engine with statistical modeling and realistic game flow</Description>
-    <PackageTags>football;simulation;game-engine;sports;nfl</PackageTags>
+    <Description>Football game simulation engine with statistical modeling and realistic game flow. Simulates complete NFL-style games with plays, penalties, injuries, and statistics.</Description>
+    <PackageTags>football;simulation;game-engine;sports;nfl;american-football</PackageTags>
     <PackageProjectUrl>https://github.com/merciless-creations/gridiron-engine</PackageProjectUrl>
     <RepositoryUrl>https://github.com/merciless-creations/gridiron-engine</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <!-- Enable deterministic builds for reproducibility -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
+
+  <!-- Include README in package -->
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
