@@ -14,12 +14,23 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         private readonly ISeedableRandom _rng;
         private readonly Player _longSnapper;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BadSnapOccurredSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="longSnapper">The long snapper whose skill affects bad snap probability.</param>
         public BadSnapOccurredSkillsCheck(ISeedableRandom rng, Player longSnapper)
         {
             _rng = rng;
             _longSnapper = longSnapper;
         }
 
+        /// <summary>
+        /// Executes the bad snap check to determine if a bad snap occurs.
+        /// Bad snap probability is based on the long snapper's blocking skill.
+        /// Average LS (50 skill): ~2% chance, Good LS (70+ skill): ~0.5% chance, Poor LS (30 skill): ~5% chance.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Bad snap probability based on long snapper's skill

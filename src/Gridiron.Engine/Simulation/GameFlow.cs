@@ -13,6 +13,18 @@ using Fumble = Gridiron.Engine.Simulation.Actions.Fumble;
 
 namespace Gridiron.Engine.Simulation
 {
+    /// <summary>
+    /// The main game simulation engine that uses a finite state machine to control game flow.
+    /// Manages all game states from pregame through postgame, handling plays, penalties,
+    /// scoring, and clock management.
+    /// </summary>
+    /// <remarks>
+    /// The state machine consists of 19 states covering:
+    /// - Game lifecycle (PreGame, CoinToss, Halftime, PostGame)
+    /// - Play execution (PrePlay, various play types, PostPlay)
+    /// - Play results (FieldGoalResult, RunPlayResult, etc.)
+    /// - Special situations (FumbleReturn, QuarterExpired)
+    /// </remarks>
     public class GameFlow
     {
         private readonly Game _game;
@@ -68,7 +80,13 @@ namespace Gridiron.Engine.Simulation
 
         private readonly StateMachine<State, Trigger> _machine;
 
-        // Constructor now takes ISeedableRandom and ILogger as dependencies
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GameFlow"/> class.
+        /// </summary>
+        /// <param name="game">The game to simulate.</param>
+        /// <param name="rng">The random number generator for deterministic simulation.</param>
+        /// <param name="logger">The logger for game events and debugging.</param>
+        /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
         public GameFlow(Game game, ISeedableRandom rng, ILogger<GameFlow> logger)
         {
             _game = game ?? throw new ArgumentNullException(nameof(game));
@@ -190,6 +208,10 @@ namespace Gridiron.Engine.Simulation
             });
         }
 
+        /// <summary>
+        /// Executes the complete game simulation from start to finish.
+        /// </summary>
+        /// <returns>The completed game with all plays, scores, and statistics populated.</returns>
         public Game Execute()
         {
             //fire the teams Selected trigger, which should change the state to CoinToss and launch the DoCoinToss method
@@ -472,6 +494,11 @@ namespace Gridiron.Engine.Simulation
 
         #region NON STATE MACHINE METHODS
 
+        /// <summary>
+        /// Gets a UML dot graph representation of the state machine.
+        /// Useful for visualization and debugging of game flow.
+        /// </summary>
+        /// <returns>A string containing the UML dot graph format.</returns>
         public string GetGraph()
         {
             return UmlDotGraph.Format(_machine.GetInfo());

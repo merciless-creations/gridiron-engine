@@ -15,6 +15,12 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
         private readonly Player _punter;
         private readonly int _fieldPosition;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PuntDistanceSkillsCheckResult"/> class.
+        /// </summary>
+        /// <param name="rng">Random number generator for determining distance variance.</param>
+        /// <param name="punter">The punter kicking the ball.</param>
+        /// <param name="fieldPosition">Current field position to determine maximum punt distance.</param>
         public PuntDistanceSkillsCheckResult(
             ISeedableRandom rng,
             Player punter,
@@ -25,6 +31,12 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             _fieldPosition = fieldPosition;
         }
 
+        /// <summary>
+        /// Executes the calculation to determine punt distance.
+        /// Punter's kicking skill affects base distance (30-55 yards), with variance and
+        /// field boundary constraints applied. Minimum punt is 10 yards (shanked punt).
+        /// </summary>
+        /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
         {
             // Base punt distance: 35-50 yards for average punter (kicking skill 50)

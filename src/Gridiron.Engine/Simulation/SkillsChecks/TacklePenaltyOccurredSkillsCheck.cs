@@ -24,6 +24,13 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         /// </summary>
         public PenaltyNames PenaltyThatOccurred { get; private set; } = PenaltyNames.NoPenalty;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TacklePenaltyOccurredSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="ballCarrier">The player being tackled.</param>
+        /// <param name="tacklers">The defenders making the tackle.</param>
+        /// <param name="tackleContext">The context of the tackle (passer, kicker, ball carrier, etc.).</param>
         public TacklePenaltyOccurredSkillsCheck(
             ISeedableRandom rng,
             Player ballCarrier,
@@ -36,6 +43,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             _tackleContext = tackleContext;
         }
 
+        /// <summary>
+        /// Executes the tackle penalty check to determine if a penalty occurs during or after a tackle.
+        /// Eligible penalties and probabilities vary based on tackle context (QB, kicker, receiver, etc.).
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Determine eligible penalties based on tackle context
@@ -94,6 +106,10 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             PenaltyThatOccurred = PenaltyNames.NoPenalty;
         }
 
+        /// <summary>
+        /// Gets the list of eligible penalties based on the tackle context.
+        /// </summary>
+        /// <returns>A list of penalty names that can occur in the given tackle context.</returns>
         private List<PenaltyNames> GetEligiblePenaltiesForContext()
         {
             var penalties = new List<PenaltyNames>();
@@ -133,6 +149,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             return penalties;
         }
 
+        /// <summary>
+        /// Calculates the adjusted penalty probability based on tackler strength and tackle context.
+        /// </summary>
+        /// <param name="baseProbability">The base probability before adjustments.</param>
+        /// <returns>The adjusted probability.</returns>
         private double CalculateContextAdjustedProbability(double baseProbability)
         {
             var adjustmentFactor = 1.0;

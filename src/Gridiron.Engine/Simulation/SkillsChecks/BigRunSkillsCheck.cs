@@ -13,12 +13,22 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         private ISeedableRandom _rng;
         private Player _ballCarrier;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BigRunSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="ballCarrier">The ball carrier whose speed affects big run probability.</param>
         public BigRunSkillsCheck(ISeedableRandom rng, Player ballCarrier)
         {
             _rng = rng;
             _ballCarrier = ballCarrier;
         }
 
+        /// <summary>
+        /// Executes the big run check to determine if the ball carrier breaks into the secondary.
+        /// Probability increases with the ball carrier's speed above the threshold.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Base chance for a big run, increased by speed above threshold

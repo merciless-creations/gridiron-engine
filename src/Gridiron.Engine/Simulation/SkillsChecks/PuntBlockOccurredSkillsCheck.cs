@@ -8,6 +8,10 @@ using System.Linq;
 
 namespace Gridiron.Engine.Simulation.SkillsChecks
 {
+    /// <summary>
+    /// Determines if a punt is blocked by the defense.
+    /// Block probability increases significantly with bad snaps and decreases with punter skill.
+    /// </summary>
     public class PuntBlockOccurredSkillsCheck : ActionOccurredSkillsCheck
     {
         private readonly ISeedableRandom _rng;
@@ -16,6 +20,14 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         private readonly List<Player> _defensiveRushers;
         private readonly bool _goodSnap;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PuntBlockOccurredSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="punter">The punter kicking the ball.</param>
+        /// <param name="offensiveLine">The offensive line protecting the punt.</param>
+        /// <param name="defensiveRushers">The defensive players rushing the punt.</param>
+        /// <param name="goodSnap">Whether the snap was good.</param>
         public PuntBlockOccurredSkillsCheck(
             ISeedableRandom rng,
             Player punter,
@@ -30,6 +42,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             _goodSnap = goodSnap;
         }
 
+        /// <summary>
+        /// Executes the punt block check to determine if the punt is blocked.
+        /// Considers punter skill, snap quality, and defensive pressure from best rusher vs average blocker.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Base block probability

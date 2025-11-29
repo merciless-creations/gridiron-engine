@@ -13,12 +13,22 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
         private ISeedableRandom _rng;
         private int _fieldPosition;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SackYardsSkillsCheckResult"/> class.
+        /// </summary>
+        /// <param name="rng">Random number generator for determining sack yardage.</param>
+        /// <param name="fieldPosition">Current field position to prevent losses beyond the goal line.</param>
         public SackYardsSkillsCheckResult(ISeedableRandom rng, int fieldPosition)
         {
             _rng = rng;
             _fieldPosition = fieldPosition;
         }
 
+        /// <summary>
+        /// Executes the calculation to determine sack yardage loss.
+        /// Sacks typically result in 2-10 yard losses, clamped to field boundaries.
+        /// </summary>
+        /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
         {
             // Calculate sack yardage loss (2-10 yards typically)

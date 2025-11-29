@@ -8,7 +8,8 @@ using System.Linq;
 namespace Gridiron.Engine.Simulation.SkillsCheckResults
 {
     /// <summary>
-    /// Calculates interception return yardage with potential for "pick-six" touchdowns
+    /// Calculates interception return yardage with potential for "pick-six" touchdowns.
+    /// Base return is 8-15 yards, with skill differential and random variance affecting the outcome.
     /// </summary>
     public class InterceptionReturnSkillsCheckResult : SkillsCheckResult<InterceptionReturnResult>
     {
@@ -17,6 +18,13 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
         private readonly List<Player> _offensePlayers;
         private readonly int _interceptionSpot;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InterceptionReturnSkillsCheckResult"/> class.
+        /// </summary>
+        /// <param name="rng">Random number generator for determining return variance.</param>
+        /// <param name="interceptor">The defensive player who intercepted the pass.</param>
+        /// <param name="offensePlayers">Offensive players on the field for pursuit calculation.</param>
+        /// <param name="interceptionSpot">Field position where the interception occurred.</param>
         public InterceptionReturnSkillsCheckResult(
             ISeedableRandom rng,
             Player interceptor,
@@ -29,6 +37,11 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             _interceptionSpot = interceptionSpot;
         }
 
+        /// <summary>
+        /// Executes the interception return calculation based on interceptor skill,
+        /// offensive pursuit ability, and random variance.
+        /// </summary>
+        /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
         {
             // Calculate returner's skill
@@ -75,12 +88,23 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
     }
 
     /// <summary>
-    /// Result of interception return calculation
+    /// Result of interception return calculation containing interceptor and yardage details.
     /// </summary>
     public class InterceptionReturnResult
     {
+        /// <summary>
+        /// Gets or sets the player who intercepted the pass.
+        /// </summary>
         public Player Interceptor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the field position where the interception occurred.
+        /// </summary>
         public int InterceptionSpot { get; set; }
+
+        /// <summary>
+        /// Gets or sets the yards gained on the interception return.
+        /// </summary>
         public int ReturnYards { get; set; }
     }
 }

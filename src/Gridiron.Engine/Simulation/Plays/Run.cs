@@ -11,21 +11,29 @@ using System.Linq;
 
 namespace Gridiron.Engine.Simulation.Plays
 {
-    //Run plays can be your typical, hand it off to the guy play
-    //or a QB scramble
-    //or a 2-pt conversion
-    //or a kneel
-    //a fake punt would be in the Punt class - those could be run or pass...
-    //a muffed snap
+    /// <summary>
+    /// Executes run plays including handoffs, QB scrambles, 2-point conversions, and kneels.
+    /// Handles blocking success, tackle breaks, big runs, fumbles, penalties, and injuries.
+    /// Note: Fake punts are handled in the Punt class.
+    /// </summary>
     public sealed class Run : IGameAction
     {
         private ISeedableRandom _rng;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Run"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator used for probabilistic outcomes.</param>
         public Run(ISeedableRandom rng)
         {
             _rng = rng;
         }
 
+        /// <summary>
+        /// Executes a run play, determining the ball carrier, run direction, blocking success,
+        /// yardage gained, and handling fumbles, penalties, and injuries.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
         public void Execute(Game game)
         {
             var play = (RunPlay)game.CurrentPlay;
@@ -348,6 +356,12 @@ namespace Gridiron.Engine.Simulation.Plays
             }
         }
 
+        /// <summary>
+        /// Determines the ball carrier for a run play based on player positions and scramble probability.
+        /// Primary carrier is the running back, but can be the quarterback for scrambles or options.
+        /// </summary>
+        /// <param name="play">The run play being executed.</param>
+        /// <returns>The player carrying the ball, or null if no carrier is found.</returns>
         private Player? DetermineBallCarrier(RunPlay play)
         {
             // Primary carrier is RB, but could be QB for scramble, or FB
@@ -365,6 +379,10 @@ namespace Gridiron.Engine.Simulation.Plays
             return rb ?? play.OffensePlayersOnField.FirstOrDefault(p => p.Position == Positions.QB);
         }
 
+        /// <summary>
+        /// Randomly determines the direction of the run play from available run directions.
+        /// </summary>
+        /// <returns>The direction the run play will be executed.</returns>
         private RunDirection DetermineRunDirection()
         {
             var directions = new[]
@@ -383,6 +401,16 @@ namespace Gridiron.Engine.Simulation.Plays
             return directions[_rng.Next(directions.Length)];
         }
 
+        /// <summary>
+        /// Generates and logs the narrative play-by-play description for a run play based on
+        /// blocking success, yardage gained, and game situation.
+        /// </summary>
+        /// <param name="play">The run play being executed.</param>
+        /// <param name="ballCarrier">The player carrying the ball.</param>
+        /// <param name="direction">The direction of the run.</param>
+        /// <param name="blockingSuccess">Whether the offensive line created a good running lane.</param>
+        /// <param name="yards">The yards gained on the play.</param>
+        /// <param name="yardsToGoal">The yards remaining to the goal line.</param>
         private void LogRunPlayNarrative(RunPlay play, Player ballCarrier, RunDirection direction, bool blockingSuccess, int yards, int yardsToGoal)
         {
             var positionName = ballCarrier.Position == Positions.QB ? "quarterback" : "running back";
@@ -427,6 +455,11 @@ namespace Gridiron.Engine.Simulation.Plays
             }
         }
 
+        /// <summary>
+        /// Converts a run direction enumeration to a human-readable text description.
+        /// </summary>
+        /// <param name="direction">The run direction to convert.</param>
+        /// <returns>A text description of the run direction.</returns>
         private string GetDirectionText(RunDirection direction)
         {
             return direction switch
@@ -444,6 +477,14 @@ namespace Gridiron.Engine.Simulation.Plays
             };
         }
 
+        /// <summary>
+        /// Handles fumble recovery on a run play, determining which team recovers
+        /// and calculating return yardage, touchdowns, or safeties.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The run play being executed.</param>
+        /// <param name="fumbler">The player who fumbled the ball.</param>
+        /// <param name="fumbleSpot">The yard line where the fumble occurred.</param>
         private void HandleFumbleRecovery(Game game, RunPlay play, Player fumbler, int fumbleSpot)
         {
             // Calculate fumble recovery
@@ -552,6 +593,16 @@ namespace Gridiron.Engine.Simulation.Plays
             play.Fumbles.Add(fumble);
         }
 
+        /// <summary>
+        /// Checks if a penalty should be added to the play and processes its effects using the legacy system.
+        /// Determines the player who committed the penalty, yardage, and whether it should be accepted.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The run play being executed.</param>
+        /// <param name="penaltyName">The type of penalty that occurred.</param>
+        /// <param name="occurredWhen">When during the play the penalty occurred.</param>
+        /// <param name="homePlayersOnField">List of home team players on the field.</param>
+        /// <param name="awayPlayersOnField">List of away team players on the field.</param>
         private void CheckAndAddPenalty(
             Game game,
             RunPlay play,

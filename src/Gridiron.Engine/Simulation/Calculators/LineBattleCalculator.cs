@@ -62,6 +62,9 @@ namespace Gridiron.Engine.Simulation.Calculators
         /// <summary>
         /// Counts how many defensive players are involved in the rush/line battle.
         /// </summary>
+        /// <param name="defensivePlayers">All defensive players on the field</param>
+        /// <param name="isPassPlay">True for pass rush count, false for run defense count</param>
+        /// <returns>Number of defenders involved in the line battle</returns>
         private static int CountRushers(List<Player> defensivePlayers, bool isPassPlay)
         {
             if (isPassPlay)

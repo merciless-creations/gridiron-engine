@@ -8,6 +8,10 @@ using System.Linq;
 
 namespace Gridiron.Engine.Simulation.SkillsChecks
 {
+    /// <summary>
+    /// Determines if a field goal attempt is blocked by the defense.
+    /// Block probability increases with kick distance and decreases with kicker skill.
+    /// </summary>
     public class FieldGoalBlockOccurredSkillsCheck : ActionOccurredSkillsCheck
     {
         private readonly ISeedableRandom _rng;
@@ -17,6 +21,15 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         private readonly List<Player> _defensiveRushers;
         private readonly bool _goodSnap;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldGoalBlockOccurredSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="kicker">The kicker attempting the field goal.</param>
+        /// <param name="kickDistance">The distance of the field goal attempt in yards.</param>
+        /// <param name="offensiveLine">The offensive line protecting the kick.</param>
+        /// <param name="defensiveRushers">The defensive players rushing the kick.</param>
+        /// <param name="goodSnap">Whether the snap was good.</param>
         public FieldGoalBlockOccurredSkillsCheck(
             ISeedableRandom rng,
             Player kicker,
@@ -33,6 +46,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             _goodSnap = goodSnap;
         }
 
+        /// <summary>
+        /// Executes the field goal block check to determine if the kick is blocked.
+        /// Considers kick distance, kicker skill, snap quality, and defensive pressure.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Base probability by distance (longer kicks = higher trajectory = easier to block)

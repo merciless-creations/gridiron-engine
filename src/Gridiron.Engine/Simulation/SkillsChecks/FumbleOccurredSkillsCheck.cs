@@ -8,6 +8,10 @@ using System.Linq;
 
 namespace Gridiron.Engine.Simulation.SkillsChecks
 {
+    /// <summary>
+    /// Determines if a fumble occurs during a play.
+    /// Fumble probability is affected by ball carrier security, defender pressure, and play type.
+    /// </summary>
     public class FumbleOccurredSkillsCheck : ActionOccurredSkillsCheck
     {
         private readonly ISeedableRandom _rng;
@@ -16,6 +20,14 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         private readonly PlayType _playType;
         private readonly bool _isQBSack;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FumbleOccurredSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="ballCarrier">The player carrying the ball.</param>
+        /// <param name="defenders">The defenders involved in the tackle.</param>
+        /// <param name="playType">The type of play.</param>
+        /// <param name="isQBSack">Whether this is a quarterback sack.</param>
         public FumbleOccurredSkillsCheck(
             ISeedableRandom rng,
             Player ballCarrier,
@@ -30,6 +42,12 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             _isQBSack = isQBSack;
         }
 
+        /// <summary>
+        /// Executes the fumble check to determine if a fumble occurs.
+        /// Considers ball carrier awareness (security), defender pressure, and number of tacklers.
+        /// Gang tackles increase fumble probability.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             double fumbleProbability;

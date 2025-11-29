@@ -17,6 +17,13 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
         private readonly List<Player> _offensivePlayers;
         private readonly List<Player> _defensivePlayers;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RunYardsSkillsCheckResult"/> class.
+        /// </summary>
+        /// <param name="rng">Random number generator for determining yardage variance.</param>
+        /// <param name="ballCarrier">The player carrying the ball.</param>
+        /// <param name="offensivePlayers">Offensive players on the field (blockers).</param>
+        /// <param name="defensivePlayers">Defensive players on the field (tacklers).</param>
         public RunYardsSkillsCheckResult(
             ISeedableRandom rng,
             Player ballCarrier,
@@ -29,6 +36,12 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             _defensivePlayers = defensivePlayers;
         }
 
+        /// <summary>
+        /// Executes the calculation to determine base run yardage.
+        /// Compares offensive power (blockers + ball carrier) vs defensive power (tacklers).
+        /// Average run is 3-5 yards with variance from -15 to +10 yards.
+        /// </summary>
+        /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
         {
             // Calculate offensive power (ball carrier + blockers)
@@ -50,6 +63,10 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             Result = (int)Math.Round(totalYards);
         }
 
+        /// <summary>
+        /// Calculates offensive power based on blockers' blocking skill and ball carrier's rushing ability.
+        /// </summary>
+        /// <returns>Offensive power value used in yardage calculation.</returns>
         private double CalculateOffensivePower()
         {
             var blockers = _offensivePlayers.Where(p =>
@@ -65,6 +82,10 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             return (blockingPower + ballCarrierPower) / 2.0;
         }
 
+        /// <summary>
+        /// Calculates defensive power based on defenders' tackling, strength, and speed.
+        /// </summary>
+        /// <returns>Defensive power value used in yardage calculation.</returns>
         private double CalculateDefensivePower()
         {
             var defenders = _defensivePlayers.Where(p =>

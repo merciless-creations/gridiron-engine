@@ -17,6 +17,13 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
         private readonly double _hangTime;
         private readonly List<Player> _coverage;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PuntReturnYardsSkillsCheckResult"/> class.
+        /// </summary>
+        /// <param name="rng">Random number generator for determining return variance.</param>
+        /// <param name="returner">The player returning the punt.</param>
+        /// <param name="hangTime">The hang time of the punt in seconds (affects coverage).</param>
+        /// <param name="coverage">Defensive players on punt coverage team.</param>
         public PuntReturnYardsSkillsCheckResult(
             ISeedableRandom rng,
             Player returner,
@@ -29,6 +36,12 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             _coverage = coverage;
         }
 
+        /// <summary>
+        /// Executes the calculation to determine punt return yardage.
+        /// Returner's ability (speed, agility, catching) is compared against coverage quality.
+        /// Longer hang time improves coverage, reducing return yardage.
+        /// </summary>
+        /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
         {
             // Calculate returner's ability (speed + agility + catching)
@@ -52,6 +65,11 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             Result = (int)Math.Round(totalReturn);
         }
 
+        /// <summary>
+        /// Calculates the quality of punt coverage based on hang time and coverage team skill.
+        /// Longer hang time allows coverage team more time to get downfield.
+        /// </summary>
+        /// <returns>Coverage quality value used to determine return yardage.</returns>
         private double CalculateCoverageQuality()
         {
             // Better hang time = better coverage (more time to get downfield)

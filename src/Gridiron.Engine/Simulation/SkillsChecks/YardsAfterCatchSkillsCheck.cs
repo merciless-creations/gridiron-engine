@@ -13,12 +13,22 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         private ISeedableRandom _rng;
         private Player _receiver;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="YardsAfterCatchSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="receiver">The receiver who caught the ball.</param>
         public YardsAfterCatchSkillsCheck(ISeedableRandom rng, Player receiver)
         {
             _rng = rng;
             _receiver = receiver;
         }
 
+        /// <summary>
+        /// Executes the yards after catch check to determine if the receiver gains extra yards after the catch.
+        /// Probability is based on receiver's speed, agility, and rushing ability.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Calculate receiver's YAC potential based on speed, agility, and elusiveness

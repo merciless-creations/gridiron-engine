@@ -4,19 +4,27 @@ using Gridiron.Engine.Simulation.Interfaces;
 
 namespace Gridiron.Engine.Simulation.Actions
 {
-    //we have a fumble on the play
-    //and we should now know who has the ball
-    //determine the result of the fumble and add it to the 
-    //current play
+    /// <summary>
+    /// Handles fumble outcomes when a player loses control of the ball.
+    /// Determines possession changes and records the fumble in the play.
+    /// </summary>
     public sealed class Fumble : IGameAction
     {
         private readonly Possession _possession;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Fumble"/> class.
+        /// </summary>
+        /// <param name="possession">The team that recovered the fumble.</param>
         public Fumble(Possession possession)
         {
             _possession = possession;
         }
 
+        /// <summary>
+        /// Executes the fumble action, determining if possession changed and logging the result.
+        /// </summary>
+        /// <param name="game">The game containing the current play with the fumble.</param>
         public void Execute(Game game)
         {
             //first determine if there was a possession change on the play

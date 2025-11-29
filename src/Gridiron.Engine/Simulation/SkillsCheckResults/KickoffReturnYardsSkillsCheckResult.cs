@@ -6,19 +6,31 @@ using System;
 namespace Gridiron.Engine.Simulation.SkillsCheckResults
 {
     /// <summary>
-    /// Calculates kickoff return yardage based on returner skill
+    /// Calculates kickoff return yardage based on returner skill.
+    /// Average return is 20-25 yards, with potential for long returns and touchdowns.
     /// </summary>
     public class KickoffReturnYardsSkillsCheckResult : SkillsCheckResult<double>
     {
         private readonly ISeedableRandom _rng;
         private readonly Player _returner;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="KickoffReturnYardsSkillsCheckResult"/> class.
+        /// </summary>
+        /// <param name="rng">Random number generator for determining return variance.</param>
+        /// <param name="returner">The player returning the kickoff.</param>
         public KickoffReturnYardsSkillsCheckResult(ISeedableRandom rng, Player returner)
         {
             _rng = rng;
             _returner = returner;
         }
 
+        /// <summary>
+        /// Executes the calculation to determine kickoff return yardage.
+        /// Returner's speed and agility affect base return (15-30 yards), with significant
+        /// random variance allowing for tackles at spot (-5 yards) or touchdown returns (85 yards).
+        /// </summary>
+        /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
         {
             // Average kickoff return: 20-25 yards in NFL

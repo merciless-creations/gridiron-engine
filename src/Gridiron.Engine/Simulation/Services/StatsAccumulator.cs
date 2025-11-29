@@ -4,10 +4,19 @@ using static Gridiron.Engine.Domain.StatTypes;
 
 namespace Gridiron.Engine.Simulation.Services
 {
+    /// <summary>
+    /// Provides static methods for accumulating player statistics during play execution.
+    /// Tracks offensive, defensive, and special teams statistics for all players involved in plays.
+    /// </summary>
     public static class StatsAccumulator
     {
         private static Random _random = new Random();
 
+        /// <summary>
+        /// Accumulates passing and receiving statistics from a completed pass play.
+        /// Tracks passing yards, touchdowns, interceptions, completions, attempts, and receiving stats.
+        /// </summary>
+        /// <param name="play">The pass play to accumulate statistics from.</param>
         public static void AccumulatePassStats(PassPlay play)
         {
             // Check for sack (negative yards on pass play)
@@ -45,6 +54,11 @@ namespace Gridiron.Engine.Simulation.Services
             }
         }
 
+        /// <summary>
+        /// Accumulates rushing statistics from a completed run play.
+        /// Tracks rushing yards, touchdowns, and attempts for each ball carrier in the play.
+        /// </summary>
+        /// <param name="play">The run play to accumulate statistics from.</param>
         public static void AccumulateRunStats(RunPlay play)
         {
             foreach (var segment in play.RunSegments)
@@ -57,6 +71,12 @@ namespace Gridiron.Engine.Simulation.Services
             }
         }
 
+        /// <summary>
+        /// Accumulates field goal kicking statistics from a field goal attempt.
+        /// Tracks field goals made and attempted for the kicker.
+        /// </summary>
+        /// <param name="play">The field goal play to accumulate statistics from.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the play is missing a kicker.</exception>
         public static void AccumulateFieldGoalStats(FieldGoalPlay play)
         {
             // Defensive check - should never happen, but catches bugs early
@@ -73,6 +93,12 @@ namespace Gridiron.Engine.Simulation.Services
             UpdatePlayerStat(play.Kicker, PlayerStatType.FieldGoalsAttempted, 1);
         }
 
+        /// <summary>
+        /// Accumulates punting and punt return statistics from a punt play.
+        /// Tracks punts, punt yards, punts inside the 20, punt returns, and punt return yards.
+        /// </summary>
+        /// <param name="play">The punt play to accumulate statistics from.</param>
+        /// <exception cref="InvalidOperationException">Thrown when the play is missing a punter.</exception>
         public static void AccumulatePuntStats(PuntPlay play)
         {
             // Defensive check - should never happen, but catches bugs early
@@ -103,6 +129,11 @@ namespace Gridiron.Engine.Simulation.Services
             }
         }
 
+        /// <summary>
+        /// Accumulates kickoff return statistics from a kickoff play.
+        /// Tracks kickoff returns and kickoff return yards for the returner.
+        /// </summary>
+        /// <param name="play">The kickoff play to accumulate statistics from.</param>
         public static void AccumulateKickoffStats(KickoffPlay play)
         {
             if (play.InitialReturner != null)
@@ -112,11 +143,21 @@ namespace Gridiron.Engine.Simulation.Services
             }
         }
 
+        /// <summary>
+        /// Accumulates fumble statistics from any play that contains fumbles.
+        /// Tracks fumbles and fumble recoveries for all players involved.
+        /// </summary>
+        /// <param name="play">The play to accumulate fumble statistics from.</param>
         public static void AccumulateFumbleStats(IPlay play)
         {
             ProcessFumbles(play.Fumbles);
         }
 
+        /// <summary>
+        /// Processes a list of fumbles and updates player statistics.
+        /// Records fumbles for players who fumbled and fumble recoveries for players who recovered.
+        /// </summary>
+        /// <param name="fumbles">The list of fumbles to process.</param>
         private static void ProcessFumbles(List<Fumble> fumbles)
         {
             if (fumbles == null) return;
@@ -131,6 +172,12 @@ namespace Gridiron.Engine.Simulation.Services
             }
         }
 
+        /// <summary>
+        /// Accumulates defensive statistics from any play.
+        /// Tracks sacks, tackles, and interceptions for defensive players.
+        /// Randomly assigns credit for tackles and sacks to defensive players on the field.
+        /// </summary>
+        /// <param name="play">The play to accumulate defensive statistics from.</param>
         public static void AccumulateDefensiveStats(IPlay play)
         {
             var defensePlayers = play.DefensePlayersOnField;
@@ -176,6 +223,13 @@ namespace Gridiron.Engine.Simulation.Services
             }
         }
 
+        /// <summary>
+        /// Updates a specific statistic for a player by adding the specified value.
+        /// Creates the stat entry if it doesn't exist for the player.
+        /// </summary>
+        /// <param name="player">The player to update statistics for.</param>
+        /// <param name="statType">The type of statistic to update.</param>
+        /// <param name="value">The value to add to the statistic.</param>
         private static void UpdatePlayerStat(Player player, PlayerStatType statType, int value)
         {
             if (player == null) return;
@@ -187,6 +241,12 @@ namespace Gridiron.Engine.Simulation.Services
             player.Stats[statType] += value;
         }
 
+        /// <summary>
+        /// Determines whether a player is in a defensive position.
+        /// Checks if the player's position is one of the standard defensive positions.
+        /// </summary>
+        /// <param name="p">The player to check.</param>
+        /// <returns>True if the player is a defender, false otherwise.</returns>
         private static bool IsDefender(Player p)
         {
             return p.Position == Positions.DT ||

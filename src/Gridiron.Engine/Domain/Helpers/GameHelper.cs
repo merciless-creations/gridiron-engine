@@ -1,5 +1,8 @@
 ﻿namespace Gridiron.Engine.Domain.Helpers
 {
+    /// <summary>
+    /// Static helper class for creating and initializing game instances.
+    /// </summary>
     public static class GameHelper
     {
         /// <summary>

@@ -14,12 +14,22 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         private ISeedableRandom _rng;
         private Player _ballCarrier;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TackleBreakSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="ballCarrier">The ball carrier attempting to break the tackle.</param>
         public TackleBreakSkillsCheck(ISeedableRandom rng, Player ballCarrier)
         {
             _rng = rng;
             _ballCarrier = ballCarrier;
         }
 
+        /// <summary>
+        /// Executes the tackle break check to determine if the ball carrier breaks a tackle attempt.
+        /// Combines ball carrier's rushing, strength, and agility against tackler's skills.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             var play = game.CurrentPlay;

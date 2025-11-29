@@ -22,11 +22,20 @@ namespace Gridiron.Engine.Simulation.Plays
     {
         private readonly ISeedableRandom _rng;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldGoal"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator used for probabilistic outcomes.</param>
         public FieldGoal(ISeedableRandom rng)
         {
             _rng = rng;
         }
 
+        /// <summary>
+        /// Executes a field goal or extra point attempt, handling all possible outcomes including bad snaps,
+        /// blocked kicks, make/miss scenarios, and returns on blocked kicks.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
         public void Execute(Game game)
         {
             var play = (FieldGoalPlay)game.CurrentPlay;
@@ -111,6 +120,14 @@ namespace Gridiron.Engine.Simulation.Plays
             ExecuteNormalFieldGoal(game, play, kicker);
         }
 
+        /// <summary>
+        /// Handles the scenario when a bad snap occurs on a field goal attempt.
+        /// Calculates yardage lost, checks for safety, and updates play state.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The field goal play being executed.</param>
+        /// <param name="holder">The player acting as holder for the kick.</param>
+        /// <param name="longSnapper">The long snapper who executed the bad snap.</param>
         private void ExecuteBadSnap(Game game, FieldGoalPlay play, Player? holder, Player? longSnapper)
         {
             play.GoodSnap = false;
@@ -148,6 +165,13 @@ namespace Gridiron.Engine.Simulation.Plays
             play.ClockStopped = true;
         }
 
+        /// <summary>
+        /// Handles a blocked field goal scenario, determining recovery and potential returns.
+        /// Covers both defensive and offensive recovery scenarios including touchdowns and safeties.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The field goal play being executed.</param>
+        /// <param name="kicker">The kicker whose kick was blocked.</param>
         private void ExecuteBlockedFieldGoal(Game game, FieldGoalPlay play, Player? kicker)
         {
             play.Blocked = true;
@@ -296,6 +320,13 @@ namespace Gridiron.Engine.Simulation.Plays
             play.ClockStopped = true;
         }
 
+        /// <summary>
+        /// Executes a normal field goal attempt with good snap and no block.
+        /// Determines if the kick is good based on distance and kicker skill, and checks for penalties.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The field goal play being executed.</param>
+        /// <param name="kicker">The kicker attempting the field goal.</param>
         private void ExecuteNormalFieldGoal(Game game, FieldGoalPlay play, Player? kicker)
         {
             if (kicker == null)
@@ -379,6 +410,16 @@ namespace Gridiron.Engine.Simulation.Plays
             play.ClockStopped = true;
         }
 
+        /// <summary>
+        /// Checks if a penalty should be added to the play and processes its effects.
+        /// Determines the player who committed the penalty, yardage, and whether it should be accepted.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The field goal play being executed.</param>
+        /// <param name="penaltyName">The type of penalty that occurred.</param>
+        /// <param name="occurredWhen">When during the play the penalty occurred.</param>
+        /// <param name="homePlayersOnField">List of home team players on the field.</param>
+        /// <param name="awayPlayersOnField">List of away team players on the field.</param>
         private void CheckAndAddPenalty(
             Game game,
             FieldGoalPlay play,
