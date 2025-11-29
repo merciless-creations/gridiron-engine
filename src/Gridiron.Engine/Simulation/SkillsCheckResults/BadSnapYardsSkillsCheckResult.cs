@@ -14,6 +14,11 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
         private readonly ISeedableRandom _rng;
         private readonly int _fieldPosition;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BadSnapYardsSkillsCheckResult"/> class.
+        /// </summary>
+        /// <param name="rng">Random number generator for determining yardage loss variance.</param>
+        /// <param name="fieldPosition">Current field position to prevent losses beyond the goal line.</param>
         public BadSnapYardsSkillsCheckResult(
             ISeedableRandom rng,
             int fieldPosition)
@@ -22,6 +27,11 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             _fieldPosition = fieldPosition;
         }
 
+        /// <summary>
+        /// Executes the calculation to determine yardage lost on a bad snap.
+        /// Loss ranges from -5 to -20 yards with variance, clamped to field boundaries to prevent safeties.
+        /// </summary>
+        /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
         {
             // Bad snap scenarios:

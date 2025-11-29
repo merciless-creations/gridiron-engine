@@ -16,6 +16,10 @@ namespace Gridiron.Engine.Simulation.BaseClasses
         /// </summary>
         public T Result { get; protected set; }
 
+        /// <summary>
+        /// Executes the action against the specified game state.
+        /// </summary>
+        /// <param name="game">The game state to execute the action against.</param>
         public abstract void Execute(Game game);
     }
 }

@@ -15,6 +15,11 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
         private readonly ISeedableRandom _rng;
         private readonly int _puntDistance;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PuntHangTimeSkillsCheckResult"/> class.
+        /// </summary>
+        /// <param name="rng">Random number generator for determining time variance.</param>
+        /// <param name="puntDistance">The distance the punt traveled in yards.</param>
         public PuntHangTimeSkillsCheckResult(
             ISeedableRandom rng,
             int puntDistance)
@@ -23,6 +28,12 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             _puntDistance = puntDistance;
         }
 
+        /// <summary>
+        /// Executes the calculation to determine punt hang time.
+        /// Formula is approximately 0.08-0.10 seconds per yard with variance.
+        /// Minimum hang time is 2.0 seconds.
+        /// </summary>
+        /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
         {
             // Hang time formula: roughly 0.08-0.10 seconds per yard

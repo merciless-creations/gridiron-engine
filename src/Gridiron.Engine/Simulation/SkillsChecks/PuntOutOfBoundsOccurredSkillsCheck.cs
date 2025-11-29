@@ -14,6 +14,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         private readonly ISeedableRandom _rng;
         private readonly int _puntLandingSpot;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PuntOutOfBoundsOccurredSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="puntLandingSpot">The yard line where the punt lands.</param>
         public PuntOutOfBoundsOccurredSkillsCheck(
             ISeedableRandom rng,
             int puntLandingSpot)
@@ -22,6 +27,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             _puntLandingSpot = puntLandingSpot;
         }
 
+        /// <summary>
+        /// Executes the punt out of bounds check to determine if the punt goes out of bounds.
+        /// Probability increases when punting deep in opponent territory (directional punting).
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Punt out of bounds probability:

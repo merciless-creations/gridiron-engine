@@ -13,11 +13,21 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
     {
         private ISeedableRandom _rng;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="QBPressureSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
         public QBPressureSkillsCheck(ISeedableRandom rng)
         {
             _rng = rng;
         }
 
+        /// <summary>
+        /// Executes the QB pressure check to determine if the quarterback is under pressure.
+        /// Pressure affects pass accuracy even if the QB is not sacked.
+        /// Compares defensive pass rush against offensive line blocking.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             var play = game.CurrentPlay;

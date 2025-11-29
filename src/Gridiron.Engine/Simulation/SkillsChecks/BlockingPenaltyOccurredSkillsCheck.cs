@@ -31,6 +31,13 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         /// </summary>
         public IPenalty PenaltyInstance { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockingPenaltyOccurredSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="offensiveLinemen">The offensive linemen whose skills affect penalty probability.</param>
+        /// <param name="defensivePlayers">The defensive players applying pressure.</param>
+        /// <param name="playType">The type of play (run or pass).</param>
         public BlockingPenaltyOccurredSkillsCheck(
             ISeedableRandom rng,
             List<Player> offensiveLinemen,
@@ -43,6 +50,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             _playType = playType;
         }
 
+        /// <summary>
+        /// Executes the blocking penalty check to determine if a penalty occurs and which specific penalty.
+        /// Considers offensive line skill, defensive pressure, and play type to adjust probabilities.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Blocking penalties that can occur during blocking
@@ -114,6 +126,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             PenaltyInstance = null;
         }
 
+        /// <summary>
+        /// Calculates the adjusted penalty probability based on offensive line skill, defensive pressure, and play type.
+        /// </summary>
+        /// <param name="baseProbability">The base probability before adjustments.</param>
+        /// <returns>The adjusted probability.</returns>
         private double CalculateContextAdjustedProbability(double baseProbability)
         {
             var adjustmentFactor = 1.0;

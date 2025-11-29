@@ -7,13 +7,28 @@ using Gridiron.Engine.Simulation.Interfaces;
 
 namespace Gridiron.Engine.Simulation.Actions
 {
+    /// <summary>
+    /// Handles pre-play activities including huddle, play calling, and player substitutions.
+    /// This is the "huddle" phase where offensive and defensive plays are determined.
+    /// </summary>
     public class PrePlay : IGameAction
     {
         private ISeedableRandom _rng;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PrePlay"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for play selection.</param>
         public PrePlay(ISeedableRandom rng)
         {
             _rng = rng;
         }
+
+        /// <summary>
+        /// Executes pre-play activities including determining the play type,
+        /// substituting players, and logging the current game situation.
+        /// </summary>
+        /// <param name="game">The game to prepare for the next play.</param>
         public void Execute(Game game)
         {
             //consider this class, the huddle

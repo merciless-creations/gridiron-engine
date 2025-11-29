@@ -18,11 +18,21 @@ namespace Gridiron.Engine.Simulation.Plays
     {
         private readonly ISeedableRandom _rng;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Kickoff"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator used for probabilistic outcomes.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="rng"/> is null.</exception>
         public Kickoff(ISeedableRandom rng)
         {
             _rng = rng ?? throw new ArgumentNullException(nameof(rng));
         }
 
+        /// <summary>
+        /// Executes a kickoff play, handling normal kickoffs, onside kicks, touchbacks, and returns.
+        /// Determines kick distance, checks for out of bounds, and processes return scenarios.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
         public void Execute(Game game)
         {
             var play = (KickoffPlay)game.CurrentPlay;
@@ -56,6 +66,12 @@ namespace Gridiron.Engine.Simulation.Plays
             ExecuteNormalKickoff(game, play, kicker);
         }
 
+        /// <summary>
+        /// Determines whether the kicking team should attempt an onside kick based on game situation.
+        /// Uses a simple heuristic based on score differential in late game situations.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <returns>True if an onside kick should be attempted; otherwise, false.</returns>
         private bool ShouldAttemptOnsideKick(Game game)
         {
             // Simple heuristic: Attempt onside kick if trailing by 7+ points in 4th quarter
@@ -68,6 +84,13 @@ namespace Gridiron.Engine.Simulation.Plays
             return scoreDifferential <= -7 && _rng.NextDouble() < GameProbabilities.Kickoffs.ONSIDE_ATTEMPT_PROBABILITY;
         }
 
+        /// <summary>
+        /// Executes an onside kick attempt, determining recovery and ball placement.
+        /// Onside kicks travel 10-15 yards with recovery probability based on kicker skill.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The kickoff play being executed.</param>
+        /// <param name="kicker">The kicker attempting the onside kick.</param>
         private void ExecuteOnsideKick(Game game, KickoffPlay play, Player kicker)
         {
             // Onside kicks travel 10-15 yards minimum
@@ -124,6 +147,13 @@ namespace Gridiron.Engine.Simulation.Plays
             play.ClockStopped = true; // Clock stops after onside kick
         }
 
+        /// <summary>
+        /// Executes a normal kickoff, calculating kick distance and handling touchbacks or returns.
+        /// Checks for out of bounds kicks and initiates return execution if applicable.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The kickoff play being executed.</param>
+        /// <param name="kicker">The kicker executing the kickoff.</param>
         private void ExecuteNormalKickoff(Game game, KickoffPlay play, Player kicker)
         {
             // Calculate kick distance based on kicker skill
@@ -167,6 +197,12 @@ namespace Gridiron.Engine.Simulation.Plays
             play.ClockStopped = true; // Clock stops after kickoff return
         }
 
+        /// <summary>
+        /// Determines if a kickoff went out of bounds based on landing spot.
+        /// Kicks have higher out of bounds probability in certain danger zones.
+        /// </summary>
+        /// <param name="landingSpot">The yard line where the kickoff landed.</param>
+        /// <returns>True if the kick went out of bounds; otherwise, false.</returns>
         private bool CheckOutOfBounds(int landingSpot)
         {
             // Kicks between 30-70 yards have small chance of going out of bounds
@@ -179,6 +215,13 @@ namespace Gridiron.Engine.Simulation.Plays
             return _rng.NextDouble() < GameProbabilities.Kickoffs.KICKOFF_OOB_DANGER_ZONE;
         }
 
+        /// <summary>
+        /// Executes a kickoff return, handling muffed catches, fair catches, and return yardage.
+        /// Includes checks for fumbles, penalties, and injuries during the return.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The kickoff play being executed.</param>
+        /// <param name="landingSpot">The yard line where the kickoff landed.</param>
         private void ExecuteKickoffReturn(Game game, KickoffPlay play, int landingSpot)
         {
             play.PossessionChange = true;
@@ -367,6 +410,14 @@ namespace Gridiron.Engine.Simulation.Plays
             play.ElapsedTime += 5.0 + (_rng.NextDouble() * 3.0);
         }
 
+        /// <summary>
+        /// Handles fumble recovery during a kickoff return, determining which team recovers
+        /// and calculating return yardage, touchdowns, or safeties.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The kickoff play being executed.</param>
+        /// <param name="fumbler">The player who fumbled the ball.</param>
+        /// <param name="fumbleSpot">The yard line where the fumble occurred.</param>
         private void HandleKickoffFumbleRecovery(Game game, KickoffPlay play, Player fumbler, int fumbleSpot)
         {
             // Calculate fumble recovery
@@ -470,6 +521,14 @@ namespace Gridiron.Engine.Simulation.Plays
             play.Fumbles.Add(fumble);
         }
 
+        /// <summary>
+        /// Handles a muffed kickoff catch, determining which team recovers the loose ball.
+        /// Receiving team has higher probability of recovery but may lose field position.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The kickoff play being executed.</param>
+        /// <param name="returner">The player who muffed the catch.</param>
+        /// <param name="landingSpot">The yard line where the kickoff landed.</param>
         private void HandleMuffedKickoff(Game game, KickoffPlay play, Player returner, int landingSpot)
         {
             play.Result.LogInformation($"The kick is muffed by {returner.LastName}!");
@@ -524,6 +583,16 @@ namespace Gridiron.Engine.Simulation.Plays
             }
         }
 
+        /// <summary>
+        /// Checks if a penalty should be added to the play and processes its effects.
+        /// Determines the player who committed the penalty, yardage, and whether it should be accepted.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The kickoff play being executed.</param>
+        /// <param name="penaltyName">The type of penalty that occurred.</param>
+        /// <param name="occurredWhen">When during the play the penalty occurred.</param>
+        /// <param name="homePlayersOnField">List of home team players on the field.</param>
+        /// <param name="awayPlayersOnField">List of away team players on the field.</param>
         private void CheckAndAddPenalty(
             Game game,
             KickoffPlay play,

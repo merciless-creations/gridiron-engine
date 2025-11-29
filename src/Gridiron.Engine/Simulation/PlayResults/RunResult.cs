@@ -7,8 +7,17 @@ using System.Linq;
 
 namespace Gridiron.Engine.Simulation.PlayResults
 {
+    /// <summary>
+    /// Processes running play results including yards gained, fumbles, touchdowns, and penalties.
+    /// Handles field position updates, down progression, and scoring for rushing plays.
+    /// </summary>
     public class RunResult : IGameAction
     {
+        /// <summary>
+        /// Executes the running play result, updating game state including field position, score, down and distance.
+        /// Handles various outcomes such as gains, losses, fumbles, touchdowns, safeties, and penalties.
+        /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
         public void Execute(Game game)
         {
             var play = (RunPlay)game.CurrentPlay;
@@ -235,7 +244,11 @@ namespace Gridiron.Engine.Simulation.PlayResults
 
         /// <summary>
         /// Applies smart acceptance/decline logic to all penalties on the play.
+        /// Determines whether each penalty should be accepted or declined based on game situation and which team benefits.
         /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
+        /// <param name="play">The run play that contains the penalties.</param>
+        /// <param name="enforcement">The penalty enforcement service that evaluates whether penalties should be accepted.</param>
         private void ApplyPenaltyAcceptanceLogic(Game game, RunPlay play, PenaltyEnforcement enforcement)
         {
             if (play.Penalties == null || !play.Penalties.Any())
@@ -258,6 +271,11 @@ namespace Gridiron.Engine.Simulation.PlayResults
             }
         }
 
+        /// <summary>
+        /// Advances the current down to the next down.
+        /// </summary>
+        /// <param name="currentDown">The current down.</param>
+        /// <returns>The next down, or Downs.None if turnover on downs.</returns>
         private Downs AdvanceDown(Downs currentDown)
         {
             return currentDown switch
@@ -270,6 +288,11 @@ namespace Gridiron.Engine.Simulation.PlayResults
             };
         }
 
+        /// <summary>
+        /// Formats a down enumeration value to its display string representation (1st, 2nd, 3rd, 4th).
+        /// </summary>
+        /// <param name="down">The down to format.</param>
+        /// <returns>The formatted down string.</returns>
         private string FormatDown(Downs down)
         {
             return down switch

@@ -29,12 +29,22 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         /// </summary>
         public IPenalty PenaltyInstance { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PreSnapPenaltyOccurredSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="playType">The type of play.</param>
         public PreSnapPenaltyOccurredSkillsCheck(ISeedableRandom rng, PlayType playType)
         {
             _rng = rng;
             _playType = playType;
         }
 
+        /// <summary>
+        /// Executes the pre-snap penalty check to determine if a penalty occurs before the snap.
+        /// Uses weighted random selection based on individual penalty odds from penalty data.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Pre-snap penalties that can occur on any play type

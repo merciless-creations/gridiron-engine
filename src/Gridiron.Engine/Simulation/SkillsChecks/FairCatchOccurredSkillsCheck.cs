@@ -15,6 +15,12 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
         private readonly double _hangTime;
         private readonly int _returnSpot;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FairCatchOccurredSkillsCheck"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator for determining outcomes.</param>
+        /// <param name="hangTime">The hang time of the punt in seconds.</param>
+        /// <param name="returnSpot">The yard line where the punt is caught.</param>
         public FairCatchOccurredSkillsCheck(
             ISeedableRandom rng,
             double hangTime,
@@ -25,6 +31,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             _returnSpot = returnSpot;
         }
 
+        /// <summary>
+        /// Executes the fair catch check to determine if the returner signals for a fair catch.
+        /// More likely with long hang time (better coverage) or deep in own territory.
+        /// </summary>
+        /// <param name="game">The current game instance.</param>
         public override void Execute(Game game)
         {
             // Fair catch more likely with:

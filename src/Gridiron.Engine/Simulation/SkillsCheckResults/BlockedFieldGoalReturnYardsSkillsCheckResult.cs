@@ -6,19 +6,31 @@ using System;
 namespace Gridiron.Engine.Simulation.SkillsCheckResults
 {
     /// <summary>
-    /// Calculates return yardage for blocked field goal recoveries
+    /// Calculates return yardage for blocked field goal recoveries.
+    /// Returns can range from -5 yards (tackled behind recovery spot) to 100 yards (full-field touchdown).
     /// </summary>
     public class BlockedFieldGoalReturnYardsSkillsCheckResult : SkillsCheckResult<double>
     {
         private readonly ISeedableRandom _rng;
         private readonly Player _returner;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockedFieldGoalReturnYardsSkillsCheckResult"/> class.
+        /// </summary>
+        /// <param name="rng">Random number generator for determining return variance.</param>
+        /// <param name="returner">The player recovering and returning the blocked field goal.</param>
         public BlockedFieldGoalReturnYardsSkillsCheckResult(ISeedableRandom rng, Player returner)
         {
             _rng = rng;
             _returner = returner;
         }
 
+        /// <summary>
+        /// Executes the calculation to determine blocked field goal return yardage.
+        /// Returner's speed and agility affect the base return, with significant random variance.
+        /// Most returns fall in the 10-30 yard range, but touchdowns are possible.
+        /// </summary>
+        /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
         {
             // Average blocked FG return: 15-25 yards

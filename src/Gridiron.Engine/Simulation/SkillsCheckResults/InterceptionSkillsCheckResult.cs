@@ -9,7 +9,8 @@ using System.Linq;
 namespace Gridiron.Engine.Simulation.SkillsCheckResults
 {
     /// <summary>
-    /// Handles the complete interception scenario including return, fumbles, and pick-six
+    /// Handles the complete interception scenario including return, fumbles, and pick-six.
+    /// Selects the interceptor, calculates return yardage, and handles potential fumbles during the return.
     /// </summary>
     public class InterceptionSkillsCheckResult : SkillsCheckResult<InterceptionResult>
     {
@@ -20,6 +21,15 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
         private readonly List<Player> _defensePlayers;
         private readonly int _interceptionSpot;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InterceptionSkillsCheckResult"/> class.
+        /// </summary>
+        /// <param name="rng">Random number generator for determining interception details.</param>
+        /// <param name="qb">The quarterback who threw the interception.</param>
+        /// <param name="intendedReceiver">The receiver the pass was intended for.</param>
+        /// <param name="offensePlayers">Offensive players on the field for pursuit.</param>
+        /// <param name="defensePlayers">Defensive players on the field who can intercept.</param>
+        /// <param name="interceptionSpot">Field position where the interception occurred.</param>
         public InterceptionSkillsCheckResult(
             ISeedableRandom rng,
             Player qb,
@@ -36,6 +46,11 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             _interceptionSpot = interceptionSpot;
         }
 
+        /// <summary>
+        /// Executes the complete interception scenario: selects the interceptor (defensive back),
+        /// calculates return yardage, checks for pick-six touchdowns, and handles fumbles during the return.
+        /// </summary>
+        /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
         {
             // Select interceptor (defensive back with best coverage/awareness/speed)
@@ -145,18 +160,53 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
     }
 
     /// <summary>
-    /// Complete result of an interception play
+    /// Complete result of an interception play including all details about the return and potential fumble.
     /// </summary>
     public class InterceptionResult
     {
+        /// <summary>
+        /// Gets or sets the defensive player who intercepted the pass.
+        /// </summary>
         public Player Interceptor { get; set; }
+
+        /// <summary>
+        /// Gets or sets the quarterback who threw the intercepted pass.
+        /// </summary>
         public Player ThrownBy { get; set; }
+
+        /// <summary>
+        /// Gets or sets the receiver the pass was intended for.
+        /// </summary>
         public Player IntendedReceiver { get; set; }
+
+        /// <summary>
+        /// Gets or sets the field position where the interception occurred.
+        /// </summary>
         public int InterceptionSpot { get; set; }
+
+        /// <summary>
+        /// Gets or sets the yards gained on the interception return.
+        /// </summary>
         public int ReturnYards { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the interception was returned for a touchdown.
+        /// </summary>
         public bool IsPickSix { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the interceptor fumbled during the return.
+        /// </summary>
         public bool FumbledDuringReturn { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fumble recovery details if a fumble occurred during the return.
+        /// </summary>
         public FumbleRecoveryResult? FumbleRecovery { get; set; }
+
+        /// <summary>
+        /// Gets or sets the final field position after the interception return and any fumbles.
+        /// </summary>
         public int FinalPosition { get; set; }
 
         /// <summary>

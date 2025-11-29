@@ -11,22 +11,29 @@ using System.Linq;
 
 namespace Gridiron.Engine.Simulation.Plays
 {
-    //Pass plays can be your typical downfield pass play
-    //a lateral
-    //a halfback pass
-    //a fake punt would be in the Punt class - those could be run or pass...
-    //a fake fieldgoal would be in the FieldGoal class - those could be run or pass...
-    //a muffed snap on a punt would be in the Punt class - those could be run or pass...
-    //a muffed snap on a fieldgoald would be in the FieldGoal class - those could be run or pass...
+    /// <summary>
+    /// Executes pass plays including downfield passes, laterals, and halfback passes.
+    /// Handles pass protection, completion checks, interceptions, sacks, and fumbles.
+    /// Note: Fake punts and fake field goals are handled in their respective classes.
+    /// </summary>
     public sealed class Pass : IGameAction
     {
         private ISeedableRandom _rng;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Pass"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator used for probabilistic outcomes.</param>
         public Pass(ISeedableRandom rng)
         {
             _rng = rng;
         }
 
+        /// <summary>
+        /// Executes a pass play, handling protection checks, pass attempts, completions,
+        /// interceptions, and sacks. Includes penalty and injury checks.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
         public void Execute(Game game)
         {
             var play = (PassPlay)game.CurrentPlay;
@@ -420,6 +427,13 @@ namespace Gridiron.Engine.Simulation.Plays
             }
         }
 
+        /// <summary>
+        /// Executes a sack scenario where the quarterback is tackled behind the line of scrimmage.
+        /// Includes fumble checks (strip sacks), penalty checks, and injury assessments.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The pass play being executed.</param>
+        /// <param name="qb">The quarterback being sacked.</param>
         private void ExecuteSack(Game game, PassPlay play, Player qb)
         {
             // Calculate sack yardage loss using SkillsCheckResult
@@ -534,6 +548,12 @@ namespace Gridiron.Engine.Simulation.Plays
             }
         }
 
+        /// <summary>
+        /// Selects the target receiver for a pass attempt based on catching ability.
+        /// Eligible receivers include wide receivers, tight ends, and running backs.
+        /// </summary>
+        /// <param name="play">The pass play being executed.</param>
+        /// <returns>The selected receiver, or null if no eligible receivers are available.</returns>
         private Player? SelectTargetReceiver(PassPlay play)
         {
             // Get all eligible receivers (WR, TE, RB)
@@ -563,6 +583,10 @@ namespace Gridiron.Engine.Simulation.Plays
             return receivers.Last();
         }
 
+        /// <summary>
+        /// Determines the type of pass (screen, short, forward, or deep) based on probability thresholds.
+        /// </summary>
+        /// <returns>The type of pass to be attempted.</returns>
         private PassType DeterminePassType()
         {
             var random = _rng.NextDouble();
@@ -573,6 +597,12 @@ namespace Gridiron.Engine.Simulation.Plays
             return PassType.Deep;
         }
 
+        /// <summary>
+        /// Calculates the air yards (distance the ball travels in the air) for a pass based on pass type.
+        /// </summary>
+        /// <param name="passType">The type of pass being thrown.</param>
+        /// <param name="fieldPosition">The current field position.</param>
+        /// <returns>The number of air yards for the pass.</returns>
         private int CalculateAirYards(PassType passType, int fieldPosition)
         {
             var airYardsResult = new AirYardsSkillsCheckResult(_rng, passType, fieldPosition);
@@ -580,6 +610,13 @@ namespace Gridiron.Engine.Simulation.Plays
             return airYardsResult.Result;
         }
 
+        /// <summary>
+        /// Calculates yards gained after the catch based on receiver's abilities.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="receiver">The receiver who caught the ball.</param>
+        /// <param name="airYards">The air yards of the pass.</param>
+        /// <returns>The number of yards gained after the catch.</returns>
         private int CalculateYardsAfterCatch(Game game, Player receiver, int airYards)
         {
             var yacResult = new YardsAfterCatchSkillsCheckResult(_rng, receiver);
@@ -587,6 +624,14 @@ namespace Gridiron.Engine.Simulation.Plays
             return yacResult.Result;
         }
 
+        /// <summary>
+        /// Handles fumble recovery on a pass play, determining which team recovers
+        /// and calculating return yardage, touchdowns, or safeties.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The pass play being executed.</param>
+        /// <param name="fumbler">The player who fumbled the ball.</param>
+        /// <param name="fumbleSpot">The yard line where the fumble occurred.</param>
         private void HandleFumbleRecovery(Game game, PassPlay play, Player fumbler, int fumbleSpot)
         {
             // Calculate fumble recovery
@@ -695,6 +740,16 @@ namespace Gridiron.Engine.Simulation.Plays
             play.Fumbles.Add(fumble);
         }
 
+        /// <summary>
+        /// Checks if a penalty should be added to the play and processes its effects using the legacy system.
+        /// Determines the player who committed the penalty, yardage, and whether it should be accepted.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The pass play being executed.</param>
+        /// <param name="penaltyName">The type of penalty that occurred.</param>
+        /// <param name="occurredWhen">When during the play the penalty occurred.</param>
+        /// <param name="homePlayersOnField">List of home team players on the field.</param>
+        /// <param name="awayPlayersOnField">List of away team players on the field.</param>
         private void CheckAndAddPenalty(
             Game game,
             PassPlay play,

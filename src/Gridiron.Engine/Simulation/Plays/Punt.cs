@@ -11,20 +11,28 @@ using System.Linq;
 
 namespace Gridiron.Engine.Simulation.Plays
 {
-    //Punt could be a regular punt,
-    //or a fake punt pass
-    //or a fake punt run
-    //blocked punt
-    //a muffed snap
+    /// <summary>
+    /// Executes punt plays including regular punts, fake punts (pass or run), blocked punts,
+    /// and muffed snaps. Handles punt distance, hang time, returns, and all special teams scenarios.
+    /// </summary>
     public sealed class Punt : IGameAction
     {
         private ISeedableRandom _rng;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Punt"/> class.
+        /// </summary>
+        /// <param name="rng">The random number generator used for probabilistic outcomes.</param>
         public Punt(ISeedableRandom rng)
         {
             _rng = rng;
         }
 
+        /// <summary>
+        /// Executes a punt play, handling bad snaps, blocked punts, touchbacks, fair catches,
+        /// and returns. Includes checks for penalties and injuries.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
         public void Execute(Game game)
         {
             var play = (PuntPlay)game.CurrentPlay;
@@ -99,6 +107,13 @@ namespace Gridiron.Engine.Simulation.Plays
             ExecuteNormalPunt(game, play, punter);
         }
 
+        /// <summary>
+        /// Handles a bad snap scenario on a punt attempt, calculating yardage lost and checking for safety.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The punt play being executed.</param>
+        /// <param name="punter">The punter attempting to recover the bad snap.</param>
+        /// <param name="longSnapper">The long snapper who executed the bad snap.</param>
         private void ExecuteBadSnap(Game game, PuntPlay play, Player punter, Player longSnapper)
         {
             play.GoodSnap = false;
@@ -130,6 +145,13 @@ namespace Gridiron.Engine.Simulation.Plays
             play.ClockStopped = true; // Turnover on downs or safety
         }
 
+        /// <summary>
+        /// Handles a blocked punt scenario, determining recovery and potential returns.
+        /// Covers both defensive and offensive recovery with possibilities for touchdowns and safeties.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The punt play being executed.</param>
+        /// <param name="punter">The punter whose kick was blocked.</param>
         private void ExecuteBlockedPunt(Game game, PuntPlay play, Player punter)
         {
             play.Blocked = true;
@@ -234,6 +256,13 @@ namespace Gridiron.Engine.Simulation.Plays
             play.ClockStopped = true; // Change of possession or score
         }
 
+        /// <summary>
+        /// Executes a normal punt with good snap and no block, calculating distance, hang time,
+        /// and handling touchbacks, out of bounds kicks, downed punts, or returns.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The punt play being executed.</param>
+        /// <param name="punter">The punter executing the punt.</param>
         private void ExecuteNormalPunt(Game game, PuntPlay play, Player punter)
         {
             // Calculate punt distance
@@ -334,6 +363,16 @@ namespace Gridiron.Engine.Simulation.Plays
             play.ClockStopped = true; // Change of possession
         }
 
+        /// <summary>
+        /// Executes a punt return, handling fair catches, muffed catches, and return yardage.
+        /// Includes checks for penalties, injuries, and potential touchdowns.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The punt play being executed.</param>
+        /// <param name="punter">The punter who kicked the ball.</param>
+        /// <param name="puntDistance">The distance the punt traveled in yards.</param>
+        /// <param name="puntLandingSpot">The yard line where the punt landed.</param>
+        /// <param name="hangTime">The hang time of the punt in seconds.</param>
         private void ExecutePuntReturn(Game game, PuntPlay play, Player punter, int puntDistance, int puntLandingSpot, double hangTime)
         {
             // Get punt returner
@@ -513,6 +552,16 @@ namespace Gridiron.Engine.Simulation.Plays
             play.ElapsedTime += hangTime + 2.0 + (_rng.NextDouble() * 4.0);
         }
 
+        /// <summary>
+        /// Checks if a penalty should be added to the play and processes its effects.
+        /// Determines the player who committed the penalty, yardage, and whether it should be accepted.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="play">The punt play being executed.</param>
+        /// <param name="penaltyName">The type of penalty that occurred.</param>
+        /// <param name="occurredWhen">When during the play the penalty occurred.</param>
+        /// <param name="homePlayersOnField">List of home team players on the field.</param>
+        /// <param name="awayPlayersOnField">List of away team players on the field.</param>
         private void CheckAndAddPenalty(
             Game game,
             PuntPlay play,

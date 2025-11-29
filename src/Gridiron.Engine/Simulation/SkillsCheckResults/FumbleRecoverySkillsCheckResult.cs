@@ -9,7 +9,8 @@ using System.Linq;
 namespace Gridiron.Engine.Simulation.SkillsCheckResults
 {
     /// <summary>
-    /// Determines fumble recovery and calculates return yardage
+    /// Determines fumble recovery and calculates return yardage.
+    /// Factors include bounce direction, player awareness, and scoop-and-score potential.
     /// </summary>
     public class FumbleRecoverySkillsCheckResult : SkillsCheckResult<FumbleRecoveryResult>
     {
@@ -19,6 +20,14 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
         private readonly List<Player> _defensePlayers;
         private readonly int _fumbleSpot;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FumbleRecoverySkillsCheckResult"/> class.
+        /// </summary>
+        /// <param name="rng">Random number generator for determining bounce and recovery.</param>
+        /// <param name="fumbler">The player who fumbled the ball.</param>
+        /// <param name="offensePlayers">Offensive players on the field who can recover.</param>
+        /// <param name="defensePlayers">Defensive players on the field who can recover.</param>
+        /// <param name="fumbleSpot">Field position where the fumble occurred.</param>
         public FumbleRecoverySkillsCheckResult(
             ISeedableRandom rng,
             Player fumbler,
@@ -33,6 +42,11 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             _fumbleSpot = fumbleSpot;
         }
 
+        /// <summary>
+        /// Executes the fumble recovery calculation including bounce direction, recovery probability,
+        /// and potential return yardage. Handles out-of-bounds fumbles and scoop-and-score scenarios.
+        /// </summary>
+        /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
         {
             // Check if fumble goes out of bounds
@@ -143,13 +157,28 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
     }
 
     /// <summary>
-    /// Result of fumble recovery calculation
+    /// Result of fumble recovery calculation containing recovery details and return yardage.
     /// </summary>
     public class FumbleRecoveryResult
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether the fumble went out of bounds.
+        /// </summary>
         public bool OutOfBounds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the player who recovered the fumble, or null if out of bounds.
+        /// </summary>
         public Player? RecoveredBy { get; set; }
+
+        /// <summary>
+        /// Gets or sets the field position where the fumble was recovered.
+        /// </summary>
         public int RecoverySpot { get; set; }
+
+        /// <summary>
+        /// Gets or sets the yards gained or lost on the return after recovery.
+        /// </summary>
         public int ReturnYards { get; set; }
     }
 }

@@ -14,6 +14,12 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
         private PassType _passType;
         private int _fieldPosition;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AirYardsSkillsCheckResult"/> class.
+        /// </summary>
+        /// <param name="rng">Random number generator for determining yardage variance.</param>
+        /// <param name="passType">The type of pass being thrown (Screen, Short, Forward, Deep).</param>
+        /// <param name="fieldPosition">Current field position to determine maximum possible air yards.</param>
         public AirYardsSkillsCheckResult(ISeedableRandom rng, PassType passType, int fieldPosition)
         {
             _rng = rng;
@@ -21,6 +27,11 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             _fieldPosition = fieldPosition;
         }
 
+        /// <summary>
+        /// Executes the calculation to determine air yards based on pass type and field position.
+        /// Air yards are clamped to ensure the ball cannot be thrown past the end zone.
+        /// </summary>
+        /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
         {
             var yardsToGoal = 100 - _fieldPosition;

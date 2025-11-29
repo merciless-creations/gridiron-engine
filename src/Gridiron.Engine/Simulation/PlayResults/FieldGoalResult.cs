@@ -12,6 +12,11 @@ namespace Gridiron.Engine.Simulation.PlayResults
     /// </summary>
     public class FieldGoalResult : IGameAction
     {
+        /// <summary>
+        /// Executes the field goal or extra point attempt result, updating game state including field position, score, and possession.
+        /// Handles various outcomes such as successful kicks, blocked kicks, missed kicks, safeties, and penalties.
+        /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
         public void Execute(Game game)
         {
             var play = (FieldGoalPlay)game.CurrentPlay;
@@ -131,6 +136,12 @@ namespace Gridiron.Engine.Simulation.PlayResults
             StatsAccumulator.AccumulateFieldGoalStats(play);
         }
 
+        /// <summary>
+        /// Handles penalty enforcement for field goal plays, including offsetting penalties and automatic first downs.
+        /// Adjusts field position and down/distance based on accepted penalties.
+        /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
+        /// <param name="play">The field goal play that contains the penalties.</param>
         private void HandlePenalties(Game game, FieldGoalPlay play)
         {
             // Check if there are any penalties on the play
@@ -229,6 +240,9 @@ namespace Gridiron.Engine.Simulation.PlayResults
         /// Special handling for penalties during PAT or 2-point conversion attempts.
         /// These follow different rules than regular plays.
         /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
+        /// <param name="play">The field goal play that is a PAT or two-point conversion attempt.</param>
+        /// <param name="enforcementResult">The result of penalty enforcement containing net yards and other penalty details.</param>
         private void HandlePATOrTwoPointPenalties(Game game, FieldGoalPlay play, PenaltyEnforcementResult enforcementResult)
         {
             if (enforcementResult.IsOffsetting)
@@ -252,7 +266,11 @@ namespace Gridiron.Engine.Simulation.PlayResults
         /// <summary>
         /// Applies smart acceptance/decline logic to all penalties on the play.
         /// Skips penalties that already have an explicit Accepted value set.
+        /// Determines whether each penalty should be accepted or declined based on game situation and which team benefits.
         /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
+        /// <param name="play">The field goal play that contains the penalties.</param>
+        /// <param name="enforcement">The penalty enforcement service that evaluates whether penalties should be accepted.</param>
         private void ApplyPenaltyAcceptanceLogic(Game game, FieldGoalPlay play, PenaltyEnforcement enforcement)
         {
             if (play.Penalties == null || !play.Penalties.Any())
@@ -287,6 +305,11 @@ namespace Gridiron.Engine.Simulation.PlayResults
             }
         }
 
+        /// <summary>
+        /// Formats a down enumeration value to its display string representation (1st, 2nd, 3rd, 4th).
+        /// </summary>
+        /// <param name="down">The down to format.</param>
+        /// <returns>The formatted down string.</returns>
         private string FormatDown(Downs down)
         {
             return down switch
@@ -299,6 +322,12 @@ namespace Gridiron.Engine.Simulation.PlayResults
             };
         }
 
+        /// <summary>
+        /// Handles the recovery of a blocked field goal, determining possession and scoring based on who recovered the ball.
+        /// Can result in touchdowns, safeties, or possession changes.
+        /// </summary>
+        /// <param name="game">The game instance containing current game state.</param>
+        /// <param name="play">The field goal play with a blocked kick recovery.</param>
         private void HandleBlockedFieldGoalRecovery(Game game, FieldGoalPlay play)
         {
             if (play.IsTouchdown)
@@ -347,6 +376,10 @@ namespace Gridiron.Engine.Simulation.PlayResults
             }
         }
 
+        /// <summary>
+        /// Logs a summary of the field goal or extra point attempt result.
+        /// </summary>
+        /// <param name="play">The field goal play to summarize.</param>
         private void LogFieldGoalSummary(FieldGoalPlay play)
         {
             if (play.Kicker != null)
