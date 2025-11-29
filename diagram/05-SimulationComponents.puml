@@ -1,0 +1,120 @@
+@startuml
+title Gridiron.Engine - Simulation - Components
+caption Game simulation engine: state machine, plays, skills checks, services
+component "Domain" <<Container>> as 9
+package Simulation {
+  component "ActionOccurredSkillsCheck" <<C# Class>> as 166
+  component "AirYardsSkillsCheckResult" <<C# Class>> as 139
+  component "BadSnapOccurredSkillsCheck" <<C# Class>> as 116
+  component "BadSnapYardsSkillsCheckResult" <<C# Class>> as 140
+  component "BigRunSkillsCheck" <<C# Class>> as 117
+  component "BlockedFieldGoalReturnYardsSkillsCheckResult" <<C# Class>> as 141
+  component "BlockingPenaltyOccurredSkillsCheck" <<C# Class>> as 135
+  component "BlockingSuccessSkillsCheck" <<C# Class>> as 118
+  component "BreakawayYardsSkillsCheckResult" <<C# Class>> as 142
+  component "CoinToss (Action)" <<C# Class>> as 93
+  component "CoveragePenaltyOccurredSkillsCheck" <<C# Class>> as 136
+  component "FairCatchOccurredSkillsCheck" <<C# Class>> as 119
+  component "FieldGoal (Play)" <<C# Class>> as 110
+  component "FieldGoalBlockOccurredSkillsCheck" <<C# Class>> as 120
+  component "FieldGoalMakeOccurredSkillsCheck" <<C# Class>> as 121
+  component "FieldGoalResult" <<C# Class>> as 115
+  component "Fumble (Action)" <<C# Class>> as 100
+  component "FumbleOccurredSkillsCheck" <<C# Class>> as 122
+  component "FumblePossessionChangeSkillsCheckResult" <<C# Class>> as 143
+  component "FumbleRecoverySkillsCheckResult" <<C# Class>> as 144
+  component "GameExpireCheck" <<C# Class>> as 105
+  component "GameFlow" <<C# Class>> as 91
+  component "GameProbabilities" <<C# Class>> as 163
+  component "HalfExpireCheck" <<C# Class>> as 104
+  component "Halftime (Action)" <<C# Class>> as 97
+  component "IGameAction" <<Interface>> as 169
+  component "InjuryEffectSkillsCheckResult" <<C# Class>> as 145
+  component "InjuryOccurredSkillsCheck" <<C# Class>> as 123
+  component "InjuryProbabilities" <<C# Class>> as 164
+  component "Interception (Action)" <<C# Class>> as 101
+  component "InterceptionOccurredSkillsCheck" <<C# Class>> as 124
+  component "InterceptionPossessionChangeSkillsCheckResult" <<C# Class>> as 146
+  component "InterceptionReturnSkillsCheckResult" <<C# Class>> as 147
+  component "InterceptionSkillsCheckResult" <<C# Class>> as 148
+  component "Kickoff (Play)" <<C# Class>> as 108
+  component "KickoffDistanceSkillsCheckResult" <<C# Class>> as 149
+  component "KickoffResult" <<C# Class>> as 113
+  component "KickoffReturnYardsSkillsCheckResult" <<C# Class>> as 150
+  component "LineBattleCalculator" <<C# Class>> as 161
+  component "MuffedCatchOccurredSkillsCheck" <<C# Class>> as 125
+  component "Pass (Play)" <<C# Class>> as 107
+  component "PassCompletionSkillsCheck" <<C# Class>> as 126
+  component "PassProtectionSkillsCheck" <<C# Class>> as 127
+  component "PassResult" <<C# Class>> as 112
+  component "PenaltyEffectSkillsCheckResult" <<C# Class>> as 151
+  component "PenaltyEnforcement" <<C# Class>> as 159
+  component "PossessionChangeSkillsCheckResult" <<C# Class>> as 168
+  component "PostGame (Action)" <<C# Class>> as 99
+  component "PostPlay (Action)" <<C# Class>> as 96
+  component "PostPlayPenaltyOccurredSkillsCheck" <<C# Class>> as 138
+  component "PreGame (Action)" <<C# Class>> as 92
+  component "PrePlay (Action)" <<C# Class>> as 94
+  component "PreSnapPenaltyOccurredSkillsCheck" <<C# Class>> as 134
+  component "Punt (Play)" <<C# Class>> as 109
+  component "PuntBlockOccurredSkillsCheck" <<C# Class>> as 128
+  component "PuntDistanceSkillsCheckResult" <<C# Class>> as 152
+  component "PuntDownedOccurredSkillsCheck" <<C# Class>> as 129
+  component "PuntHangTimeSkillsCheckResult" <<C# Class>> as 153
+  component "PuntOutOfBoundsOccurredSkillsCheck" <<C# Class>> as 130
+  component "PuntResult" <<C# Class>> as 114
+  component "PuntReturnYardsSkillsCheckResult" <<C# Class>> as 154
+  component "QBPressureSkillsCheck" <<C# Class>> as 131
+  component "QuarterExpireCheck" <<C# Class>> as 103
+  component "QuarterExpired (Action)" <<C# Class>> as 98
+  component "Run (Play)" <<C# Class>> as 106
+  component "RunResult" <<C# Class>> as 111
+  component "RunYardsSkillsCheckResult" <<C# Class>> as 155
+  component "SackYardsSkillsCheckResult" <<C# Class>> as 156
+  component "ScoreCheck" <<C# Class>> as 102
+  component "SkillsCheckResult<T>" <<C# Class>> as 165
+  component "Snap (Action)" <<C# Class>> as 95
+  component "StatsAccumulator" <<C# Class>> as 160
+  component "TackleBreakSkillsCheck" <<C# Class>> as 132
+  component "TackleBreakYardsSkillsCheckResult" <<C# Class>> as 157
+  component "TacklePenaltyOccurredSkillsCheck" <<C# Class>> as 137
+  component "TeamPowerCalculator" <<C# Class>> as 162
+  component "YardageSkillsCheckResult" <<C# Class>> as 167
+  component "YardsAfterCatchSkillsCheck" <<C# Class>> as 133
+  component "YardsAfterCatchSkillsCheckResult" <<C# Class>> as 158
+}
+93 ..> 169 : Implements
+110 ..> 120 : Checks blocks
+110 ..> 121 : Checks make/miss
+108 ..> 119 : Checks fair catch
+108 ..> 149 : Calculates distance
+108 ..> 125 : Checks muffed catch
+107 ..> 136 : Checks PI
+107 ..> 124 : Checks interceptions
+107 ..> 126 : Checks completion
+107 ..> 127 : Checks sacks
+107 ..> 133 : Checks YAC
+112 ..> 159 : Enforces penalties
+112 ..> 160 : Accumulates stats
+96 ..> 169 : Implements
+96 ..> 138 : Checks post-play penalties
+96 ..> 103 : Checks quarter expiration
+96 ..> 102 : Checks scoring
+92 ..> 169 : Implements
+94 ..> 169 : Implements
+94 ..> 134 : Checks pre-snap penalties
+94 ..> 95 : Executes snap
+109 ..> 119 : Checks fair catch
+109 ..> 128 : Checks blocks
+109 ..> 152 : Calculates distance
+106 ..> 117 : Checks breakaway
+106 ..> 135 : Checks holding
+106 ..> 118 : Checks blocking
+106 ..> 122 : Checks fumbles
+106 ..> 123 : Checks injuries
+106 ..> 132 : Checks tackle breaks
+111 ..> 159 : Enforces penalties
+111 ..> 160 : Accumulates stats
+95 ..> 169 : Implements
+@enduml
+
