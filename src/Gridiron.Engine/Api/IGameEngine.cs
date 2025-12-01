@@ -1,4 +1,5 @@
 using Gridiron.Engine.Domain;
+using Gridiron.Engine.Simulation.Overtime;
 using Microsoft.Extensions.Logging;
 
 namespace Gridiron.Engine.Api
@@ -33,6 +34,12 @@ namespace Gridiron.Engine.Api
         /// Logger for play-by-play output. If null, no logging is performed.
         /// </summary>
         public ILogger? Logger { get; set; }
+
+        /// <summary>
+        /// Overtime rules provider. If null, uses NFL Regular Season rules.
+        /// Use OvertimeRulesRegistry to get pre-defined providers (e.g., NFL Playoff, NCAA).
+        /// </summary>
+        public IOvertimeRulesProvider? OvertimeRulesProvider { get; set; }
     }
 
     /// <summary>
@@ -76,14 +83,19 @@ namespace Gridiron.Engine.Api
         public int TotalPlays => Game.Plays.Count;
 
         /// <summary>
-        /// Whether the game ended in a tie (overtime not yet implemented).
+        /// Whether the game ended in a tie.
         /// </summary>
-        public bool IsTie => HomeScore == AwayScore;
+        public bool IsTie => Game.IsTie;
 
         /// <summary>
         /// The winning team, or null if tied.
         /// </summary>
-        public Team? Winner => IsTie ? null : (HomeScore > AwayScore ? HomeTeam : AwayTeam);
+        public Team? Winner => Game.Winner;
+
+        /// <summary>
+        /// Whether the game went to overtime.
+        /// </summary>
+        public bool WentToOvertime => Game.OvertimeState?.IsInOvertime ?? false;
 
         /// <summary>
         /// The random seed used for this simulation (for replay purposes).

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Stateless;
 using Stateless.Graph;
 using Gridiron.Engine.Simulation.Actions;
+using Gridiron.Engine.Simulation.Overtime;
 using Gridiron.Engine.Simulation.PlayResults;
 using Gridiron.Engine.Simulation.Plays;
 using Gridiron.Engine.Simulation.SkillsCheckResults;
@@ -35,6 +36,9 @@ namespace Gridiron.Engine.Simulation
         // Injected logger
         private readonly ILogger<GameFlow> _logger;
 
+        // Overtime rules provider
+        private readonly IOvertimeRulesProvider _overtimeRules;
+
         enum Trigger
         {
             Snap,
@@ -47,7 +51,10 @@ namespace Gridiron.Engine.Simulation
             GameExpired,
             NextPlay,
             StartGameFlow,
-            QuarterOver
+            QuarterOver,
+            // Overtime triggers
+            StartOvertime,
+            OvertimeGameOver
         }
 
         enum State
@@ -70,7 +77,9 @@ namespace Gridiron.Engine.Simulation
             Halftime,
             PostGame,
             InitializeGame,
-            QuarterExpired
+            QuarterExpired,
+            // Overtime states
+            OvertimeSetup
         }
 
         private readonly StateMachine<State, Trigger>.TriggerWithParameters<bool> _nextPlayTrigger;
@@ -86,12 +95,14 @@ namespace Gridiron.Engine.Simulation
         /// <param name="game">The game to simulate.</param>
         /// <param name="rng">The random number generator for deterministic simulation.</param>
         /// <param name="logger">The logger for game events and debugging.</param>
+        /// <param name="overtimeRules">The overtime rules provider (defaults to NFL Regular Season).</param>
         /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        public GameFlow(Game game, ISeedableRandom rng, ILogger<GameFlow> logger)
+        public GameFlow(Game game, ISeedableRandom rng, ILogger<GameFlow> logger, IOvertimeRulesProvider? overtimeRules = null)
         {
             _game = game ?? throw new ArgumentNullException(nameof(game));
             _rng = rng ?? throw new ArgumentNullException(nameof(rng));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _overtimeRules = overtimeRules ?? OvertimeRulesRegistry.Default;
 
             // Set the game's logger so it can be used for play-by-play logging
             _game.Logger = logger;
@@ -192,7 +203,13 @@ namespace Gridiron.Engine.Simulation
                 .OnEntry(DoQuarterExpire, "The teams change endzones...")
                 .Permit(Trigger.QuarterOver, State.PrePlay)
                 .Permit(Trigger.HalfExpired, State.Halftime)
-                .Permit(Trigger.GameExpired, State.PostGame);
+                .Permit(Trigger.GameExpired, State.PostGame)
+                .Permit(Trigger.StartOvertime, State.OvertimeSetup);
+
+            _machine.Configure(State.OvertimeSetup)
+                .OnEntry(DoOvertimeSetup, "Setting up overtime")
+                .Permit(Trigger.CoinTossed, State.PrePlay)
+                .Permit(Trigger.OvertimeGameOver, State.PostGame);
 
             _machine.Configure(State.Halftime)
                 .OnEntry(DoHalftime, "The band takes the field at halftime")
@@ -251,10 +268,23 @@ namespace Gridiron.Engine.Simulation
                 case QuarterType.GameOver:
                     _machine.Fire(Trigger.GameExpired);
                     break;
+                case QuarterType.Overtime:
+                    // Game is tied at end of 4th quarter - go to overtime
+                    _machine.Fire(Trigger.StartOvertime);
+                    break;
                 default:
                     _machine.Fire(Trigger.QuarterOver);
                     break;
             }
+        }
+
+        private void DoOvertimeSetup()
+        {
+            var overtimeSetup = new OvertimeSetup(_rng, _overtimeRules);
+            overtimeSetup.Execute(_game);
+
+            // After overtime setup, proceed to PrePlay for the first overtime possession
+            _machine.Fire(Trigger.CoinTossed);
         }
 
         private void DoHalftime()

@@ -199,6 +199,8 @@ namespace Gridiron.Engine.Tests
             Assert.IsFalse(game.CurrentPlay.HalfExpired);
 
             //end the fourth quarter
+            // Set a score so the game isn't tied (tied games go to overtime)
+            game.HomeScore = 7;
             game.CurrentQuarter.TimeRemaining = 1;
             game.CurrentPlay.ElapsedTime = 2.0;
             game.CurrentPlay.QuarterExpired = false;

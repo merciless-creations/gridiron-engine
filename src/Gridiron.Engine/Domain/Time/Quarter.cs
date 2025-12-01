@@ -15,18 +15,23 @@ namespace Gridiron.Engine.Domain.Time
         private int timeRemaining;
 
         /// <summary>
-        /// Gets or sets the time remaining in the quarter in seconds.
-        /// Value is clamped between 0 and 900 (15 minutes).
+        /// Gets the maximum duration for this quarter in seconds.
+        /// Default is 900 (15 minutes), but overtime periods may have different durations.
         /// </summary>
-        [RangeAttribute(0, 900, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+        public int MaxDuration { get; private set; } = 900;
+
+        /// <summary>
+        /// Gets or sets the time remaining in the quarter in seconds.
+        /// Value is clamped between 0 and MaxDuration.
+        /// </summary>
         public int TimeRemaining
         {
             get => timeRemaining;
             set
             {
-                if (value >= 900)
+                if (value >= MaxDuration)
                 {
-                    timeRemaining = 900;
+                    timeRemaining = MaxDuration;
                     return;
                 }
 
@@ -53,7 +58,21 @@ namespace Gridiron.Engine.Domain.Time
         public Quarter(QuarterType type)
         {
             QuarterType = type;
+            MaxDuration = 900;
             TimeRemaining = 900;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Quarter"/> class with a custom duration.
+        /// Used for overtime periods which may have different durations (e.g., NFL OT is 10 minutes).
+        /// </summary>
+        /// <param name="type">The type of quarter.</param>
+        /// <param name="durationSeconds">The duration of the quarter in seconds.</param>
+        public Quarter(QuarterType type, int durationSeconds)
+        {
+            QuarterType = type;
+            MaxDuration = durationSeconds;
+            TimeRemaining = durationSeconds;
         }
     }
 

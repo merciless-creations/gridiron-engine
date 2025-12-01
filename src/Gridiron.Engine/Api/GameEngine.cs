@@ -1,6 +1,7 @@
 using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation;
+using Gridiron.Engine.Simulation.Overtime;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -59,8 +60,11 @@ namespace Gridiron.Engine.Api
             DepthChartBuilder.AssignAllDepthCharts(homeTeam);
             DepthChartBuilder.AssignAllDepthCharts(awayTeam);
 
+            // Get overtime rules provider (default to NFL Regular Season)
+            var overtimeRules = options.OvertimeRulesProvider ?? OvertimeRulesRegistry.Default;
+
             // Run the simulation
-            var gameFlow = new GameFlow(game, rng, logger);
+            var gameFlow = new GameFlow(game, rng, logger, overtimeRules);
             gameFlow.Execute();
 
             return new GameResult { Game = game };
