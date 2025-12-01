@@ -41,19 +41,10 @@ jobs:
 
     - name: Set version from input
       if: github.event_name == 'workflow_dispatch'
-      run: echo "PACKAGE_VERSION=\${{ inputs.version }}" >> $GITHUB_ENV
+      run: echo "PACKAGE_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
 
     - name: Pack
-      run: dotnet pack src/Gridiron.Engine/Gridiron.Engine.csproj --configuration Release --no-build -p:PackageVersion=\${{ env.PACKAGE_VERSION }} --output ./nupkg
+      run: dotnet pack src/Gridiron.Engine/Gridiron.Engine.csproj --configuration Release --no-build -p:PackageVersion=${{ env.PACKAGE_VERSION }} --output ./nupkg
 
     - name: Push to GitHub Packages
-      run: dotnet nuget push ./nupkg/*.nupkg --source "https://nuget.pkg.github.com/merciless-creations/index.json" --api-key \${{ secrets.GITHUB_TOKEN }} --skip-duplicate
-
-    - name: Make package public
-      run: |
-        curl -X PATCH \
-          -H "Authorization: Bearer \${{ secrets.GITHUB_TOKEN }}" \
-          -H "Accept: application/vnd.github+json" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/orgs/merciless-creations/packages/nuget/Gridiron.Engine \
-          -d '{"visibility":"public"}' || echo "Note: Could not change package visibility automatically."
+      run: dotnet nuget push ./nupkg/*.nupkg --source "https://nuget.pkg.github.com/merciless-creations/index.json" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
