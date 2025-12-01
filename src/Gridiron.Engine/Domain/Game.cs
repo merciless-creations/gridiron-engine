@@ -115,6 +115,26 @@ namespace Gridiron.Engine.Domain
         public Half CurrentHalf { get; set; }
 
         /// <summary>
+        /// Gets or sets the overtime state. Null if the game is not in overtime.
+        /// </summary>
+        public OvertimeState? OvertimeState { get; set; }
+
+        /// <summary>
+        /// Gets whether the game is currently in overtime.
+        /// </summary>
+        public bool IsInOvertime => OvertimeState?.IsInOvertime ?? false;
+
+        /// <summary>
+        /// Gets whether the game ended in a tie.
+        /// </summary>
+        public bool IsTie => HomeScore == AwayScore;
+
+        /// <summary>
+        /// Gets the winning team (null if game is tied).
+        /// </summary>
+        public Team? Winner => IsTie ? null : (HomeScore > AwayScore ? HomeTeam : AwayTeam);
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Game"/> class.
         /// Creates a game with 3600 seconds (60 minutes) remaining, starting in the first quarter.
         /// </summary>

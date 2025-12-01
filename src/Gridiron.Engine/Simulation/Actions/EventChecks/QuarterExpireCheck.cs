@@ -48,10 +48,38 @@ namespace Gridiron.Engine.Simulation.Actions.EventChecks
                         game.CurrentQuarter = game.Halves[1].Quarters[1];
                         break;
                     case QuarterType.Fourth:
-                        game.CurrentQuarter.QuarterType = QuarterType.GameOver;
+                        // Check if game is tied - if so, go to overtime
+                        if (game.HomeScore == game.AwayScore)
+                        {
+                            game.CurrentQuarter.QuarterType = QuarterType.Overtime;
+                            game.CurrentPlay.Result.LogInformation("Game is tied! Going to overtime...");
+                        }
+                        else
+                        {
+                            game.CurrentQuarter.QuarterType = QuarterType.GameOver;
+                        }
                         break;
                     case QuarterType.Overtime:
-                        //TODO check if tied & move to another OT
+                        // Overtime period ended - check if game should continue
+                        // The OvertimeState and rules provider will determine the outcome
+                        // For now, just check if still tied and rules allow ties
+                        if (game.OvertimeState != null)
+                        {
+                            if (game.HomeScore == game.AwayScore)
+                            {
+                                // Still tied - GameFlow will determine if we continue or end
+                                // QuarterType stays as Overtime to trigger another period or tie
+                            }
+                            else
+                            {
+                                // Game decided - there's a winner
+                                game.CurrentQuarter.QuarterType = QuarterType.GameOver;
+                            }
+                        }
+                        else
+                        {
+                            game.CurrentQuarter.QuarterType = QuarterType.GameOver;
+                        }
                         break;
                 }
             }
