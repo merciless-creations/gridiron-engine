@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh issue view:*)",
+      "Bash(tree:*)",
+      "Bash(gh issue comment:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet test:*)",
+      "Bash(git checkout:*)",
+      "Bash(git restore:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(cat:*)",
+      "Bash(gh workflow:*)",
+      "Bash(git fetch:*)",
+      "Bash(git cat-file:*)",
+      "Bash(gh api:*)",
+      "Bash(git stash:*)",
+      "Bash(git pull:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh release create:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run:*)",
+      "Bash(find:*)",
+      "Bash(gh issue create:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
