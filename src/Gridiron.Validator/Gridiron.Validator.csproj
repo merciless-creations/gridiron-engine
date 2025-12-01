@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Gridiron.Validator</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gridiron.Engine\Gridiron.Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <!-- Copy TestData from tests project for now (until Gridiron.TestData NuGet exists) -->
+  <ItemGroup>
+    <None Include="..\..\tests\Gridiron.Engine.Tests\TestData\*.json" CopyToOutputDirectory="PreserveNewest" LinkBase="TestData" />
+  </ItemGroup>
+
+</Project>
