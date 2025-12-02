@@ -6,6 +6,10 @@ The backend and simulation engine for Gridiron, an NFL franchise management game
 
 https://github.com/merciless-creations/gridiron-engine
 
+## Project
+
+https://github.com/orgs/merciless-creations/projects/2
+
 ## Tech Stack
 
 | Layer | Technology |
