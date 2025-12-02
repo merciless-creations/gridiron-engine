@@ -100,6 +100,8 @@ When working near the state machine, consult Scott before making changes.
 ## Development Guidelines
 
 - Follow existing patterns in the codebase
+- Magic strings and hard numeric values used for statistical calculations should be abstracted into a static class
+- Where rules are able to diverge due to different leagues (NFL vs NCAA vs XFL), or rulesets for regular season or playoffs, use a provider model to encapsulate the differences elegantly, so we can easily inject the apprpriate rulest for the game.
 - Ask Scott before modifying core simulation logic
 - Keep simulation concerns separate from presentation concerns
 - Do not add formation/play-name logic to the engine
