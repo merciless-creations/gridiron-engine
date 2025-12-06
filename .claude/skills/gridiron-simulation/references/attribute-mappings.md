@@ -18,64 +18,69 @@ Attributes create **probability modifiers**, not deterministic outcomes. A 99-ra
 | 85-94 | All-Pro level | +18% to +25% |
 | 95-99 | Elite/HOF | +25% to +30% |
 
-## Modifier Curve
+## Current Modifier Formula
 
-Use a logarithmic curve to prevent extreme ratings from breaking the simulation:
+The simulation uses **linear divisors** for attribute modifiers:
 
+```csharp
+// Example from PassCompletionSkillsCheck.cs
+completionProbability = BASE_PROBABILITY + (skillDifferential / SKILL_DENOMINATOR);
 ```
-modifier = sign(rating - 50) * log(1 + |rating - 50| / 10) * 0.15
-```
 
-This produces diminishing returns at extremes. A jump from 90→99 matters less than 50→59.
+Each point of skill differential has equal impact. Constants are defined in `GameProbabilities.cs`.
 
-> **Implementation Note:** Issue #27 tracks updating the codebase to use this logarithmic formula. Current implementation uses linear divisors.
+> **Future Enhancement:** Issue #27 tracks implementing logarithmic curves for diminishing returns at extremes.
 
 ---
 
-# Current Implementation
+## Player Attributes
 
-The following attributes are implemented in `Player.cs` and used by the simulation engine.
+Defined in `Player.cs`. All ratings are 0-100 scale.
 
-## Physical Attributes
+### Physical Attributes
 
-| Attribute | Range | Used In Simulation | Notes |
-|-----------|-------|-------------------|-------|
-| Speed | 0-100 | Yes | Pursuit, breakaway, separation, returns |
-| Strength | 0-100 | Yes | Blocking matchups, tackling, breaking tackles |
-| Agility | 0-100 | Yes | Elusiveness, YAC potential |
-| Awareness | 0-100 | Yes | Decision-making, fumble recovery, reads |
-| Fragility | 0-100 | Yes | Injury probability (higher = more injury prone, default 50) |
+| Attribute | Used In Simulation | Notes |
+|-----------|-------------------|-------|
+| Speed | Yes | Pursuit, breakaway, separation, returns |
+| Strength | Yes | Blocking matchups, tackling, breaking tackles |
+| Agility | Yes | Elusiveness, YAC potential |
+| Awareness | Yes | Decision-making, fumble recovery, ball security proxy |
+| Fragility | Yes | Injury probability (higher = more injury prone, default 50) |
 
-## Skill Attributes
+### Skill Attributes
 
-| Attribute | Range | Positions | Used In Simulation |
-|-----------|-------|-----------|-------------------|
-| Passing | 0-100 | QB | Completion probability, interception avoidance |
-| Catching | 0-100 | WR/TE/RB | Catch probability |
-| Rushing | 0-100 | RB/QB | Ball carrier effectiveness, yards gained |
-| Blocking | 0-100 | OL/TE/FB | Run lanes, pass protection |
-| Tackling | 0-100 | DL/LB/S/CB | Tackle success, preventing YAC |
-| Coverage | 0-100 | CB/S/LB | Pass defense, interception chance |
-| Kicking | 0-100 | K/P | FG accuracy, punt distance, kickoff distance |
+| Attribute | Positions | Used In Simulation |
+|-----------|-----------|-------------------|
+| Passing | QB | Completion probability, interception avoidance |
+| Catching | WR/TE/RB | Catch probability |
+| Rushing | RB/QB | Ball carrier effectiveness, yards gained |
+| Blocking | OL/TE/FB | Run lanes, pass protection |
+| Tackling | DL/LB/S/CB | Tackle success, preventing YAC |
+| Coverage | CB/S/LB | Pass defense, interception chance |
+| Kicking | K/P | FG accuracy, punt distance, kickoff distance |
 
-## Mental Attributes
+### Mental Attributes
 
-| Attribute | Range | Used In Simulation | Notes |
-|-----------|-------|-------------------|-------|
-| Morale | 0-100 | Not yet | Defined in Player.cs, future use |
-| Discipline | 0-100 | Not yet | Defined in Player.cs, future use for penalties |
+| Attribute | Used In Simulation | Notes |
+|-----------|-------------------|-------|
+| Morale | Not yet | Defined in Player.cs, future use |
+| Discipline | Not yet | Defined in Player.cs, future use for penalties |
 
-## Development Attributes
+### Development Attributes
 
-| Attribute | Range | Notes |
-|-----------|-------|-------|
-| Health | 0-100 | Current health level |
-| Potential | 0-100 | Player ceiling for development |
-| Progression | 0-100 | Skill development rate |
+| Attribute | Notes |
+|-----------|-------|
+| Health | Current health level (0-100) |
+| Potential | Player ceiling for development |
+| Progression | Skill development rate |
 
-## Current Matchup Formulas
+> **Future Enhancement:** Issue #28 tracks expanding to 30+ granular attributes.
 
-These are the actual formulas used in the SkillsCheck classes:
+---
+
+## Matchup Formulas
+
+These are the actual formulas used in the SkillsCheck classes.
 
 ### Pass Completion (`PassCompletionSkillsCheck.cs`)
 
@@ -101,7 +106,7 @@ defensivePower = Average((Defender.Tackling + Defender.Strength + Defender.Speed
 
 skillDifferential = offensivePower - defensivePower
 baseYards = 3.0 + (skillDifferential / 20.0)
-// Random variance: -15 to +10 yards
+// Random variance applied
 ```
 
 ### Tackle Break (`TackleBreakSkillsCheck.cs`)
@@ -118,9 +123,14 @@ breakProbability = 0.25 + (skillDifferential / 250.0)
 ### Fumble (`FumbleOccurredSkillsCheck.cs`)
 
 ```csharp
-// Base rates: 1.5% normal, 12% on sacks, 2.5% on returns
+// Base rates from GameProbabilities.Turnovers:
+// - 1.5% normal plays
+// - 12% on sacks
+// - 2.5% on returns
+
 carrierSecurity = BallCarrier.Awareness
 securityFactor = 1.0 - (carrierSecurity / 200.0)  // 0.5x to 1.0x
+
 defenderPressure = (Defender.Strength + Defender.Speed) / 2.0
 pressureFactor = 0.5 + (defenderPressure / 200.0)
 
@@ -138,223 +148,11 @@ probability = baseProbability * fragilityFactor * positionMultiplier * contactMu
 
 ---
 
-# Target Design (Future)
+## Design Principles
 
-The following expanded attribute system is the target for deeper simulation. See issue #28.
+### Ceiling and Floor
 
-## Physical Attributes (Target)
-
-| Attribute | Affects |
-|-----------|---------|
-| Speed | Pursuit angles, breakaway probability, separation on routes |
-| Acceleration | First-step advantage, closing speed |
-| Strength | Blocking matchups, tackling, breaking tackles |
-| Agility | Elusiveness, change of direction |
-| Stamina | Fatigue accumulation rate |
-| Durability | Injury probability (inverse of current Fragility) |
-
-## Skill Attributes - Offense (Target)
-
-| Attribute | Affects |
-|-----------|---------|
-| Throw Power | Deep ball completion %, ball velocity |
-| Throw Accuracy (Short) | Completion % on short routes |
-| Throw Accuracy (Medium) | Completion % on intermediate routes |
-| Throw Accuracy (Deep) | Completion % on deep routes |
-| Throw Under Pressure | Accuracy modifier when pressured |
-| Catching | Catch probability baseline |
-| Catch in Traffic | Catch modifier when contested |
-| Route Running | Separation from defender |
-| Release | Beating press coverage |
-| Run Blocking | Run lane creation |
-| Pass Blocking | Sack prevention |
-| Ball Carrier Vision | Yards after contact, finding holes |
-| Elusiveness | Broken tackle probability |
-| Trucking | Yards after contact vs. smaller defenders |
-| Stiff Arm | Broken tackle alternative |
-| Ball Security | Fumble probability reduction |
-
-## Skill Attributes - Defense (Target)
-
-| Attribute | Affects |
-|-----------|---------|
-| Tackling | Solo tackle probability, missed tackles |
-| Hit Power | Fumble forcing, YAC reduction |
-| Block Shedding | Defeating blocks |
-| Pursuit | Angle to ball carrier |
-| Play Recognition | Reading play type, reacting |
-| Man Coverage | Tight coverage on receiver |
-| Zone Coverage | Break on ball in zone |
-| Press | Disrupting release |
-| Pass Rush | Pressure rate, sack probability |
-| Finesse Moves | Pass rush vs. power blockers |
-| Power Moves | Pass rush vs. agile blockers |
-
-## Mental Attributes (Target)
-
-| Attribute | Affects |
-|-----------|---------|
-| Intelligence | Pre-snap reads, audible effectiveness, adjustment speed |
-| Discipline | Penalty probability, assignment adherence |
-| Awareness | Reaction to developing plays |
-| Composure | Performance in high-pressure situations |
-
-## Target Matchup Resolution
-
-When the expanded attribute system is implemented, matchups will resolve with more granularity:
-
-### Passing Matchup (Target)
-
-```
-receiver_separation = (RouteRunning + Speed) / 2
-defender_coverage = (ManCoverage + Speed) / 2
-separation_differential = receiver_separation - defender_coverage
-
-If separation_differential > 0:
-  Easier catch (receiver open)
-Else:
-  Contested catch (use CatchInTraffic)
-```
-
-### Blocking Matchup (Target)
-
-```
-blocker_strength = (RunBlocking or PassBlocking) + Strength
-defender_shed = BlockShedding + Strength
-blocking_differential = blocker_strength - defender_shed
-
-If blocking_differential > 0:
-  Block holds
-Else:
-  Defender penetrates (timing based on differential)
-```
-
-### Tackle Attempt (Target)
-
-```
-tackle_probability = Tackling + (Pursuit * pursuit_angle_factor)
-evasion = Elusiveness + BallCarrierVision
-
-If tackle_probability > evasion:
-  Tackle made
-Else:
-  Broken tackle (additional yards)
-```
-
----
-
-# Planned Systems (Not Yet Implemented)
-
-The following systems are designed but not yet built into the simulation.
-
-## Fatigue System
-
-> **Status:** Not implemented. No stamina tracking currently exists.
-
-```
-effective_attribute = base_attribute * (stamina_remaining / 100)
-```
-
-At 70% stamina, a 90-rated attribute performs like 63. This matters for late-game drives.
-
-## Composure System
-
-> **Status:** Not implemented. No Composure attribute exists.
-
-In high-pressure situations (4th quarter, close game, red zone):
-
-```
-effective_attribute = base_attribute * (0.8 + Composure * 0.004)
-```
-
-A player with 50 Composure performs at 100%. A player with 25 Composure performs at 90%. A player with 75 Composure performs at 110%.
-
-## Weather Effects
-
-> **Status:** Not implemented. No weather system exists.
-
-| Condition | Passing | Kicking | Fumble Risk |
-|-----------|---------|---------|-------------|
-| Clear | 100% | 100% | 100% |
-| Rain | 90% | 92% | 120% |
-| Snow | 85% | 85% | 130% |
-| Wind (10+ mph) | 95% | -1% per mph | 100% |
-| Cold (< 32°F) | 97% | 95% | 105% |
-
-## Coaching Modifiers
-
-> **Status:** Not implemented. Coach entity exists in `Coach.cs` but is not used in simulation.
-
-### Scheme Fit
-
-Players perform better in schemes that match their attributes:
-
-| Scheme Type | Favored Attributes |
-|-------------|-------------------|
-| West Coast | Short/Medium Accuracy, Route Running, Catching |
-| Air Raid | Deep Accuracy, Speed, Throw Power |
-| Power Run | Strength, Run Blocking, Trucking |
-| Zone Run | Agility, Ball Carrier Vision, Athleticism |
-| 3-4 Defense | OLB Pass Rush, NT Strength |
-| 4-3 Defense | DE Pass Rush, Speed |
-| Cover 2 | Zone Coverage, Speed, Pursuit |
-| Man Press | Man Coverage, Press, Speed |
-
-A player with high scheme-fit attributes gets +5% effectiveness. Mismatch gets -5%.
-
-### Play-Calling Tendencies
-
-Coaches have tendency weights that influence play selection:
-
-```
-run_pass_ratio: 0.0 to 1.0 (0.5 = balanced)
-aggressiveness: 0.0 to 1.0 (4th down decisions, deep passes)
-tempo: 0.0 to 1.0 (hurry-up frequency)
-```
-
-### In-Game Adjustments
-
-Coaches with high adjustment ability can modify tendencies mid-game:
-
-```
-adjustment_ability = CoachIntelligence * 0.01
-tendency_shift = base_tendency + (adjustment_ability * opponent_tendency_differential)
-```
-
----
-
-# Design Principles
-
-## Target Aggregation
-
-When the expanded attribute system is implemented, multiple attributes will affect outcomes using weighted averages:
-
-### Run Play (Target)
-```
-success_factors = {
-  RB.BallCarrierVision: 0.25,
-  RB.Speed: 0.15,
-  RB.Elusiveness: 0.15,
-  OL_avg.RunBlocking: 0.30,
-  DL_avg.BlockShedding: -0.15  # Negative = defender attribute hurts offense
-}
-```
-
-### Pass Play (Target)
-```
-success_factors = {
-  QB.Accuracy[depth]: 0.25,
-  WR.RouteRunning: 0.20,
-  WR.Catching: 0.15,
-  CB.Coverage: -0.20,
-  OL_avg.PassBlocking: 0.10,
-  DL_avg.PassRush: -0.10
-}
-```
-
-## Ceiling and Floor
-
-To prevent absurd outcomes (this principle applies to both current and future implementations):
+To prevent absurd outcomes:
 
 - No play has > 99% success probability
 - No play has < 1% success probability
@@ -363,9 +161,16 @@ To prevent absurd outcomes (this principle applies to both current and future im
 
 Even the best QB throwing to the best WR against a practice squad corner can still throw an incompletion. Even a backup RB can occasionally break a 50-yard run.
 
+### Configuration
+
+All probability constants are centralized in `GameProbabilities.cs` for easy tuning.
+
 ---
 
-# Related Issues
+## Related Issues
 
 - **#27** - Implement logarithmic modifier curves
 - **#28** - Expand player attribute system
+- **#36** - Implement fatigue system
+- **#37** - Implement composure system
+- **#39** - Implement coaching scheme fit modifiers
