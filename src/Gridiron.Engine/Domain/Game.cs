@@ -87,6 +87,18 @@ namespace Gridiron.Engine.Domain
         public int AwayScore { get; set; } = 0;
 
         /// <summary>
+        /// Gets or sets the number of timeouts remaining for the home team.
+        /// Resets to 3 at the start of each half.
+        /// </summary>
+        public int HomeTimeoutsRemaining { get; set; } = 3;
+
+        /// <summary>
+        /// Gets or sets the number of timeouts remaining for the away team.
+        /// Resets to 3 at the start of each half.
+        /// </summary>
+        public int AwayTimeoutsRemaining { get; set; } = 3;
+
+        /// <summary>
         /// Gets the total time remaining in the game in seconds.
         /// Calculated by summing remaining time across all quarters.
         /// </summary>
@@ -162,6 +174,21 @@ namespace Gridiron.Engine.Domain
         public Team GetDefensiveTeam(Possession possession)
         {
             return possession == Possession.Home ? AwayTeam : HomeTeam;
+        }
+
+        /// <summary>
+        /// Gets the number of timeouts remaining for the specified team.
+        /// </summary>
+        /// <param name="team">The team to get timeouts for.</param>
+        /// <returns>The number of timeouts remaining.</returns>
+        public int GetTimeoutsRemaining(Possession team)
+        {
+            return team switch
+            {
+                Possession.Home => HomeTimeoutsRemaining,
+                Possession.Away => AwayTimeoutsRemaining,
+                _ => 0
+            };
         }
 
         /// <summary>

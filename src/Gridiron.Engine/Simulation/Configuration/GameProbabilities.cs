@@ -259,5 +259,58 @@ namespace Gridiron.Engine.Simulation.Configuration
             public const double TWO_POINT_RUN_PROBABILITY = 0.5;         // 50% run on 2-point conversion
             public const double TWO_POINT_PASS_PROBABILITY = 0.5;        // 50% pass on 2-point conversion
         }
+
+        /// <summary>
+        /// Timeout decision thresholds and mechanics.
+        /// </summary>
+        public static class Timeouts
+        {
+            // ========================================
+            // TIMEOUT ALLOCATION
+            // ========================================
+
+            /// <summary>Number of timeouts each team receives per half.</summary>
+            public const int TIMEOUTS_PER_HALF = 3;
+
+            /// <summary>Number of timeouts each team receives in overtime.</summary>
+            public const int TIMEOUTS_PER_OVERTIME = 2;
+
+            // ========================================
+            // CLOCK RESET VALUES
+            // ========================================
+
+            /// <summary>Play clock value after a timeout is called (seconds).</summary>
+            public const int PLAY_CLOCK_AFTER_TIMEOUT = 25;
+
+            // ========================================
+            // ICE THE KICKER THRESHOLDS
+            // ========================================
+
+            /// <summary>Probability of attempting to ice the kicker when conditions are met.</summary>
+            public const double ICE_KICKER_PROBABILITY = 0.30;
+
+            /// <summary>Minimum field goal distance (yards) to consider icing the kicker.</summary>
+            public const int ICE_KICKER_MIN_DISTANCE = 45;
+
+            // ========================================
+            // STOP THE CLOCK THRESHOLDS
+            // ========================================
+
+            /// <summary>Time remaining in half (seconds) to consider stopping the clock.</summary>
+            public const int STOP_CLOCK_TIME_THRESHOLD = 120;
+
+            /// <summary>Probability of stopping clock when trailing with time running out.</summary>
+            public const double STOP_CLOCK_PROBABILITY = 0.85;
+
+            // ========================================
+            // AVOID DELAY OF GAME THRESHOLDS
+            // ========================================
+
+            /// <summary>Play clock value (seconds) at which to consider calling timeout to avoid delay.</summary>
+            public const int AVOID_DELAY_PLAY_CLOCK_THRESHOLD = 3;
+
+            /// <summary>Probability of calling timeout to avoid delay of game.</summary>
+            public const double AVOID_DELAY_PROBABILITY = 0.90;
+        }
     }
 }
