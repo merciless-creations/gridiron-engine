@@ -470,7 +470,7 @@ namespace Gridiron.Engine.Simulation
             // }
 
             //check for penalties during and after the play, scores, injuries, quarter expiration
-            var postPlay = new PostPlay();
+            var postPlay = new PostPlay(_rng);
             postPlay.Execute(_game);
 
             _machine.Fire(_nextPlayTrigger, _game.CurrentPlay.QuarterExpired);
