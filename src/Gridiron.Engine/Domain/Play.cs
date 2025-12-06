@@ -138,5 +138,20 @@ namespace Gridiron.Engine.Domain
         /// Gets or sets whether this play resulted in a touchdown.
         /// </summary>
         public bool IsTouchdown { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets whether a timeout was called before this play (e.g., ice the kicker).
+        /// </summary>
+        public bool TimeoutCalledBeforePlay { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets whether a timeout was called after this play (e.g., stop the clock).
+        /// </summary>
+        public bool TimeoutCalledAfterPlay { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets which team called the timeout (if any).
+        /// </summary>
+        public Possession? TimeoutCalledBy { get; set; } = null;
     }
 }

@@ -104,7 +104,7 @@ When working near the state machine, consult Scott before making changes.
 ## Development Guidelines
 
 - Follow existing patterns in the codebase
-- Where rules are able to diverge due to different leagues (NFL vs NCAA vs XFL), or rulesets for regular season or playoffs, use a provider model to encapsulate the differences elegantly, so we can easily inject the apprpriate rulest for the game.
+- Where rules are able to diverge due to different leagues (NFL vs NCAA vs XFL), or rulesets for regular season or playoffs, use a provider model to encapsulate the differences elegantly, so we can easily inject the appropriate ruleset for the game.
 
 ### Centralized Constants Pattern
 
@@ -117,15 +117,38 @@ public static class GameProbabilities
     public static class Passing { /* completion rates, interception chances, etc. */ }
     public static class Rushing { /* tackle break rates, big run chances, etc. */ }
     public static class FourthDown { /* go-for-it probabilities, field position thresholds, etc. */ }
+    public static class Timeouts { /* timeout thresholds, ice kicker probability, etc. */ }
     // ... other domains
 }
 ```
 
 **Usage:** Reference constants as `GameProbabilities.DomainName.CONSTANT_NAME`
 
-**Existing domains:** Passing, Rushing, Turnovers, FieldGoals, Kickoffs, Punts, GameDecisions, FourthDown
+**Existing domains:** Passing, Rushing, Turnovers, FieldGoals, Kickoffs, Punts, GameDecisions, FourthDown, Timeouts
 
 When adding new simulation logic that requires configuration values, add a new nested class to `GameProbabilities.cs` rather than creating a standalone constants file.
+
+### Decision vs Mechanic Separation
+
+Separate **decision logic** ("should we do X?") from **game mechanics** ("X was chosen, execute it"):
+
+```
+┌─────────────────────┐     ┌─────────────────────┐
+│  DECISION ENGINE    │     │    GAME MECHANIC    │
+│                     │     │                     │
+│  "Should we call    │────▶│  "Timeout called.   │
+│   a timeout?"       │     │   Clock stops.      │
+│                     │     │   Play clock = 25s. │
+│  Probabilistic,     │     │   Timeouts -= 1"    │
+│  situational        │     │                     │
+│                     │     │  Pure rule          │
+│  Returns: Yes/No    │     │  enforcement        │
+└─────────────────────┘     └─────────────────────┘
+```
+
+- **Decision engines** go in `Simulation/Decision/`
+- **Game mechanics** go in `Simulation/Mechanics/`
+- See `TimeoutDecisionEngine` and `TimeoutMechanic` as the reference implementation
 
 ### Other Guidelines
 
@@ -170,6 +193,21 @@ When adding new simulation logic that requires configuration values, add a new n
 - `chore/` — Maintenance, refactoring, docs
 
 This applies to ALL changes, no matter how small—even single-line fixes.
+
+### Checkpoint Commits
+
+**Never miss an opportunity to commit a checkpoint.** When you reach a stable state (tests pass, feature partially complete, architecture in place), commit it immediately. These checkpoints serve as rollback points if subsequent work goes sideways.
+
+Good checkpoint moments:
+- Architecture/scaffolding complete, before implementation details
+- Tests written and passing, before refactoring
+- One component complete, before starting the next
+- After any significant milestone within a feature
+
+Checkpoint commits should:
+- Have clear commit messages describing what's complete
+- Pass all existing tests
+- Be atomic (don't mix unrelated changes)
 
 ## When Uncertain
 
