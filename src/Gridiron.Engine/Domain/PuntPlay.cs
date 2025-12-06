@@ -38,6 +38,9 @@ namespace Gridiron.Engine.Domain
         public bool IsTouchdown { get; set; }
         public bool IsSafety { get; set; }
         public bool ClockStopped { get; set; }
+        public bool TimeoutCalledBeforePlay { get; set; }
+        public bool TimeoutCalledAfterPlay { get; set; }
+        public Possession? TimeoutCalledBy { get; set; }
 
         // ========================================
         // PUNT-SPECIFIC PROPERTIES

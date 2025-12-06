@@ -167,5 +167,24 @@ namespace Gridiron.Engine.Domain
         /// Whether the clock stopped at the end of this play
         /// </summary>
         bool ClockStopped { get; set; }
+
+        // ========================================
+        // TIMEOUTS
+        // ========================================
+
+        /// <summary>
+        /// Whether a timeout was called before this play (e.g., ice the kicker)
+        /// </summary>
+        bool TimeoutCalledBeforePlay { get; set; }
+
+        /// <summary>
+        /// Whether a timeout was called after this play (e.g., stop the clock)
+        /// </summary>
+        bool TimeoutCalledAfterPlay { get; set; }
+
+        /// <summary>
+        /// Which team called the timeout (if any)
+        /// </summary>
+        Possession? TimeoutCalledBy { get; set; }
     }
 }

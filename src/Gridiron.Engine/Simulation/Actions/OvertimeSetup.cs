@@ -2,6 +2,7 @@ using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Domain.Time;
 using Gridiron.Engine.Simulation.Interfaces;
+using Gridiron.Engine.Simulation.Mechanics;
 using Gridiron.Engine.Simulation.Overtime;
 using Microsoft.Extensions.Logging;
 
@@ -14,6 +15,7 @@ namespace Gridiron.Engine.Simulation.Actions
     {
         private readonly ISeedableRandom _rng;
         private readonly IOvertimeRulesProvider _rules;
+        private readonly TimeoutMechanic _timeoutMechanic;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OvertimeSetup"/> class.
@@ -24,6 +26,7 @@ namespace Gridiron.Engine.Simulation.Actions
         {
             _rng = rng;
             _rules = rules;
+            _timeoutMechanic = new TimeoutMechanic();
         }
 
         /// <summary>
@@ -42,6 +45,9 @@ namespace Gridiron.Engine.Simulation.Actions
                     HomeTimeoutsRemaining = _rules.TimeoutsPerTeam,
                     AwayTimeoutsRemaining = _rules.TimeoutsPerTeam
                 };
+
+                // Also set Game-level timeouts to match
+                _timeoutMechanic.SetTimeoutsForOvertime(game);
 
                 // Perform coin toss for overtime
                 if (_rules.HasOvertimeCoinToss)

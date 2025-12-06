@@ -3,7 +3,9 @@ using Microsoft.Extensions.Logging;
 using Gridiron.Engine.Domain.Helpers;
 using Newtonsoft.Json;
 using Gridiron.Engine.Simulation.Configuration;
+using Gridiron.Engine.Simulation.Decision;
 using Gridiron.Engine.Simulation.Interfaces;
+using Gridiron.Engine.Simulation.Mechanics;
 
 namespace Gridiron.Engine.Simulation.Actions
 {
@@ -13,7 +15,9 @@ namespace Gridiron.Engine.Simulation.Actions
     /// </summary>
     public class PrePlay : IGameAction
     {
-        private ISeedableRandom _rng;
+        private readonly ISeedableRandom _rng;
+        private readonly TimeoutDecisionEngine _timeoutDecisionEngine;
+        private readonly TimeoutMechanic _timeoutMechanic;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PrePlay"/> class.
@@ -22,6 +26,8 @@ namespace Gridiron.Engine.Simulation.Actions
         public PrePlay(ISeedableRandom rng)
         {
             _rng = rng;
+            _timeoutDecisionEngine = new TimeoutDecisionEngine(rng);
+            _timeoutMechanic = new TimeoutMechanic();
         }
 
         /// <summary>
@@ -39,6 +45,9 @@ namespace Gridiron.Engine.Simulation.Actions
 
             // Assign the game's logger to this play so it can log play-by-play results
             game.CurrentPlay.Result = game.Logger;
+
+            // Check for pre-play timeout decisions (e.g., ice the kicker)
+            CheckForPrePlayTimeout(game);
 
             // Log the current game situation
             var downText = game.CurrentDown switch
@@ -110,6 +119,78 @@ namespace Gridiron.Engine.Simulation.Actions
             {
                 game.CurrentPlay.Result.LogInformation("Receivers are spread wide, could be a passing down");
             }
+        }
+
+        /// <summary>
+        /// Checks if the defense should call a timeout before this play (e.g., ice the kicker).
+        /// </summary>
+        private void CheckForPrePlayTimeout(Game game)
+        {
+            var currentPlay = game.CurrentPlay;
+
+            // Defense considers calling timeout to ice the kicker on field goal attempts
+            if (currentPlay.PlayType == PlayType.FieldGoal)
+            {
+                var defensiveTeam = currentPlay.Possession == Possession.Home
+                    ? Possession.Away
+                    : Possession.Home;
+
+                // Calculate field goal distance
+                int fieldGoalDistance = CalculateFieldGoalDistance(game.FieldPosition, currentPlay.Possession);
+
+                // Get score differential from defense's perspective
+                int scoreDiff = defensiveTeam == Possession.Home
+                    ? game.HomeScore - game.AwayScore
+                    : game.AwayScore - game.HomeScore;
+
+                // Get time remaining in current half
+                int timeInHalf = game.CurrentQuarter.TimeRemaining;
+                if (game.CurrentHalf.Quarters.Count > 1 && game.CurrentQuarter == game.CurrentHalf.Quarters[0])
+                {
+                    // First quarter of the half - add second quarter's time
+                    timeInHalf += game.CurrentHalf.Quarters[1].TimeRemaining;
+                }
+
+                var context = new TimeoutContext(
+                    team: defensiveTeam,
+                    isOffense: false,
+                    timeoutsRemaining: game.GetTimeoutsRemaining(defensiveTeam),
+                    scoreDifferential: scoreDiff,
+                    timeRemainingInHalfSeconds: timeInHalf,
+                    timeRemainingInGameSeconds: game.TimeRemaining,
+                    isClockRunning: false, // Pre-play, clock is stopped
+                    playClockSeconds: 25, // Default play clock
+                    timingPhase: TimeoutTimingPhase.PrePlay,
+                    upcomingPlayType: PlayType.FieldGoal,
+                    fieldGoalDistance: fieldGoalDistance
+                );
+
+                var decision = _timeoutDecisionEngine.Decide(context);
+
+                if (decision == TimeoutDecision.IceKicker)
+                {
+                    var result = _timeoutMechanic.Execute(game, defensiveTeam, decision);
+                    if (result.Success)
+                    {
+                        // Mark the play as having a timeout called before it
+                        currentPlay.TimeoutCalledBeforePlay = true;
+                        currentPlay.TimeoutCalledBy = defensiveTeam;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calculates the field goal distance based on field position.
+        /// Field goal distance = yards to goal line + 17 (10 yard end zone + 7 yard snap/hold).
+        /// </summary>
+        private int CalculateFieldGoalDistance(int fieldPosition, Possession possession)
+        {
+            int yardsToGoal = possession == Possession.Home
+                ? 100 - fieldPosition
+                : fieldPosition;
+
+            return yardsToGoal + 17;
         }
 
         //Eventually this method will be much more complex
