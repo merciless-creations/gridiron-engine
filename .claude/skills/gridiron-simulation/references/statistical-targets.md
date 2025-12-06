@@ -4,7 +4,7 @@ Target distributions derived from NFL data 2020-2024. These are the **goals** fo
 
 **Acceptable variance:** ±5% on primary metrics.
 
-**Validation:** See issue #30 for the framework to automatically validate simulation output against these targets.
+**Validation:** Use `Gridiron.Validator` project to validate simulation output against these targets.
 
 ## Rushing
 
@@ -75,11 +75,11 @@ Deep (21+): 12%
 ### Turnover Context Modifiers
 
 Turnovers are not uniform. Increase probability when:
-- Player is fatigued (stamina < 60%)
+- Player is fatigued (stamina < 60%) — see #36
 - Player discipline is low
 - Pressure on QB (rush vs. protection mismatch)
 - Ball carrier hit by multiple defenders
-- Weather conditions (if modeled)
+- Weather conditions (if modeled) — see #38
 
 Decrease probability when:
 - Player has high ball security attribute
@@ -224,36 +224,34 @@ Fourth down attempts are situationally driven:
 | Severe (season) | 0.02-0.05 | |
 
 Injury probability increases with:
-- Player fatigue
+- Player fatigue — see #36
 - High-impact collisions
-- Low durability attribute
+- Low durability attribute (high Fragility)
 - Certain play types (kickoff returns historically highest)
 
 ---
 
-# Validation
+## Validation
 
-These targets are validated by running large-scale simulations and comparing aggregate output.
+Use the `Gridiron.Validator` project to run large-scale simulations and compare output against these targets.
 
-## How to Use This Document
+```bash
+# Run validation
+dotnet run --project src/Gridiron.Validator -- --games 1000 --seed 42
+```
+
+### How to Use This Document
 
 1. **During development** — Reference targets when tuning probabilities in `GameProbabilities.cs`
 2. **After changes** — Run validation to ensure statistics remain realistic
-3. **Debugging** — If a metric is off, trace back to the relevant skills check
-
-## Current Status
-
-> **Note:** A formal validation framework is not yet implemented. See issue #30.
-
-Once implemented, this section will document:
-- Which metrics are currently within tolerance
-- Which need tuning
-- Historical drift over engine versions
+3. **Debugging** — If a metric is off, trace back to the relevant SkillsCheck class
 
 ---
 
-# Related Issues
+## Related Issues
 
+- **#15** - Fix yardage distributions (normal/log-normal)
 - **#27** - Logarithmic modifier curves (will affect all statistics)
 - **#28** - Expanded attributes (will enable finer-grained targeting)
-- **#30** - Statistical validation framework
+- **#36** - Fatigue system (affects late-game statistics)
+- **#38** - Weather effects (affects passing, kicking, fumbles)
