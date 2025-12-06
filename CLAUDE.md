@@ -104,8 +104,31 @@ When working near the state machine, consult Scott before making changes.
 ## Development Guidelines
 
 - Follow existing patterns in the codebase
-- Magic strings and hard numeric values used for statistical calculations should be abstracted into a static class
 - Where rules are able to diverge due to different leagues (NFL vs NCAA vs XFL), or rulesets for regular season or playoffs, use a provider model to encapsulate the differences elegantly, so we can easily inject the apprpriate rulest for the game.
+
+### Centralized Constants Pattern
+
+All probability values, thresholds, and configuration constants **must** be defined in `Simulation/Configuration/GameProbabilities.cs`. Do not create separate constants files scattered throughout the codebase.
+
+**Structure:** Use nested static classes to organize constants by domain:
+```csharp
+public static class GameProbabilities
+{
+    public static class Passing { /* completion rates, interception chances, etc. */ }
+    public static class Rushing { /* tackle break rates, big run chances, etc. */ }
+    public static class FourthDown { /* go-for-it probabilities, field position thresholds, etc. */ }
+    // ... other domains
+}
+```
+
+**Usage:** Reference constants as `GameProbabilities.DomainName.CONSTANT_NAME`
+
+**Existing domains:** Passing, Rushing, Turnovers, FieldGoals, Kickoffs, Punts, GameDecisions, FourthDown
+
+When adding new simulation logic that requires configuration values, add a new nested class to `GameProbabilities.cs` rather than creating a standalone constants file.
+
+### Other Guidelines
+
 - Ask Scott before modifying core simulation logic
 - Keep simulation concerns separate from presentation concerns
 - Do not add formation/play-name logic to the engine
