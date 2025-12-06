@@ -16,6 +16,7 @@ namespace Gridiron.Engine.Simulation.Actions
     public class PrePlay : IGameAction
     {
         private readonly ISeedableRandom _rng;
+        private readonly FourthDownDecisionEngine _fourthDownEngine;
         private readonly TimeoutDecisionEngine _timeoutDecisionEngine;
         private readonly TimeoutMechanic _timeoutMechanic;
 
@@ -26,6 +27,7 @@ namespace Gridiron.Engine.Simulation.Actions
         public PrePlay(ISeedableRandom rng)
         {
             _rng = rng;
+            _fourthDownEngine = new FourthDownDecisionEngine(rng);
             _timeoutDecisionEngine = new TimeoutDecisionEngine(rng);
             _timeoutMechanic = new TimeoutMechanic();
         }
@@ -358,6 +360,17 @@ namespace Gridiron.Engine.Simulation.Actions
                 }
                 // Otherwise, down and yards were already set by PlayResult
 
+                // Fourth down decision logic
+                if (game.CurrentDown == Downs.Fourth)
+                {
+                    currentPlay = HandleFourthDown(game, possession);
+                    if (currentPlay != null)
+                    {
+                        return currentPlay;
+                    }
+                    // If HandleFourthDown returns null, it means go for it - fall through to run/pass
+                }
+
                 //totally random for now, but later will need to add logic for determining both
                 //offensive and defensive play calls here
                 //coaches will decide whether to run or pass based on down, distance, time remaining, score, etc.
@@ -392,6 +405,58 @@ namespace Gridiron.Engine.Simulation.Actions
         private Possession FlipPossession(Possession currentPossession)
         {
             return currentPossession == Possession.Home ? Possession.Away : Possession.Home;
+        }
+
+        /// <summary>
+        /// Handles fourth down decision-making using the FourthDownDecisionEngine.
+        /// Returns a punt or field goal play if appropriate, or null if the team should go for it.
+        /// </summary>
+        /// <param name="game">The current game state.</param>
+        /// <param name="possession">The team with possession.</param>
+        /// <returns>A punt or field goal play, or null if going for it.</returns>
+        private IPlay? HandleFourthDown(Game game, Possession possession)
+        {
+            bool isHome = possession == Possession.Home;
+            int scoreDifferential = isHome
+                ? game.HomeScore - game.AwayScore
+                : game.AwayScore - game.HomeScore;
+
+            var context = new FourthDownContext(
+                fieldPosition: game.FieldPosition,
+                yardsToGo: game.YardsToGo,
+                scoreDifferential: scoreDifferential,
+                timeRemainingSeconds: game.TimeRemaining,
+                isHome: isHome
+            );
+
+            var decision = _fourthDownEngine.Decide(context);
+
+            switch (decision)
+            {
+                case FourthDownDecision.Punt:
+                    return new PuntPlay
+                    {
+                        Possession = possession,
+                        Down = Downs.Fourth,
+                        StartTime = game.Plays.Count > 0 ? game.Plays.Last().StopTime : 0,
+                        PossessionChange = false // Will change after punt
+                    };
+
+                case FourthDownDecision.AttemptFieldGoal:
+                    return new FieldGoalPlay
+                    {
+                        Possession = possession,
+                        Down = Downs.Fourth,
+                        StartTime = game.Plays.Count > 0 ? game.Plays.Last().StopTime : 0,
+                        IsExtraPoint = false
+                    };
+
+                case FourthDownDecision.GoForIt:
+                default:
+                    // Return null to indicate the team is going for it
+                    // The caller will fall through to run/pass selection
+                    return null;
+            }
         }
 
         private void SubstituteDefensivePlayers(Game game)

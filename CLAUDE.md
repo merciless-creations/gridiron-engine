@@ -116,6 +116,7 @@ public static class GameProbabilities
 {
     public static class Passing { /* completion rates, interception chances, etc. */ }
     public static class Rushing { /* tackle break rates, big run chances, etc. */ }
+    public static class FourthDown { /* go-for-it probabilities, field position thresholds, etc. */ }
     public static class Timeouts { /* timeout thresholds, ice kicker probability, etc. */ }
     // ... other domains
 }
@@ -123,7 +124,9 @@ public static class GameProbabilities
 
 **Usage:** Reference constants as `GameProbabilities.DomainName.CONSTANT_NAME`
 
-**Existing domains:** Passing, Rushing, Turnovers, FieldGoals, Kickoffs, Punts, GameDecisions, Timeouts
+**Existing domains:** Passing, Rushing, Turnovers, FieldGoals, Kickoffs, Punts, GameDecisions, FourthDown, Timeouts
+
+When adding new simulation logic that requires configuration values, add a new nested class to `GameProbabilities.cs` rather than creating a standalone constants file.
 
 ### Decision vs Mechanic Separation
 
