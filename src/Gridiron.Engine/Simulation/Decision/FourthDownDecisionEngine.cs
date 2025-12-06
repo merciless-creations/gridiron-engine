@@ -1,4 +1,5 @@
 using Gridiron.Engine.Domain.Helpers;
+using Gridiron.Engine.Simulation.Configuration;
 
 namespace Gridiron.Engine.Simulation.Decision
 {
@@ -128,12 +129,12 @@ namespace Gridiron.Engine.Simulation.Decision
             int fieldGoalDistance = CalculateFieldGoalDistance(context.FieldPosition, context.IsHome);
 
             // Is a field goal attempt realistic? (Max ~60 yards in NFL)
-            bool fieldGoalInRange = fieldGoalDistance <= FourthDownConstants.FIELD_GOAL_MAX_RANGE;
+            bool fieldGoalInRange = fieldGoalDistance <= GameProbabilities.FourthDown.FIELD_GOAL_MAX_RANGE;
 
             // Are we too close to punt effectively? (Inside opponent's 35)
             // A punt from the 35 would go into or through the end zone
             bool tooCloseForPunt = GetYardsToOpponentGoal(context.FieldPosition, context.IsHome)
-                                   <= FourthDownConstants.NO_PUNT_ZONE_YARDS;
+                                   <= GameProbabilities.FourthDown.NO_PUNT_ZONE_YARDS;
 
             // ══════════════════════════════════════════════════════════════════
             // STEP 2: Check for forced "go for it" situations (desperation mode)
@@ -201,19 +202,19 @@ namespace Gridiron.Engine.Simulation.Decision
             // Scenario 1: Trailing by more than one possession with less than 2 minutes
             // You need multiple scores - can't afford to punt
             bool desperationMode = context.ScoreDifferential < -8 &&
-                                   context.TimeRemainingSeconds < FourthDownConstants.DESPERATION_TIME_SECONDS;
+                                   context.TimeRemainingSeconds < GameProbabilities.FourthDown.DESPERATION_TIME_SECONDS;
 
             // Scenario 2: Trailing by any amount with less than 30 seconds
             // This is likely your last possession - punt is pointless
             bool lastChance = context.ScoreDifferential < 0 &&
-                              context.TimeRemainingSeconds < FourthDownConstants.LAST_CHANCE_TIME_SECONDS;
+                              context.TimeRemainingSeconds < GameProbabilities.FourthDown.LAST_CHANCE_TIME_SECONDS;
 
             // Scenario 3: Trailing, in opponent territory, short yardage, under 5 minutes
             // High-value situation where going for it is strategically sound
             bool aggressiveMode = context.ScoreDifferential < 0 &&
                                   GetYardsToOpponentGoal(context.FieldPosition, context.IsHome) <= 50 &&
-                                  context.TimeRemainingSeconds < FourthDownConstants.AGGRESSIVE_TIME_SECONDS &&
-                                  context.YardsToGo <= FourthDownConstants.AGGRESSIVE_MAX_YARDS_TO_GO;
+                                  context.TimeRemainingSeconds < GameProbabilities.FourthDown.AGGRESSIVE_TIME_SECONDS &&
+                                  context.YardsToGo <= GameProbabilities.FourthDown.AGGRESSIVE_MAX_YARDS_TO_GO;
 
             return desperationMode || lastChance || aggressiveMode;
         }
@@ -233,17 +234,17 @@ namespace Gridiron.Engine.Simulation.Decision
         private double GetBaseGoForItProbability(int yardsToGo)
         {
             if (yardsToGo <= 1)
-                return FourthDownConstants.GO_FOR_IT_PROB_1_YARD;      // 65%
+                return GameProbabilities.FourthDown.GO_FOR_IT_PROB_1_YARD;      // 65%
             if (yardsToGo <= 2)
-                return FourthDownConstants.GO_FOR_IT_PROB_2_YARDS;     // 35%
+                return GameProbabilities.FourthDown.GO_FOR_IT_PROB_2_YARDS;     // 35%
             if (yardsToGo <= 3)
-                return FourthDownConstants.GO_FOR_IT_PROB_3_YARDS;     // 20%
+                return GameProbabilities.FourthDown.GO_FOR_IT_PROB_3_YARDS;     // 20%
             if (yardsToGo <= 5)
-                return FourthDownConstants.GO_FOR_IT_PROB_4_5_YARDS;   // 8%
+                return GameProbabilities.FourthDown.GO_FOR_IT_PROB_4_5_YARDS;   // 8%
             if (yardsToGo <= 10)
-                return FourthDownConstants.GO_FOR_IT_PROB_6_10_YARDS;  // 3%
+                return GameProbabilities.FourthDown.GO_FOR_IT_PROB_6_10_YARDS;  // 3%
 
-            return FourthDownConstants.GO_FOR_IT_PROB_LONG;            // 1%
+            return GameProbabilities.FourthDown.GO_FOR_IT_PROB_LONG;            // 1%
         }
 
         /// <summary>
@@ -285,23 +286,23 @@ namespace Gridiron.Engine.Simulation.Decision
             // FIELD POSITION MODIFIERS
             // ─────────────────────────────────────────────────────────────────
 
-            if (yardsToGoal <= FourthDownConstants.RED_ZONE_YARDS)
+            if (yardsToGoal <= GameProbabilities.FourthDown.RED_ZONE_YARDS)
             {
                 // Red zone: More aggressive - even if we fail, opponent is pinned deep
                 // and we likely have a FG option anyway
-                probability += FourthDownConstants.RED_ZONE_GO_BONUS;
+                probability += GameProbabilities.FourthDown.RED_ZONE_GO_BONUS;
             }
-            else if (yardsToGoal <= FourthDownConstants.OPPONENT_TERRITORY_YARDS)
+            else if (yardsToGoal <= GameProbabilities.FourthDown.OPPONENT_TERRITORY_YARDS)
             {
                 // Opponent territory: Slightly more aggressive
                 // Failure still leaves defense in okay position
-                probability += FourthDownConstants.OPPONENT_TERRITORY_GO_BONUS;
+                probability += GameProbabilities.FourthDown.OPPONENT_TERRITORY_GO_BONUS;
             }
-            else if (yardsToGoal >= FourthDownConstants.OWN_TERRITORY_CONSERVATIVE_YARDS)
+            else if (yardsToGoal >= GameProbabilities.FourthDown.OWN_TERRITORY_CONSERVATIVE_YARDS)
             {
                 // Deep in own territory: Be conservative
                 // Failure gives opponent a short field for easy points
-                probability -= FourthDownConstants.OWN_TERRITORY_GO_PENALTY;
+                probability -= GameProbabilities.FourthDown.OWN_TERRITORY_GO_PENALTY;
             }
 
             // ─────────────────────────────────────────────────────────────────
@@ -311,34 +312,34 @@ namespace Gridiron.Engine.Simulation.Decision
             if (context.ScoreDifferential < -7)
             {
                 // Trailing by more than a TD: Must be aggressive to catch up
-                probability += FourthDownConstants.TRAILING_BIG_GO_BONUS;
+                probability += GameProbabilities.FourthDown.TRAILING_BIG_GO_BONUS;
             }
             else if (context.ScoreDifferential < 0)
             {
                 // Trailing by a small margin: Slightly more aggressive
-                probability += FourthDownConstants.TRAILING_SMALL_GO_BONUS;
+                probability += GameProbabilities.FourthDown.TRAILING_SMALL_GO_BONUS;
             }
             else if (context.ScoreDifferential > 14)
             {
                 // Leading big: Protect the lead, no unnecessary risks
-                probability -= FourthDownConstants.LEADING_BIG_GO_PENALTY;
+                probability -= GameProbabilities.FourthDown.LEADING_BIG_GO_PENALTY;
             }
 
             // ─────────────────────────────────────────────────────────────────
             // TIME REMAINING MODIFIERS (late game adjustments)
             // ─────────────────────────────────────────────────────────────────
 
-            if (context.TimeRemainingSeconds < FourthDownConstants.LATE_GAME_TIME_SECONDS)
+            if (context.TimeRemainingSeconds < GameProbabilities.FourthDown.LATE_GAME_TIME_SECONDS)
             {
                 if (context.ScoreDifferential < 0)
                 {
                     // Trailing late: Urgency - each possession is precious
-                    probability += FourthDownConstants.TRAILING_LATE_GO_BONUS;
+                    probability += GameProbabilities.FourthDown.TRAILING_LATE_GO_BONUS;
                 }
                 else if (context.ScoreDifferential > 0)
                 {
                     // Leading late: Milk the clock, avoid risky plays
-                    probability -= FourthDownConstants.LEADING_LATE_GO_PENALTY;
+                    probability -= GameProbabilities.FourthDown.LEADING_LATE_GO_PENALTY;
                 }
             }
 
@@ -349,13 +350,13 @@ namespace Gridiron.Engine.Simulation.Decision
             if (fieldGoalInRange)
             {
                 int fgDistance = CalculateFieldGoalDistance(context.FieldPosition, context.IsHome);
-                if (fgDistance <= FourthDownConstants.FIELD_GOAL_CHIP_SHOT_YARDS)
+                if (fgDistance <= GameProbabilities.FourthDown.FIELD_GOAL_CHIP_SHOT_YARDS)
                 {
                     // Chip shot available: Strongly prefer taking the points
                     // Exception: 4th and 1-2 still worth going for (high success rate)
                     if (context.YardsToGo > 2)
                     {
-                        probability -= FourthDownConstants.CHIP_SHOT_FG_GO_PENALTY;
+                        probability -= GameProbabilities.FourthDown.CHIP_SHOT_FG_GO_PENALTY;
                     }
                 }
             }
@@ -386,13 +387,13 @@ namespace Gridiron.Engine.Simulation.Decision
         private FourthDownDecision ChooseBetweenPuntAndFieldGoal(FourthDownContext context, int fieldGoalDistance)
         {
             // Chip shot range (≤35 yards): ~95%+ make rate, always kick
-            if (fieldGoalDistance <= FourthDownConstants.FIELD_GOAL_CHIP_SHOT_YARDS)
+            if (fieldGoalDistance <= GameProbabilities.FourthDown.FIELD_GOAL_CHIP_SHOT_YARDS)
             {
                 return FourthDownDecision.AttemptFieldGoal;
             }
 
             // Normal range (36-45 yards): ~85% make rate, usually kick
-            if (fieldGoalDistance <= FourthDownConstants.FIELD_GOAL_NORMAL_RANGE)
+            if (fieldGoalDistance <= GameProbabilities.FourthDown.FIELD_GOAL_NORMAL_RANGE)
             {
                 // 80% field goal, 20% punt (punt if pinning them deep matters more)
                 if (_rng.NextDouble() < 0.80)
@@ -402,7 +403,7 @@ namespace Gridiron.Engine.Simulation.Decision
             }
 
             // Long range (46-55 yards): ~65% make rate, more situational
-            if (fieldGoalDistance <= FourthDownConstants.FIELD_GOAL_LONG_RANGE)
+            if (fieldGoalDistance <= GameProbabilities.FourthDown.FIELD_GOAL_LONG_RANGE)
             {
                 // Score differential matters more for long kicks
                 if (context.ScoreDifferential <= -3)
