@@ -7,13 +7,17 @@ using System.Linq;
 namespace Gridiron.Engine.Simulation.Services
 {
     /// <summary>
-    /// Centralized penalty enforcement service that handles all NFL penalty rules.
+    /// Centralized penalty enforcement mechanic that handles all NFL penalty rules.
+    /// This is the MECHANIC in the Context → Decision → Mechanic pattern.
+    ///
     /// Responsible for:
-    /// - Penalty acceptance/decline logic
     /// - Multi-penalty resolution (offsetting, priority)
     /// - Enforcement (yards, automatic first downs, loss of down)
     /// - Half-distance to goal calculations
     /// - Dead ball vs live ball fouls
+    ///
+    /// Note: Penalty accept/decline DECISIONS should be made via PenaltyDecisionEngine
+    /// before calling this service. Penalties should have their Accepted property set.
     /// </summary>
     public class PenaltyEnforcement
     {
@@ -310,95 +314,6 @@ namespace Gridiron.Engine.Simulation.Services
             };
 
             return deadBallFouls.Contains(penalty);
-        }
-
-        /// <summary>
-        /// Determines whether to accept or decline a penalty based on game situation.
-        /// </summary>
-        public bool ShouldAcceptPenalty(
-            Game game,
-            Penalty penalty,
-            Possession penalizedTeam,
-            Possession offense,
-            int yardsGainedOnPlay,
-            Downs currentDown,
-            int yardsToGo)
-        {
-            var isOffensivePenalty = penalizedTeam == offense;
-            var isDefensivePenalty = !isOffensivePenalty;
-
-            // Calculate what would happen if accepted vs declined
-            var acceptedYards = isOffensivePenalty ? -penalty.Yards : penalty.Yards;
-            var acceptedDown = currentDown;
-            var acceptedYardsToGo = yardsToGo;
-
-            if (isDefensivePenalty && IsAutomaticFirstDown(penalty.Name))
-            {
-                acceptedDown = Downs.First;
-                acceptedYardsToGo = 10;
-            }
-            else if (isOffensivePenalty && IsLossOfDown(penalty.Name))
-            {
-                acceptedDown = AdvanceDown(currentDown);
-            }
-
-            // Declined outcome
-            var declinedYards = yardsGainedOnPlay;
-            var declinedDown = currentDown;
-            var declinedYardsToGo = yardsToGo - yardsGainedOnPlay;
-
-            if (declinedYards >= yardsToGo)
-            {
-                declinedDown = Downs.First;
-                declinedYardsToGo = 10;
-            }
-            else if (declinedYards < 0)
-            {
-                declinedDown = AdvanceDown(currentDown);
-                declinedYardsToGo = yardsToGo - declinedYards;
-            }
-
-            // Decision logic varies by which team benefits
-            if (isDefensivePenalty)
-            {
-                // Defensive penalty - offense decides
-                // Accept if it gives better field position or down/distance
-
-                // Always accept if it gives automatic first down
-                if (IsAutomaticFirstDown(penalty.Name))
-                {
-                    return true;
-                }
-
-                // Accept if penalty yards are better than play result
-                if (acceptedYards > declinedYards)
-                {
-                    return true;
-                }
-
-                // Decline if play result was better (e.g., long completion vs 5-yard penalty)
-                return false;
-            }
-            else
-            {
-                // Offensive penalty - defense decides
-
-                // Generally accept offensive penalties (they help defense)
-                // Exception: Decline if play result was worse for offense
-
-                // Example: 3rd and 10, offense gains 2 yards with holding penalty
-                // Declined: 4th and 8 (better for defense - forces punt/4th down attempt)
-                // Accepted: 3rd and 20 (gives offense another chance)
-
-                if (declinedDown == Downs.Fourth || declinedDown == Downs.None)
-                {
-                    // Decline - play result already caused 4th down or turnover
-                    return false;
-                }
-
-                // Accept in most other cases
-                return true;
-            }
         }
 
         private Downs AdvanceDown(Downs currentDown)

@@ -1,5 +1,6 @@
 ﻿using Gridiron.Engine.Domain;
 using Microsoft.Extensions.Logging;
+using Gridiron.Engine.Simulation.Decision;
 using Gridiron.Engine.Simulation.Interfaces;
 using Gridiron.Engine.Simulation.Services;
 using System;
@@ -127,9 +128,10 @@ namespace Gridiron.Engine.Simulation.PlayResults
                 return; // Scoring play stands, penalties declined
             }
 
-            // Apply smart acceptance/decline logic to penalties
+            // Apply smart acceptance/decline logic to penalties using decision engine
+            ApplyPenaltyAcceptanceLogic(game, play);
+
             var penaltyEnforcement = new PenaltyEnforcement(play.Result);
-            ApplyPenaltyAcceptanceLogic(game, play, penaltyEnforcement);
 
             // Recheck after acceptance logic
             hasAcceptedPenalties = play.Penalties.Any(p => p.Accepted);
@@ -220,11 +222,11 @@ namespace Gridiron.Engine.Simulation.PlayResults
         /// <summary>
         /// Applies smart acceptance/decline logic to all penalties on the play.
         /// Determines whether each penalty should be accepted or declined based on game situation and which team benefits.
+        /// Uses PenaltyDecisionEngine to determine whether each penalty should be accepted or declined.
         /// </summary>
         /// <param name="game">The game instance containing current game state.</param>
         /// <param name="play">The punt play that contains the penalties.</param>
-        /// <param name="enforcement">The penalty enforcement service that evaluates whether penalties should be accepted.</param>
-        private void ApplyPenaltyAcceptanceLogic(Game game, PuntPlay play, PenaltyEnforcement enforcement)
+        private void ApplyPenaltyAcceptanceLogic(Game game, PuntPlay play)
         {
             if (play.Penalties == null || !play.Penalties.Any())
                 return;
@@ -237,20 +239,33 @@ namespace Gridiron.Engine.Simulation.PlayResults
                 return;
             }
 
+            var decisionEngine = new PenaltyDecisionEngine();
+
             foreach (var penalty in play.Penalties)
             {
-                // Determine which team committed the penalty
-                var penalizedTeam = penalty.CalledOn;
+                // For punts, create context with appropriate values:
+                // - Punts are always 4th down but NOT "turnover on downs" - they're intentional
+                // - Use Downs.First to avoid triggering turnover logic in decision engine
+                // - Punts don't result in first downs for the punting team
+                var context = new PenaltyDecisionContext(
+                    penaltyName: penalty.Name,
+                    penaltyYards: penalty.Yards,
+                    penalizedTeam: penalty.CalledOn,
+                    occurredWhen: penalty.OccuredWhen,
+                    offense: play.Possession,
+                    yardsGainedOnPlay: play.YardsGained,
+                    playResultedInFirstDown: false, // Punts don't give first downs
+                    playResultedInTurnover: false, // Punts are intentional, not turnovers
+                    playResultedInTouchdown: play.IsTouchdown,
+                    currentDown: Downs.First, // Use First to avoid turnover-on-downs logic
+                    yardsToGo: 10,
+                    fieldPosition: game.FieldPosition,
+                    scoreDifferential: 0,
+                    timeRemainingSeconds: game.TimeRemaining
+                );
 
-                // Use smart acceptance logic
-                penalty.Accepted = enforcement.ShouldAcceptPenalty(
-                    game,
-                    penalty,
-                    penalizedTeam,
-                    play.Possession,
-                    play.YardsGained,
-                    play.Down,
-                    game.YardsToGo);
+                var decision = decisionEngine.Decide(context);
+                penalty.Accepted = decision == PenaltyDecision.Accept;
             }
         }
 
