@@ -423,5 +423,31 @@ namespace Gridiron.Engine.Simulation.Configuration
             /// <summary>Probability of calling timeout to avoid delay of game.</summary>
             public const double AVOID_DELAY_PROBABILITY = 0.90;
         }
+
+        /// <summary>
+        /// Clock management play constants for spike and kneel plays.
+        /// </summary>
+        public static class ClockManagement
+        {
+            // ========================================
+            // KNEEL (VICTORY FORMATION) CONSTANTS
+            // ========================================
+
+            /// <summary>Elapsed time for a kneel play (uses full play clock).</summary>
+            public const int KNEEL_ELAPSED_TIME_SECONDS = 40;
+
+            /// <summary>Yards lost on a kneel play (always -1).</summary>
+            public const int KNEEL_YARDS_LOST = 1;
+
+            // ========================================
+            // SPIKE CONSTANTS
+            // ========================================
+
+            /// <summary>Elapsed time for a spike play (very quick).</summary>
+            public const int SPIKE_ELAPSED_TIME_SECONDS = 3;
+
+            /// <summary>Yards gained on a spike play (always 0).</summary>
+            public const int SPIKE_YARDS_GAINED = 0;
+        }
     }
 }

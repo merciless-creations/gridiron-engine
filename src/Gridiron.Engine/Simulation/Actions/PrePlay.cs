@@ -115,6 +115,14 @@ namespace Gridiron.Engine.Simulation.Actions
                 // This is a free kick after a safety
                 game.CurrentPlay.Result.LogInformation("Free kick formation after the safety");
             }
+            else if (game.CurrentPlay.PlayType == PlayType.Kneel)
+            {
+                game.CurrentPlay.Result.LogInformation("Victory formation - they're going to take a knee");
+            }
+            else if (game.CurrentPlay.PlayType == PlayType.Spike)
+            {
+                game.CurrentPlay.Result.LogInformation("Hurry-up offense - they're going to spike the ball");
+            }
             else if (game.CurrentPlay.PlayType == PlayType.Run)
             {
                 game.CurrentPlay.Result.LogInformation("The big package is in, looks like a run formation");
@@ -377,27 +385,50 @@ namespace Gridiron.Engine.Simulation.Actions
                 }
 
                 // Use decision engine to determine play type
-                // Future: coaches will decide based on down, distance, time remaining, score, tendencies
+                // Checks for clock management plays (spike/kneel) first, then falls through to run/pass
                 var playCallContext = PlayCallContext.ForScrimmagePlay(game, possession);
                 var playTypeDecision = _playCallEngine.DecidePlayType(playCallContext);
 
-                if (playTypeDecision == PlayCallDecision.Run)
+                switch (playTypeDecision)
                 {
-                    currentPlay = new RunPlay
-                    {
-                        Possession = possession,
-                        ElapsedTime = 1.5,
-                        Down = game.CurrentDown
-                    };
-                }
-                else
-                {
-                    currentPlay = new PassPlay
-                    {
-                        Possession = possession,
-                        ElapsedTime = 1.5,
-                        Down = game.CurrentDown
-                    };
+                    case PlayCallDecision.Kneel:
+                        currentPlay = new RunPlay
+                        {
+                            Possession = possession,
+                            ElapsedTime = 1.5,
+                            Down = game.CurrentDown,
+                            IsKneel = true
+                        };
+                        break;
+
+                    case PlayCallDecision.Spike:
+                        currentPlay = new PassPlay
+                        {
+                            Possession = possession,
+                            ElapsedTime = 1.5,
+                            Down = game.CurrentDown,
+                            IsSpike = true
+                        };
+                        break;
+
+                    case PlayCallDecision.Run:
+                        currentPlay = new RunPlay
+                        {
+                            Possession = possession,
+                            ElapsedTime = 1.5,
+                            Down = game.CurrentDown
+                        };
+                        break;
+
+                    case PlayCallDecision.Pass:
+                    default:
+                        currentPlay = new PassPlay
+                        {
+                            Possession = possession,
+                            ElapsedTime = 1.5,
+                            Down = game.CurrentDown
+                        };
+                        break;
                 }
             }
 
@@ -483,17 +514,19 @@ namespace Gridiron.Engine.Simulation.Actions
                 var chart = defenseTeam.FieldGoalDefenseDepthChart.Chart;
                 SubstituteFieldGoalDefense(chart, playersOnField);
             }
-            else if (currentPlay.PlayType == PlayType.Run || currentPlay.PlayType == PlayType.Pass)
+            else if (currentPlay.PlayType == PlayType.Run || currentPlay.PlayType == PlayType.Pass ||
+                     currentPlay.PlayType == PlayType.Kneel || currentPlay.PlayType == PlayType.Spike)
             {
-                // Regular defense
+                // Regular defense (spike and kneel use regular personnel)
                 var chart = defenseTeam.DefenseDepthChart.Chart;
 
-                // Linemen
-                AddUniquePlayers(chart, Positions.DE, currentPlay.PlayType == PlayType.Run ? 2 : 1, playersOnField, "defense");
+                // Linemen - use run personnel for kneel plays
+                bool isRunOriented = currentPlay.PlayType == PlayType.Run || currentPlay.PlayType == PlayType.Kneel;
+                AddUniquePlayers(chart, Positions.DE, isRunOriented ? 2 : 1, playersOnField, "defense");
                 AddUniquePlayers(chart, Positions.DT, 2, playersOnField, "defense");
 
                 // Linebackers
-                AddUniquePlayers(chart, Positions.LB, currentPlay.PlayType == PlayType.Run ? 3 : 4, playersOnField, "defense");
+                AddUniquePlayers(chart, Positions.LB, isRunOriented ? 3 : 4, playersOnField, "defense");
 
                 // Defensive backs (fill remaining spots to reach 11)
                 int remaining = 11 - playersOnField.Count;
@@ -588,9 +621,10 @@ namespace Gridiron.Engine.Simulation.Actions
                 var chart = offenseTeam.FieldGoalOffenseDepthChart.Chart;
                 SubstituteFieldGoalOffense(chart, playersOnField, currentPlay as FieldGoalPlay);
             }
-            else if (currentPlay.PlayType == PlayType.Run || currentPlay.PlayType == PlayType.Pass)
+            else if (currentPlay.PlayType == PlayType.Run || currentPlay.PlayType == PlayType.Pass ||
+                     currentPlay.PlayType == PlayType.Kneel || currentPlay.PlayType == PlayType.Spike)
             {
-                // Regular offense
+                // Regular offense (spike and kneel use regular personnel)
                 var chart = offenseTeam.OffenseDepthChart.Chart;
 
                 // Always include 1 QB, 1 RB, 1 FB, 1 C, 2 G, 2 T
@@ -601,9 +635,10 @@ namespace Gridiron.Engine.Simulation.Actions
                 AddUniquePlayers(chart, Positions.G, 2, playersOnField, "offense");
                 AddUniquePlayers(chart, Positions.T, 2, playersOnField, "offense");
 
-                // WR and TE selection based on play type
-                AddUniquePlayers(chart, Positions.WR, currentPlay.PlayType == PlayType.Run ? 2 : 3, playersOnField, "offense");
-                AddUniquePlayers(chart, Positions.TE, currentPlay.PlayType == PlayType.Run ? 1 : 0, playersOnField, "offense");
+                // WR and TE selection based on play type - kneel uses run personnel
+                bool isRunOriented = currentPlay.PlayType == PlayType.Run || currentPlay.PlayType == PlayType.Kneel;
+                AddUniquePlayers(chart, Positions.WR, isRunOriented ? 2 : 3, playersOnField, "offense");
+                AddUniquePlayers(chart, Positions.TE, isRunOriented ? 1 : 0, playersOnField, "offense");
             }
             else
             {

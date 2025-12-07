@@ -1092,13 +1092,13 @@ var playersOnField = isOffense ? play.OffensePlayersOnField : play.DefensePlayer
             }
 
             // Spike results - no yards, clock stops
-            play.YardsGained = 0;
+            play.YardsGained = GameProbabilities.ClockManagement.SPIKE_YARDS_GAINED;
             play.EndFieldPosition = play.StartFieldPosition;
             play.ClockStopped = true;
             play.GoodSnap = true;
 
             // Spike takes ~3 seconds
-            play.ElapsedTime = 3.0;
+            play.ElapsedTime = GameProbabilities.ClockManagement.SPIKE_ELAPSED_TIME_SECONDS;
 
             // Create an incomplete pass segment for the spike
             var segment = new PassSegment

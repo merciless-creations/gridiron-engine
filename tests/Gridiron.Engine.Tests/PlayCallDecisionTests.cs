@@ -718,7 +718,566 @@ namespace Gridiron.Engine.Tests
 
         #endregion
 
+        #region ShouldKneel Tests
+
+        [TestMethod]
+        public void ShouldKneel_Q4Leading_EnoughTimeToKneelOut_ReturnsTrue()
+        {
+            // Arrange - 4th quarter, leading, 1st down with 160 seconds (4 kneels * 40s = 160s)
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateKneelContext(
+                down: Downs.First,
+                scoreDiff: 7, // Leading
+                quarter: 4,
+                timeRemaining: 160 // Exactly 4 * 40 seconds
+            );
+
+            // Act
+            var shouldKneel = engine.ShouldKneel(context);
+
+            // Assert
+            Assert.IsTrue(shouldKneel, "Should kneel when can run out clock with kneels");
+        }
+
+        [TestMethod]
+        public void ShouldKneel_Q4Leading_NotEnoughTime_ReturnsFalse()
+        {
+            // Arrange - 4th quarter, leading, 1st down with 161 seconds (need 160)
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateKneelContext(
+                down: Downs.First,
+                scoreDiff: 7,
+                quarter: 4,
+                timeRemaining: 161 // One second too many
+            );
+
+            // Act
+            var shouldKneel = engine.ShouldKneel(context);
+
+            // Assert
+            Assert.IsFalse(shouldKneel, "Should NOT kneel when can't run out clock");
+        }
+
+        [TestMethod]
+        public void ShouldKneel_NotFourthQuarter_ReturnsFalse()
+        {
+            // Arrange - 3rd quarter, leading, plenty of kneel time
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateKneelContext(
+                down: Downs.First,
+                scoreDiff: 7,
+                quarter: 3, // Not Q4
+                timeRemaining: 100
+            );
+
+            // Act
+            var shouldKneel = engine.ShouldKneel(context);
+
+            // Assert
+            Assert.IsFalse(shouldKneel, "Should NOT kneel in Q3");
+        }
+
+        [TestMethod]
+        public void ShouldKneel_NotLeading_ReturnsFalse()
+        {
+            // Arrange - Q4, trailing
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateKneelContext(
+                down: Downs.First,
+                scoreDiff: -7, // Trailing
+                quarter: 4,
+                timeRemaining: 100
+            );
+
+            // Act
+            var shouldKneel = engine.ShouldKneel(context);
+
+            // Assert
+            Assert.IsFalse(shouldKneel, "Should NOT kneel when trailing");
+        }
+
+        [TestMethod]
+        public void ShouldKneel_Tied_ReturnsFalse()
+        {
+            // Arrange - Q4, tied
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateKneelContext(
+                down: Downs.First,
+                scoreDiff: 0, // Tied
+                quarter: 4,
+                timeRemaining: 100
+            );
+
+            // Act
+            var shouldKneel = engine.ShouldKneel(context);
+
+            // Assert
+            Assert.IsFalse(shouldKneel, "Should NOT kneel when tied");
+        }
+
+        [TestMethod]
+        public void ShouldKneel_DownNone_ReturnsFalse()
+        {
+            // Arrange - Special situation (kickoff, conversion)
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = new PlayCallContext(
+                down: Downs.None,
+                yardsToGo: 10,
+                fieldPosition: 50,
+                scoreDifferential: 7,
+                timeRemainingSeconds: 100,
+                quarter: 4,
+                isTwoPointConversion: false,
+                possession: Possession.Home
+            );
+
+            // Act
+            var shouldKneel = engine.ShouldKneel(context);
+
+            // Assert
+            Assert.IsFalse(shouldKneel, "Should NOT kneel on special situations");
+        }
+
+        [TestMethod]
+        public void ShouldKneel_FourthDown_Only40Seconds_ReturnsTrue()
+        {
+            // Arrange - 4th down, 40 seconds (exactly 1 kneel worth)
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateKneelContext(
+                down: Downs.Fourth,
+                scoreDiff: 7,
+                quarter: 4,
+                timeRemaining: 40
+            );
+
+            // Act
+            var shouldKneel = engine.ShouldKneel(context);
+
+            // Assert
+            Assert.IsTrue(shouldKneel, "Should kneel on 4th down if can run out clock");
+        }
+
+        #endregion
+
+        #region ShouldSpike Tests
+
+        [TestMethod]
+        public void ShouldSpike_LateGameTrailingNoTimeoutsClockRunning_ReturnsTrue()
+        {
+            // Arrange - Q4, under 2 min, trailing, no timeouts, clock running, 2nd down
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateSpikeContext(
+                down: Downs.Second,
+                scoreDiff: -7,
+                quarter: 4,
+                timeRemaining: 60,
+                timeouts: 0,
+                isClockRunning: true
+            );
+
+            // Act
+            var shouldSpike = engine.ShouldSpike(context);
+
+            // Assert
+            Assert.IsTrue(shouldSpike, "Should spike in late game, trailing, no timeouts, clock running");
+        }
+
+        [TestMethod]
+        public void ShouldSpike_NotLateGame_ReturnsFalse()
+        {
+            // Arrange - Q4 but over 2 minutes
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateSpikeContext(
+                down: Downs.Second,
+                scoreDiff: -7,
+                quarter: 4,
+                timeRemaining: 180, // Over 2 minutes
+                timeouts: 0,
+                isClockRunning: true
+            );
+
+            // Act
+            var shouldSpike = engine.ShouldSpike(context);
+
+            // Assert
+            Assert.IsFalse(shouldSpike, "Should NOT spike with more than 2 minutes left");
+        }
+
+        [TestMethod]
+        public void ShouldSpike_Q3_ReturnsFalse()
+        {
+            // Arrange - Q3, even if under 2 minutes
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateSpikeContext(
+                down: Downs.Second,
+                scoreDiff: -7,
+                quarter: 3, // Not Q4
+                timeRemaining: 60,
+                timeouts: 0,
+                isClockRunning: true
+            );
+
+            // Act
+            var shouldSpike = engine.ShouldSpike(context);
+
+            // Assert
+            Assert.IsFalse(shouldSpike, "Should NOT spike in Q3");
+        }
+
+        [TestMethod]
+        public void ShouldSpike_NotTrailing_ReturnsFalse()
+        {
+            // Arrange - Leading
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateSpikeContext(
+                down: Downs.Second,
+                scoreDiff: 7, // Leading
+                quarter: 4,
+                timeRemaining: 60,
+                timeouts: 0,
+                isClockRunning: true
+            );
+
+            // Act
+            var shouldSpike = engine.ShouldSpike(context);
+
+            // Assert
+            Assert.IsFalse(shouldSpike, "Should NOT spike when leading");
+        }
+
+        [TestMethod]
+        public void ShouldSpike_Tied_ReturnsFalse()
+        {
+            // Arrange - Tied game
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateSpikeContext(
+                down: Downs.Second,
+                scoreDiff: 0, // Tied
+                quarter: 4,
+                timeRemaining: 60,
+                timeouts: 0,
+                isClockRunning: true
+            );
+
+            // Act
+            var shouldSpike = engine.ShouldSpike(context);
+
+            // Assert
+            Assert.IsFalse(shouldSpike, "Should NOT spike when tied");
+        }
+
+        [TestMethod]
+        public void ShouldSpike_HasTimeouts_ReturnsFalse()
+        {
+            // Arrange - Has timeouts (should use them instead)
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateSpikeContext(
+                down: Downs.Second,
+                scoreDiff: -7,
+                quarter: 4,
+                timeRemaining: 60,
+                timeouts: 1, // Has a timeout
+                isClockRunning: true
+            );
+
+            // Act
+            var shouldSpike = engine.ShouldSpike(context);
+
+            // Assert
+            Assert.IsFalse(shouldSpike, "Should NOT spike when have timeouts");
+        }
+
+        [TestMethod]
+        public void ShouldSpike_ClockStopped_ReturnsFalse()
+        {
+            // Arrange - Clock already stopped
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateSpikeContext(
+                down: Downs.Second,
+                scoreDiff: -7,
+                quarter: 4,
+                timeRemaining: 60,
+                timeouts: 0,
+                isClockRunning: false // Clock already stopped
+            );
+
+            // Act
+            var shouldSpike = engine.ShouldSpike(context);
+
+            // Assert
+            Assert.IsFalse(shouldSpike, "Should NOT spike when clock already stopped");
+        }
+
+        [TestMethod]
+        public void ShouldSpike_FourthDown_ReturnsFalse()
+        {
+            // Arrange - 4th down (would turn ball over)
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateSpikeContext(
+                down: Downs.Fourth, // 4th down
+                scoreDiff: -7,
+                quarter: 4,
+                timeRemaining: 60,
+                timeouts: 0,
+                isClockRunning: true
+            );
+
+            // Act
+            var shouldSpike = engine.ShouldSpike(context);
+
+            // Assert
+            Assert.IsFalse(shouldSpike, "Should NOT spike on 4th down");
+        }
+
+        [TestMethod]
+        public void ShouldSpike_DownNone_ReturnsFalse()
+        {
+            // Arrange - Special situation
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = new PlayCallContext(
+                down: Downs.None,
+                yardsToGo: 10,
+                fieldPosition: 50,
+                scoreDifferential: -7,
+                timeRemainingSeconds: 60,
+                quarter: 4,
+                isTwoPointConversion: false,
+                possession: Possession.Home,
+                timeoutsRemaining: 0,
+                isClockRunning: true
+            );
+
+            // Act
+            var shouldSpike = engine.ShouldSpike(context);
+
+            // Assert
+            Assert.IsFalse(shouldSpike, "Should NOT spike on special situations");
+        }
+
+        #endregion
+
+        #region DecidePlayType Integration with Spike/Kneel
+
+        [TestMethod]
+        public void DecidePlayType_KneelScenario_ReturnsKneel()
+        {
+            // Arrange - Perfect kneel scenario
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateKneelContext(
+                down: Downs.First,
+                scoreDiff: 7,
+                quarter: 4,
+                timeRemaining: 120 // 4 downs * 40s = 160s > 120s - can kneel out
+            );
+
+            // Act
+            var decision = engine.DecidePlayType(context);
+
+            // Assert
+            Assert.AreEqual(PlayCallDecision.Kneel, decision, "Should decide to kneel");
+        }
+
+        [TestMethod]
+        public void DecidePlayType_SpikeScenario_ReturnsSpike()
+        {
+            // Arrange - Perfect spike scenario
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateSpikeContext(
+                down: Downs.First,
+                scoreDiff: -7,
+                quarter: 4,
+                timeRemaining: 60,
+                timeouts: 0,
+                isClockRunning: true
+            );
+
+            // Act
+            var decision = engine.DecidePlayType(context);
+
+            // Assert
+            Assert.AreEqual(PlayCallDecision.Spike, decision, "Should decide to spike");
+        }
+
+        [TestMethod]
+        public void DecidePlayType_NormalScenario_ReturnsRunOrPass()
+        {
+            // Arrange - Normal scenario (not kneel or spike)
+            var rng = new SeedableRandom(42);
+            var engine = new PlayCallDecisionEngine(rng);
+            var context = CreateScrimmageContext(down: Downs.First, yardsToGo: 10);
+
+            // Act
+            var decision = engine.DecidePlayType(context);
+
+            // Assert
+            Assert.IsTrue(
+                decision == PlayCallDecision.Run || decision == PlayCallDecision.Pass,
+                "Normal scenario should return Run or Pass");
+        }
+
+        #endregion
+
+        #region New Derived Properties Tests
+
+        [TestMethod]
+        public void PlayCallContext_DownsRemaining_CalculatesCorrectly()
+        {
+            // Arrange & Act
+            var first = CreateScrimmageContext(Downs.First, 10);
+            var second = CreateScrimmageContext(Downs.Second, 10);
+            var third = CreateScrimmageContext(Downs.Third, 10);
+            var fourth = CreateScrimmageContext(Downs.Fourth, 10);
+
+            // Assert
+            Assert.AreEqual(4, first.DownsRemaining, "First down should have 4 downs remaining");
+            Assert.AreEqual(3, second.DownsRemaining, "Second down should have 3 downs remaining");
+            Assert.AreEqual(2, third.DownsRemaining, "Third down should have 2 downs remaining");
+            Assert.AreEqual(1, fourth.DownsRemaining, "Fourth down should have 1 down remaining");
+        }
+
+        [TestMethod]
+        public void PlayCallContext_DownsRemaining_NoneReturnsZero()
+        {
+            var context = new PlayCallContext(
+                down: Downs.None,
+                yardsToGo: 10,
+                fieldPosition: 50,
+                scoreDifferential: 0,
+                timeRemainingSeconds: 900,
+                quarter: 2,
+                isTwoPointConversion: false,
+                possession: Possession.Home
+            );
+
+            Assert.AreEqual(0, context.DownsRemaining, "Downs.None should have 0 downs remaining");
+        }
+
+        [TestMethod]
+        public void PlayCallContext_HasTimeouts_TrueWhenPositive()
+        {
+            var withTimeouts = new PlayCallContext(
+                down: Downs.First, yardsToGo: 10, fieldPosition: 50, scoreDifferential: 0,
+                timeRemainingSeconds: 900, quarter: 2, isTwoPointConversion: false,
+                possession: Possession.Home, timeoutsRemaining: 1
+            );
+
+            var noTimeouts = new PlayCallContext(
+                down: Downs.First, yardsToGo: 10, fieldPosition: 50, scoreDifferential: 0,
+                timeRemainingSeconds: 900, quarter: 2, isTwoPointConversion: false,
+                possession: Possession.Home, timeoutsRemaining: 0
+            );
+
+            Assert.IsTrue(withTimeouts.HasTimeouts, "1 timeout should mean HasTimeouts=true");
+            Assert.IsFalse(noTimeouts.HasTimeouts, "0 timeouts should mean HasTimeouts=false");
+        }
+
+        [TestMethod]
+        public void PlayCallContext_IsLeading_TrueWhenPositiveScoreDiff()
+        {
+            var leading = CreateContextWithQuarterAndScore(quarter: 2, scoreDiff: 7);
+            var tied = CreateContextWithQuarterAndScore(quarter: 2, scoreDiff: 0);
+            var trailing = CreateContextWithQuarterAndScore(quarter: 2, scoreDiff: -7);
+
+            Assert.IsTrue(leading.IsLeading, "+7 should be leading");
+            Assert.IsFalse(tied.IsLeading, "0 should NOT be leading");
+            Assert.IsFalse(trailing.IsLeading, "-7 should NOT be leading");
+        }
+
+        [TestMethod]
+        public void PlayCallContext_IsFourthQuarter_TrueOnlyInQ4()
+        {
+            var q1 = CreateContextWithQuarterAndScore(quarter: 1, scoreDiff: 0);
+            var q2 = CreateContextWithQuarterAndScore(quarter: 2, scoreDiff: 0);
+            var q3 = CreateContextWithQuarterAndScore(quarter: 3, scoreDiff: 0);
+            var q4 = CreateContextWithQuarterAndScore(quarter: 4, scoreDiff: 0);
+            var ot = CreateContextWithQuarterAndScore(quarter: 5, scoreDiff: 0);
+
+            Assert.IsFalse(q1.IsFourthQuarter, "Q1 should NOT be fourth quarter");
+            Assert.IsFalse(q2.IsFourthQuarter, "Q2 should NOT be fourth quarter");
+            Assert.IsFalse(q3.IsFourthQuarter, "Q3 should NOT be fourth quarter");
+            Assert.IsTrue(q4.IsFourthQuarter, "Q4 SHOULD be fourth quarter");
+            Assert.IsFalse(ot.IsFourthQuarter, "OT should NOT be fourth quarter");
+        }
+
+        [TestMethod]
+        public void PlayCallContext_IsLateGame_Q4AndUnder2Minutes()
+        {
+            var lateGame = new PlayCallContext(
+                down: Downs.First, yardsToGo: 10, fieldPosition: 50, scoreDifferential: 0,
+                timeRemainingSeconds: 100, quarter: 4, isTwoPointConversion: false,
+                possession: Possession.Home
+            );
+
+            var notLateQ4Over2Min = new PlayCallContext(
+                down: Downs.First, yardsToGo: 10, fieldPosition: 50, scoreDifferential: 0,
+                timeRemainingSeconds: 180, quarter: 4, isTwoPointConversion: false,
+                possession: Possession.Home
+            );
+
+            var notLateQ3Under2Min = new PlayCallContext(
+                down: Downs.First, yardsToGo: 10, fieldPosition: 50, scoreDifferential: 0,
+                timeRemainingSeconds: 100, quarter: 3, isTwoPointConversion: false,
+                possession: Possession.Home
+            );
+
+            Assert.IsTrue(lateGame.IsLateGame, "Q4 under 2min should be late game");
+            Assert.IsFalse(notLateQ4Over2Min.IsLateGame, "Q4 over 2min should NOT be late game");
+            Assert.IsFalse(notLateQ3Under2Min.IsLateGame, "Q3 under 2min should NOT be late game");
+        }
+
+        #endregion
+
         #region Helper Methods
+
+        private PlayCallContext CreateKneelContext(Downs down, int scoreDiff, int quarter, int timeRemaining)
+        {
+            return new PlayCallContext(
+                down: down,
+                yardsToGo: 10,
+                fieldPosition: 50,
+                scoreDifferential: scoreDiff,
+                timeRemainingSeconds: timeRemaining,
+                quarter: quarter,
+                isTwoPointConversion: false,
+                possession: Possession.Home,
+                timeoutsRemaining: 3,
+                isClockRunning: true
+            );
+        }
+
+        private PlayCallContext CreateSpikeContext(Downs down, int scoreDiff, int quarter, int timeRemaining, int timeouts, bool isClockRunning)
+        {
+            return new PlayCallContext(
+                down: down,
+                yardsToGo: 10,
+                fieldPosition: 50,
+                scoreDifferential: scoreDiff,
+                timeRemainingSeconds: timeRemaining,
+                quarter: quarter,
+                isTwoPointConversion: false,
+                possession: Possession.Home,
+                timeoutsRemaining: timeouts,
+                isClockRunning: isClockRunning
+            );
+        }
 
         private PlayCallContext CreateConversionContext(int scoreDifferential)
         {

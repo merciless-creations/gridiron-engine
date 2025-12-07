@@ -826,10 +826,10 @@ namespace Gridiron.Engine.Simulation.Plays
             }
 
             // Kneel results - lose 1 yard, clock runs
-            play.YardsGained = -1;
+            play.YardsGained = -GameProbabilities.ClockManagement.KNEEL_YARDS_LOST;
 
             // Calculate end field position (lose 1 yard)
-            var endFieldPosition = play.StartFieldPosition - 1;
+            var endFieldPosition = play.StartFieldPosition - GameProbabilities.ClockManagement.KNEEL_YARDS_LOST;
 
             // Check for safety (extremely rare - would need to kneel in own end zone)
             if (endFieldPosition <= 0)
@@ -847,13 +847,13 @@ namespace Gridiron.Engine.Simulation.Plays
             play.GoodSnap = true;
 
             // Kneel takes full play clock (~40 seconds)
-            play.ElapsedTime = 40.0;
+            play.ElapsedTime = GameProbabilities.ClockManagement.KNEEL_ELAPSED_TIME_SECONDS;
 
             // Create a run segment for the kneel
             var segment = new RunSegment
             {
                 BallCarrier = qb,
-                YardsGained = -1,
+                YardsGained = -GameProbabilities.ClockManagement.KNEEL_YARDS_LOST,
                 Direction = RunDirection.Middle,
                 EndedInFumble = false,
                 IsOutOfBounds = false

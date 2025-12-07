@@ -32,6 +32,12 @@ namespace Gridiron.Engine.Simulation.Decision
         /// <summary>Team with possession.</summary>
         public Possession Possession { get; }
 
+        /// <summary>Number of timeouts remaining for the team with possession.</summary>
+        public int TimeoutsRemaining { get; }
+
+        /// <summary>Whether the game clock is currently running (based on previous play outcome).</summary>
+        public bool IsClockRunning { get; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PlayCallContext"/> struct.
         /// </summary>
@@ -43,7 +49,9 @@ namespace Gridiron.Engine.Simulation.Decision
             int timeRemainingSeconds,
             int quarter,
             bool isTwoPointConversion,
-            Possession possession)
+            Possession possession,
+            int timeoutsRemaining = 3,
+            bool isClockRunning = false)
         {
             Down = down;
             YardsToGo = yardsToGo;
@@ -53,6 +61,8 @@ namespace Gridiron.Engine.Simulation.Decision
             Quarter = quarter;
             IsTwoPointConversion = isTwoPointConversion;
             Possession = possession;
+            TimeoutsRemaining = timeoutsRemaining;
+            IsClockRunning = isClockRunning;
         }
 
         /// <summary>
@@ -64,6 +74,10 @@ namespace Gridiron.Engine.Simulation.Decision
                 ? game.HomeScore - game.AwayScore
                 : game.AwayScore - game.HomeScore;
 
+            // Determine if clock is running from previous play
+            // Clock is stopped at start of game or after plays that stop the clock
+            bool isClockRunning = game.Plays.Count > 0 && !game.Plays.Last().ClockStopped;
+
             return new PlayCallContext(
                 down: game.CurrentDown,
                 yardsToGo: game.YardsToGo,
@@ -72,7 +86,9 @@ namespace Gridiron.Engine.Simulation.Decision
                 timeRemainingSeconds: game.TimeRemaining,
                 quarter: GetCurrentQuarter(game),
                 isTwoPointConversion: false,
-                possession: possession
+                possession: possession,
+                timeoutsRemaining: game.GetTimeoutsRemaining(possession),
+                isClockRunning: isClockRunning
             );
         }
 
@@ -167,6 +183,39 @@ namespace Gridiron.Engine.Simulation.Decision
         /// Whether time is running out (less than 2 minutes in the game).
         /// </summary>
         public bool IsTwoMinuteWarning => TimeRemainingSeconds <= 120;
+
+        /// <summary>
+        /// Number of downs remaining in the current possession (4 - current down number).
+        /// Returns 0 for special situations (kickoff, etc.) where Down is None.
+        /// </summary>
+        public int DownsRemaining => Down switch
+        {
+            Downs.First => 4,
+            Downs.Second => 3,
+            Downs.Third => 2,
+            Downs.Fourth => 1,
+            _ => 0
+        };
+
+        /// <summary>
+        /// Whether the team has any timeouts remaining.
+        /// </summary>
+        public bool HasTimeouts => TimeoutsRemaining > 0;
+
+        /// <summary>
+        /// Whether the team is leading (positive score differential).
+        /// </summary>
+        public bool IsLeading => ScoreDifferential > 0;
+
+        /// <summary>
+        /// Whether the game is in the fourth quarter.
+        /// </summary>
+        public bool IsFourthQuarter => Quarter == 4;
+
+        /// <summary>
+        /// Whether this is a late-game situation (4th quarter with less than 2 minutes).
+        /// </summary>
+        public bool IsLateGame => IsFourthQuarter && IsTwoMinuteWarning;
 
         #endregion
     }
