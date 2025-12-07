@@ -1,5 +1,6 @@
 using Gridiron.Engine.Domain;
 using Microsoft.Extensions.Logging;
+using Gridiron.Engine.Simulation.Decision;
 using Gridiron.Engine.Simulation.Interfaces;
 using Gridiron.Engine.Simulation.Services;
 using System.Linq;
@@ -152,9 +153,8 @@ namespace Gridiron.Engine.Simulation.PlayResults
                 return; // No penalties, nothing to do
             }
 
-            // Apply smart acceptance/decline logic to penalties
-            var penaltyEnforcement = new PenaltyEnforcement(play.Result);
-            ApplyPenaltyAcceptanceLogic(game, play, penaltyEnforcement);
+            // Apply smart acceptance/decline logic to penalties using decision engine
+            ApplyPenaltyAcceptanceLogic(game, play);
 
             // Recheck after acceptance logic
             hasAcceptedPenalties = play.Penalties.Any(p => p.Accepted);
@@ -165,6 +165,7 @@ namespace Gridiron.Engine.Simulation.PlayResults
             }
 
             // Enforce penalties and get the result
+            var penaltyEnforcement = new PenaltyEnforcement(play.Result);
             var enforcementResult = penaltyEnforcement.EnforcePenalties(game, play, play.YardsGained);
 
             // Special handling for PAT attempts
@@ -267,41 +268,47 @@ namespace Gridiron.Engine.Simulation.PlayResults
         /// Applies smart acceptance/decline logic to all penalties on the play.
         /// Skips penalties that already have an explicit Accepted value set.
         /// Determines whether each penalty should be accepted or declined based on game situation and which team benefits.
+        /// Uses PenaltyDecisionEngine to determine whether each penalty should be accepted or declined.
         /// </summary>
         /// <param name="game">The game instance containing current game state.</param>
         /// <param name="play">The field goal play that contains the penalties.</param>
-        /// <param name="enforcement">The penalty enforcement service that evaluates whether penalties should be accepted.</param>
-        private void ApplyPenaltyAcceptanceLogic(Game game, FieldGoalPlay play, PenaltyEnforcement enforcement)
+        private void ApplyPenaltyAcceptanceLogic(Game game, FieldGoalPlay play)
         {
             if (play.Penalties == null || !play.Penalties.Any())
                 return;
 
+            // Skip if already explicitly accepted (e.g., in tests or scenarios)
+            var hasExplicitAcceptance = play.Penalties.Any(p => p.Accepted);
+            if (hasExplicitAcceptance)
+            {
+                // Don't override explicit acceptance decisions
+                return;
+            }
+
+            var decisionEngine = new PenaltyDecisionEngine();
+
             foreach (var penalty in play.Penalties)
             {
-                // Skip if already explicitly accepted or declined (e.g., in tests or scenarios)
-                // We only apply smart logic if Accepted hasn't been set yet
-                // Note: Default value of bool is false, so we can't distinguish between
-                // "explicitly set to false" and "not set". For now, we'll check if ANY
-                // penalties have Accepted = true, and if so, skip smart logic for all.
-                var hasExplicitAcceptance = play.Penalties.Any(p => p.Accepted);
-                if (hasExplicitAcceptance)
-                {
-                    // Don't override explicit acceptance decisions
-                    return;
-                }
+                // For field goals, create context with appropriate down (PAT = 1st, FG = 4th)
+                var context = new PenaltyDecisionContext(
+                    penaltyName: penalty.Name,
+                    penaltyYards: penalty.Yards,
+                    penalizedTeam: penalty.CalledOn,
+                    occurredWhen: penalty.OccuredWhen,
+                    offense: play.Possession,
+                    yardsGainedOnPlay: play.YardsGained,
+                    playResultedInFirstDown: false,
+                    playResultedInTurnover: false,
+                    playResultedInTouchdown: false,
+                    currentDown: play.IsExtraPoint ? Downs.First : Downs.Fourth,
+                    yardsToGo: game.YardsToGo,
+                    fieldPosition: game.FieldPosition,
+                    scoreDifferential: 0, // Not relevant for FG decisions
+                    timeRemainingSeconds: game.TimeRemaining
+                );
 
-                // Determine which team committed the penalty
-                var penalizedTeam = penalty.CalledOn;
-
-                // Use smart acceptance logic
-                penalty.Accepted = enforcement.ShouldAcceptPenalty(
-                    game,
-                    penalty,
-                    penalizedTeam,
-                    play.Possession,
-                    play.YardsGained,
-                    play.IsExtraPoint ? Downs.First : Downs.Fourth, // PAT is like first down, FG is 4th down
-                    game.YardsToGo);
+                var decision = decisionEngine.Decide(context);
+                penalty.Accepted = decision == PenaltyDecision.Accept;
             }
         }
 

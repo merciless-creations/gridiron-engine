@@ -1,5 +1,7 @@
 ﻿using Gridiron.Engine.Domain;
+using Gridiron.Engine.Domain.Helpers;
 using Microsoft.Extensions.Logging;
+using Gridiron.Engine.Simulation.Decision;
 using Gridiron.Engine.Simulation.Interfaces;
 using Gridiron.Engine.Simulation.Services;
 using System;
@@ -110,9 +112,8 @@ namespace Gridiron.Engine.Simulation.PlayResults
 
                 if (hasAcceptedPenalties)
                 {
-                    // Apply smart acceptance/decline logic to penalties
-                    var penaltyEnforcement = new PenaltyEnforcement(play.Result);
-                    ApplyPenaltyAcceptanceLogic(game, play, penaltyEnforcement);
+                    // Apply smart acceptance/decline logic to penalties using decision engine
+                    ApplyPenaltyAcceptanceLogic(game, play);
 
                     // Recheck after acceptance logic
                     hasAcceptedPenalties = play.Penalties.Any(p => p.Accepted);
@@ -244,30 +245,22 @@ namespace Gridiron.Engine.Simulation.PlayResults
 
         /// <summary>
         /// Applies smart acceptance/decline logic to all penalties on the play.
-        /// Determines whether each penalty should be accepted or declined based on game situation and which team benefits.
+        /// Uses PenaltyDecisionEngine to determine whether each penalty should be accepted or declined.
         /// </summary>
         /// <param name="game">The game instance containing current game state.</param>
         /// <param name="play">The run play that contains the penalties.</param>
-        /// <param name="enforcement">The penalty enforcement service that evaluates whether penalties should be accepted.</param>
-        private void ApplyPenaltyAcceptanceLogic(Game game, RunPlay play, PenaltyEnforcement enforcement)
+        private void ApplyPenaltyAcceptanceLogic(Game game, RunPlay play)
         {
             if (play.Penalties == null || !play.Penalties.Any())
                 return;
 
+            var decisionEngine = new PenaltyDecisionEngine();
+
             foreach (var penalty in play.Penalties)
             {
-                // Determine which team committed the penalty
-                var penalizedTeam = penalty.CalledOn;
-
-                // Use smart acceptance logic
-                penalty.Accepted = enforcement.ShouldAcceptPenalty(
-                    game,
-                    penalty,
-                    penalizedTeam,
-                    play.Possession,
-                    play.YardsGained,
-                    play.Down,
-                    game.YardsToGo);
+                var context = PenaltyDecisionContext.FromGameState(game, play, penalty);
+                var decision = decisionEngine.Decide(context);
+                penalty.Accepted = decision == PenaltyDecision.Accept;
             }
         }
 

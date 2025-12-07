@@ -462,12 +462,9 @@ namespace Gridiron.Engine.Simulation
             PenaltyCheck(PenaltyOccuredWhen.During);
             PenaltyCheck(PenaltyOccuredWhen.After);
 
-            //if we have a penalty/penalties then lets apply it/them
-            // TODO: Implement penalty enforcement in Phase 2
-            // if (_game.CurrentPlay.Penalties.Count > 0)
-            // {
-            //     Apply penalty enforcement logic here
-            // }
+            // Penalty acceptance/enforcement is handled within each PlayResult's Execute method
+            // using the PenaltyDecisionEngine (for accept/decline decisions) and
+            // PenaltyEnforcement (for yardage and down/distance mechanics).
 
             //check for penalties during and after the play, scores, injuries, quarter expiration
             var postPlay = new PostPlay(_rng);
