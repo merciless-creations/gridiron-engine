@@ -19,6 +19,7 @@ namespace Gridiron.Engine.Simulation.Actions
         private readonly FourthDownDecisionEngine _fourthDownEngine;
         private readonly TimeoutDecisionEngine _timeoutDecisionEngine;
         private readonly TimeoutMechanic _timeoutMechanic;
+        private readonly PlayCallDecisionEngine _playCallEngine;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PrePlay"/> class.
@@ -30,6 +31,7 @@ namespace Gridiron.Engine.Simulation.Actions
             _fourthDownEngine = new FourthDownDecisionEngine(rng);
             _timeoutDecisionEngine = new TimeoutDecisionEngine(rng);
             _timeoutMechanic = new TimeoutMechanic();
+            _playCallEngine = new PlayCallDecisionEngine(rng);
         }
 
         /// <summary>
@@ -282,10 +284,11 @@ namespace Gridiron.Engine.Simulation.Actions
                 {
                     var scoringTeam = lastPlay.Possession;
 
-                    // Chance of going for 2-pt conversion vs extra point
-                    var conversionChoice = _rng.NextDouble();
+                    // Use decision engine to decide conversion type
+                    var conversionContext = PlayCallContext.ForConversionDecision(game, scoringTeam);
+                    var conversionDecision = _playCallEngine.DecideConversion(conversionContext);
 
-                    if (conversionChoice < GameProbabilities.GameDecisions.TWO_POINT_CONVERSION_ATTEMPT)
+                    if (conversionDecision == ConversionDecision.TwoPointConversion)
                     {
                         // 2-pt conversion attempt (Run or Pass from 2-yard line)
                         // From opponent's 2-yard line
@@ -295,9 +298,11 @@ namespace Gridiron.Engine.Simulation.Actions
                         game.FieldPosition = twoPointPosition;
                         game.CurrentDown = Downs.None; // Conversion attempt is not a down
 
-                        // Randomly choose run or pass for 2-pt conversion
-                        var playChoice = _rng.NextDouble();
-                        if (playChoice < GameProbabilities.GameDecisions.TWO_POINT_RUN_PROBABILITY)
+                        // Use decision engine to choose run or pass for 2-pt conversion
+                        var twoPointContext = PlayCallContext.ForTwoPointConversion(game, scoringTeam);
+                        var twoPointPlayType = _playCallEngine.DecidePlayType(twoPointContext);
+
+                        if (twoPointPlayType == PlayCallDecision.Run)
                         {
                             currentPlay = new RunPlay
                             {
@@ -371,15 +376,13 @@ namespace Gridiron.Engine.Simulation.Actions
                     // If HandleFourthDown returns null, it means go for it - fall through to run/pass
                 }
 
-                //totally random for now, but later will need to add logic for determining both
-                //offensive and defensive play calls here
-                //coaches will decide whether to run or pass based on down, distance, time remaining, score, etc.
-                var kindOfPlay = _rng.NextDouble();
+                // Use decision engine to determine play type
+                // Future: coaches will decide based on down, distance, time remaining, score, tendencies
+                var playCallContext = PlayCallContext.ForScrimmagePlay(game, possession);
+                var playTypeDecision = _playCallEngine.DecidePlayType(playCallContext);
 
-                //for now - a 50/50 shot of run or pass
-                if (kindOfPlay <= 0.5)
+                if (playTypeDecision == PlayCallDecision.Run)
                 {
-                    //run
                     currentPlay = new RunPlay
                     {
                         Possession = possession,
@@ -389,7 +392,6 @@ namespace Gridiron.Engine.Simulation.Actions
                 }
                 else
                 {
-                    //pass
                     currentPlay = new PassPlay
                     {
                         Possession = possession,
