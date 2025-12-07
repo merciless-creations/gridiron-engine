@@ -133,22 +133,36 @@ When adding new simulation logic that requires configuration values, add a new n
 Separate **decision logic** ("should we do X?") from **game mechanics** ("X was chosen, execute it"):
 
 ```
-┌─────────────────────┐     ┌─────────────────────┐
-│  DECISION ENGINE    │     │    GAME MECHANIC    │
-│                     │     │                     │
-│  "Should we call    │────▶│  "Timeout called.   │
-│   a timeout?"       │     │   Clock stops.      │
-│                     │     │   Play clock = 25s. │
-│  Probabilistic,     │     │   Timeouts -= 1"    │
-│  situational        │     │                     │
-│                     │     │  Pure rule          │
-│  Returns: Yes/No    │     │  enforcement        │
-└─────────────────────┘     └─────────────────────┘
+┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│      CONTEXT        │     │  DECISION ENGINE    │     │    GAME MECHANIC    │
+│                     │     │                     │     │                     │
+│  "What's the        │────▶│  "What should       │────▶│  "Do it.            │
+│   situation?"       │     │   we do?"           │     │   Update state."    │
+│                     │     │                     │     │                     │
+│  Game state,        │     │  Probabilistic,     │     │  Pure rule          │
+│  player attributes, │     │  situational,       │     │  enforcement,       │
+│  score, time, etc.  │     │  coach tendencies   │     │  deterministic      │
+└─────────────────────┘     └─────────────────────┘     └─────────────────────┘
 ```
 
-- **Decision engines** go in `Simulation/Decision/`
-- **Game mechanics** go in `Simulation/Mechanics/`
-- See `TimeoutDecisionEngine` and `TimeoutMechanic` as the reference implementation
+**This pattern applies universally to all game mechanisms:**
+
+| Mechanism | Context | Decision | Mechanic |
+|-----------|---------|----------|----------|
+| Timeouts | Game situation, score, time | Call timeout? | Execute timeout |
+| Penalties | Play result + fouls called | Accept/decline? | Enforce penalty |
+| Fourth down | Field position, score, time | Go/punt/FG? | Execute play type |
+| Play calling | Down, distance, situation | Run/pass? | Execute play |
+| Onside kick | Score, time remaining | Onside? | Execute kick type |
+| Two-point | Score differential, time | 2pt/PAT? | Execute conversion |
+| Fair catch | Punt hang time, coverage | Fair catch? | Signal/return |
+
+**File organization:**
+- **Context structs** go in `Simulation/Decision/` (e.g., `TimeoutContext`)
+- **Decision engines** go in `Simulation/Decision/` (e.g., `TimeoutDecisionEngine`)
+- **Game mechanics** go in `Simulation/Mechanics/` (e.g., `TimeoutMechanic`)
+
+**Reference implementations:** `TimeoutDecisionEngine` + `TimeoutMechanic`
 
 ### Other Guidelines
 
