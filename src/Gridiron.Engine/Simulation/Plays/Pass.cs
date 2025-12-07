@@ -38,6 +38,13 @@ namespace Gridiron.Engine.Simulation.Plays
         {
             var play = (PassPlay)game.CurrentPlay;
 
+            // Handle spike play - intentional incomplete pass to stop the clock
+            if (play.IsSpike)
+            {
+                ExecuteSpike(game, play);
+                return;
+            }
+
             // Get the QB
             var qb = play.OffensePlayersOnField.FirstOrDefault(p => p.Position == Positions.QB);
             if (qb == null)
@@ -1064,5 +1071,47 @@ var playersOnField = isOffense ? play.OffensePlayersOnField : play.DefensePlayer
            play.Result.LogWarning($"No replacement available for {injuredPlayer.LastName} at {injuredPlayer.Position}! Team playing short-handed.");
      }
     }
+
+        /// <summary>
+        /// Executes a spike play - an intentional incomplete pass to stop the clock.
+        /// Takes ~3 seconds, gains 0 yards, stops the clock.
+        /// </summary>
+        private void ExecuteSpike(Game game, PassPlay play)
+        {
+            // Get the QB
+            var qb = play.OffensePlayersOnField.FirstOrDefault(p => p.Position == Positions.QB);
+
+            // Log the spike
+            if (qb != null)
+            {
+                play.Result.LogInformation($"{qb.LastName} spikes the ball to stop the clock.");
+            }
+            else
+            {
+                play.Result.LogInformation("Quarterback spikes the ball to stop the clock.");
+            }
+
+            // Spike results - no yards, clock stops
+            play.YardsGained = 0;
+            play.EndFieldPosition = play.StartFieldPosition;
+            play.ClockStopped = true;
+            play.GoodSnap = true;
+
+            // Spike takes ~3 seconds
+            play.ElapsedTime = 3.0;
+
+            // Create an incomplete pass segment for the spike
+            var segment = new PassSegment
+            {
+                Passer = qb,
+                Receiver = null,
+                IsComplete = false,
+                Type = PassType.Short,
+                AirYards = 0,
+                YardsAfterCatch = 0,
+                EndedInFumble = false
+            };
+            play.PassSegments.Add(segment);
+        }
     }
 }

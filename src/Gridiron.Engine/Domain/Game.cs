@@ -400,6 +400,10 @@ namespace Gridiron.Engine.Domain
         /// <summary>A passing play.</summary>
         Pass,
         /// <summary>A rushing play.</summary>
-        Run
+        Run,
+        /// <summary>A spike play to stop the clock (intentional incomplete pass).</summary>
+        Spike,
+        /// <summary>A kneel down (victory formation) to run out the clock.</summary>
+        Kneel
     }
 }

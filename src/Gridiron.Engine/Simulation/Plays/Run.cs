@@ -38,6 +38,13 @@ namespace Gridiron.Engine.Simulation.Plays
         {
             var play = (RunPlay)game.CurrentPlay;
 
+            // Handle kneel play - victory formation to run out the clock
+            if (play.IsKneel)
+            {
+                ExecuteKneel(game, play);
+                return;
+            }
+
             // Determine the ball carrier (RB or QB for scramble)
             var ballCarrier = DetermineBallCarrier(play);
 
@@ -797,6 +804,61 @@ namespace Gridiron.Engine.Simulation.Plays
                 "Taunting" => PenaltyNames.Taunting,
                 _ => PenaltyNames.NoPenalty // Fallback for unmapped penalties
             };
+        }
+
+        /// <summary>
+        /// Executes a kneel play (victory formation) - run out the clock.
+        /// Takes full play clock (~40 seconds), loses 1 yard, clock keeps running.
+        /// </summary>
+        private void ExecuteKneel(Game game, RunPlay play)
+        {
+            // Get the QB (ball carrier for kneel)
+            var qb = play.OffensePlayersOnField.FirstOrDefault(p => p.Position == Positions.QB);
+
+            // Log the kneel
+            if (qb != null)
+            {
+                play.Result.LogInformation($"{qb.LastName} takes a knee.");
+            }
+            else
+            {
+                play.Result.LogInformation("Quarterback takes a knee.");
+            }
+
+            // Kneel results - lose 1 yard, clock runs
+            play.YardsGained = -1;
+
+            // Calculate end field position (lose 1 yard)
+            var endFieldPosition = play.StartFieldPosition - 1;
+
+            // Check for safety (extremely rare - would need to kneel in own end zone)
+            if (endFieldPosition <= 0)
+            {
+                play.IsSafety = true;
+                play.EndFieldPosition = 0;
+                play.Result.LogInformation("SAFETY! Kneel in the end zone!");
+            }
+            else
+            {
+                play.EndFieldPosition = endFieldPosition;
+            }
+
+            play.ClockStopped = false; // Clock keeps running on kneel
+            play.GoodSnap = true;
+
+            // Kneel takes full play clock (~40 seconds)
+            play.ElapsedTime = 40.0;
+
+            // Create a run segment for the kneel
+            var segment = new RunSegment
+            {
+                BallCarrier = qb,
+                YardsGained = -1,
+                Direction = RunDirection.Middle,
+                EndedInFumble = false,
+                IsOutOfBounds = false
+            };
+            play.RunSegments.Add(segment);
         }
     }
 }
