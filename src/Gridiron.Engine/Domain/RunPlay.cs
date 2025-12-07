@@ -14,7 +14,14 @@ namespace Gridiron.Engine.Domain
         // IPLAY INTERFACE IMPLEMENTATION
         // ========================================
 
-        public PlayType PlayType => PlayType.Run;
+        public PlayType PlayType => IsKneel ? PlayType.Kneel : PlayType.Run;
+
+        /// <summary>
+        /// Indicates this is a kneel play (victory formation to run out the clock).
+        /// When true, the play skips normal run execution and results in an immediate
+        /// -1 yard run with full play clock (~40 seconds) elapsed and clock running.
+        /// </summary>
+        public bool IsKneel { get; set; }
         public int StartTime { get; set; }
         public int StopTime { get; set; }
         public double ElapsedTime { get; set; }

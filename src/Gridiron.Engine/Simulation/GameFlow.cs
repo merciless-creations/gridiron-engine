@@ -129,10 +129,10 @@ namespace Gridiron.Engine.Simulation
             _machine.Configure(State.PrePlay)
                 .OnEntry(DoPrePlay, "Determine play, pre-play penalty and snap the ball")
                 .PermitIf(Trigger.Snap, State.FieldGoal, () => _game.CurrentPlay?.PlayType == PlayType.FieldGoal)
-                .PermitIf(Trigger.Snap, State.RunPlay, () => _game.CurrentPlay?.PlayType == PlayType.Run)
+                .PermitIf(Trigger.Snap, State.RunPlay, () => _game.CurrentPlay?.PlayType == PlayType.Run || _game.CurrentPlay?.PlayType == PlayType.Kneel)
                 .PermitIf(Trigger.Snap, State.Kickoff, () => _game.CurrentPlay?.PlayType == PlayType.Kickoff)
                 .PermitIf(Trigger.Snap, State.Punt, () => _game.CurrentPlay?.PlayType == PlayType.Punt)
-                .PermitIf(Trigger.Snap, State.PassPlay, () => _game.CurrentPlay?.PlayType == PlayType.Pass)
+                .PermitIf(Trigger.Snap, State.PassPlay, () => _game.CurrentPlay?.PlayType == PlayType.Pass || _game.CurrentPlay?.PlayType == PlayType.Spike)
                 .Permit(Trigger.PlayResult, State.PostPlay);
 
             //every play state should end in a fumble check state
@@ -169,10 +169,10 @@ namespace Gridiron.Engine.Simulation
             _machine.Configure(State.FumbleReturn)
                 .OnEntry(DoFumbleCheck, "was there a fumble on the play")
                 .PermitIf(Trigger.PlayResult, State.FieldGoalResult, () => _game.CurrentPlay?.PlayType == PlayType.FieldGoal)
-                .PermitIf(Trigger.PlayResult, State.RunPlayResult, () => _game.CurrentPlay?.PlayType == PlayType.Run)
+                .PermitIf(Trigger.PlayResult, State.RunPlayResult, () => _game.CurrentPlay?.PlayType == PlayType.Run || _game.CurrentPlay?.PlayType == PlayType.Kneel)
                 .PermitIf(Trigger.PlayResult, State.KickoffResult, () => _game.CurrentPlay?.PlayType == PlayType.Kickoff)
                 .PermitIf(Trigger.PlayResult, State.PuntResult, () => _game.CurrentPlay?.PlayType == PlayType.Punt)
-                .PermitIf(Trigger.PlayResult, State.PassPlayResult, () => _game.CurrentPlay?.PlayType == PlayType.Pass);
+                .PermitIf(Trigger.PlayResult, State.PassPlayResult, () => _game.CurrentPlay?.PlayType == PlayType.Pass || _game.CurrentPlay?.PlayType == PlayType.Spike);
 
             _machine.Configure(State.FieldGoalResult)
                 .OnEntry(DoFieldGoalResult, "the kick is up...")

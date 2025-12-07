@@ -14,7 +14,14 @@ namespace Gridiron.Engine.Domain
         // IPLAY INTERFACE IMPLEMENTATION
         // ========================================
 
-        public PlayType PlayType => PlayType.Pass;
+        public PlayType PlayType => IsSpike ? PlayType.Spike : PlayType.Pass;
+
+        /// <summary>
+        /// Indicates this is a spike play (intentional incomplete pass to stop the clock).
+        /// When true, the play skips normal pass execution and results in an immediate
+        /// incomplete pass with ~3 seconds elapsed and clock stopped.
+        /// </summary>
+        public bool IsSpike { get; set; }
         public int StartTime { get; set; }
         public int StopTime { get; set; }
         public double ElapsedTime { get; set; }
