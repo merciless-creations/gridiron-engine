@@ -2,6 +2,7 @@ using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Microsoft.Extensions.Logging;
 using Gridiron.Engine.Simulation.Configuration;
+using Gridiron.Engine.Simulation.Decision;
 using Gridiron.Engine.Simulation.Interfaces;
 using Gridiron.Engine.Simulation.SkillsCheckResults;
 using Gridiron.Engine.Simulation.SkillsChecks;
@@ -17,6 +18,8 @@ namespace Gridiron.Engine.Simulation.Plays
     public sealed class Kickoff : IGameAction
     {
         private readonly ISeedableRandom _rng;
+        private readonly OnsideKickDecisionEngine _onsideKickEngine;
+        private readonly FairCatchDecisionEngine _fairCatchEngine;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Kickoff"/> class.
@@ -26,6 +29,8 @@ namespace Gridiron.Engine.Simulation.Plays
         public Kickoff(ISeedableRandom rng)
         {
             _rng = rng ?? throw new ArgumentNullException(nameof(rng));
+            _onsideKickEngine = new OnsideKickDecisionEngine(rng);
+            _fairCatchEngine = new FairCatchDecisionEngine(rng);
         }
 
         /// <summary>
@@ -53,9 +58,11 @@ namespace Gridiron.Engine.Simulation.Plays
 
             play.Kicker = kicker;
 
-            // Check if this should be an onside kick (trailing late in game)
-            // Simple heuristic for now
-            if (ShouldAttemptOnsideKick(game))
+            // Use decision engine to determine if this should be an onside kick
+            var onsideContext = OnsideKickContext.FromGame(game, play.Possession);
+            var onsideDecision = _onsideKickEngine.Decide(onsideContext);
+
+            if (onsideDecision == OnsideKickDecision.OnsideKick)
             {
                 play.OnsideKick = true;
                 ExecuteOnsideKick(game, play, kicker);
@@ -64,24 +71,6 @@ namespace Gridiron.Engine.Simulation.Plays
 
             // Execute normal kickoff
             ExecuteNormalKickoff(game, play, kicker);
-        }
-
-        /// <summary>
-        /// Determines whether the kicking team should attempt an onside kick based on game situation.
-        /// Uses a simple heuristic based on score differential in late game situations.
-        /// </summary>
-        /// <param name="game">The current game state.</param>
-        /// <returns>True if an onside kick should be attempted; otherwise, false.</returns>
-        private bool ShouldAttemptOnsideKick(Game game)
-        {
-            // Simple heuristic: Attempt onside kick if trailing by 7+ points in 4th quarter
-            // In a real implementation, this would be more sophisticated
-            var scoreDifferential = (game.CurrentPlay.Possession == Possession.Home)
-                ? (game.HomeScore - game.AwayScore)
-                : (game.AwayScore - game.HomeScore);
-
-            // Probability for onside attempt when trailing significantly
-            return scoreDifferential <= -7 && _rng.NextDouble() < GameProbabilities.Kickoffs.ONSIDE_ATTEMPT_PROBABILITY;
         }
 
         /// <summary>
@@ -268,11 +257,11 @@ namespace Gridiron.Engine.Simulation.Plays
                 return;
             }
 
-            // Check if returner signals for fair catch
-            var fairCatchCheck = new FairCatchOccurredSkillsCheck(_rng, estimatedHangTime, landingSpot);
-            fairCatchCheck.Execute(game);
+            // Use decision engine to determine if returner signals for fair catch
+            var fairCatchContext = FairCatchContext.ForKickoffReturn(estimatedHangTime, landingSpot, returner);
+            var fairCatchDecision = _fairCatchEngine.Decide(fairCatchContext);
 
-            if (fairCatchCheck.Occurred)
+            if (fairCatchDecision == FairCatchDecision.FairCatch)
             {
                 play.FairCatch = true;
                 play.PossessionChange = true;

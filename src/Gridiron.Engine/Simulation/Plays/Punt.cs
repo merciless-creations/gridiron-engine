@@ -2,6 +2,7 @@
 using Gridiron.Engine.Domain.Helpers;
 using Microsoft.Extensions.Logging;
 using Gridiron.Engine.Simulation.Configuration;
+using Gridiron.Engine.Simulation.Decision;
 using Gridiron.Engine.Simulation.Interfaces;
 using Gridiron.Engine.Simulation.SkillsChecks;
 using Gridiron.Engine.Simulation.SkillsCheckResults;
@@ -18,6 +19,7 @@ namespace Gridiron.Engine.Simulation.Plays
     public sealed class Punt : IGameAction
     {
         private ISeedableRandom _rng;
+        private readonly FairCatchDecisionEngine _fairCatchEngine;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Punt"/> class.
@@ -26,6 +28,7 @@ namespace Gridiron.Engine.Simulation.Plays
         public Punt(ISeedableRandom rng)
         {
             _rng = rng;
+            _fairCatchEngine = new FairCatchDecisionEngine(rng);
         }
 
         /// <summary>
@@ -394,11 +397,11 @@ namespace Gridiron.Engine.Simulation.Plays
                 return;
             }
 
-            // Check for fair catch
-            var fairCatchCheck = new FairCatchOccurredSkillsCheck(_rng, hangTime, puntLandingSpot);
-            fairCatchCheck.Execute(game);
+            // Use decision engine to determine if returner signals for fair catch
+            var fairCatchContext = FairCatchContext.ForPuntReturn(hangTime, puntLandingSpot, returner);
+            var fairCatchDecision = _fairCatchEngine.Decide(fairCatchContext);
 
-            if (fairCatchCheck.Occurred)
+            if (fairCatchDecision == FairCatchDecision.FairCatch)
             {
                 play.FairCatch = true;
                 play.YardsGained = puntDistance;
