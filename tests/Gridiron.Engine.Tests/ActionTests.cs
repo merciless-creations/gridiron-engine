@@ -3,6 +3,7 @@ using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Domain.Time;
 using Gridiron.Engine.Simulation.Actions;
 using Gridiron.Engine.Simulation.Actions.EventChecks;
+using Gridiron.Engine.Simulation.Rules.TwoMinuteWarning;
 using Gridiron.Engine.Tests.Helpers;
 using Fumble = Gridiron.Engine.Simulation.Actions.Fumble;
 using Interception = Gridiron.Engine.Simulation.Actions.Interception;
@@ -151,7 +152,8 @@ namespace Gridiron.Engine.Tests
         public void GameAdvancesQuartersAndHalvesCorrectlyTest()
         {
             var game = _testGame.GetGame();
-            var quarterExpireCheck = new QuarterExpireCheck();
+            var twoMinuteWarningRules = TwoMinuteWarningRulesRegistry.Default;
+            var quarterExpireCheck = new QuarterExpireCheck(twoMinuteWarningRules);
             var halfExpireCheck = new HalfExpireCheck();
 
             Assert.AreEqual(Gridiron.Engine.Domain.Time.QuarterType.First, game.CurrentQuarter.QuarterType);
