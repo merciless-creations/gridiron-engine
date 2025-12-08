@@ -1,5 +1,6 @@
 using Gridiron.Engine.Domain;
 using Gridiron.Engine.Simulation.Overtime;
+using Gridiron.Engine.Simulation.Rules.TwoMinuteWarning;
 using Microsoft.Extensions.Logging;
 
 namespace Gridiron.Engine.Api
@@ -40,6 +41,12 @@ namespace Gridiron.Engine.Api
         /// Use OvertimeRulesRegistry to get pre-defined providers (e.g., NFL Playoff, NCAA).
         /// </summary>
         public IOvertimeRulesProvider? OvertimeRulesProvider { get; set; }
+
+        /// <summary>
+        /// Two-minute warning rules provider. If null, uses NFL rules.
+        /// Use TwoMinuteWarningRulesRegistry to get pre-defined providers (e.g., NFL, NCAA).
+        /// </summary>
+        public ITwoMinuteWarningRulesProvider? TwoMinuteWarningRulesProvider { get; set; }
     }
 
     /// <summary>

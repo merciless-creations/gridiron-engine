@@ -2,6 +2,7 @@ using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation;
 using Gridiron.Engine.Simulation.Overtime;
+using Gridiron.Engine.Simulation.Rules.TwoMinuteWarning;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -63,8 +64,11 @@ namespace Gridiron.Engine.Api
             // Get overtime rules provider (default to NFL Regular Season)
             var overtimeRules = options.OvertimeRulesProvider ?? OvertimeRulesRegistry.Default;
 
+            // Get two-minute warning rules provider (default to NFL)
+            var twoMinuteWarningRules = options.TwoMinuteWarningRulesProvider ?? TwoMinuteWarningRulesRegistry.Default;
+
             // Run the simulation
-            var gameFlow = new GameFlow(game, rng, logger, overtimeRules);
+            var gameFlow = new GameFlow(game, rng, logger, overtimeRules, twoMinuteWarningRules);
             gameFlow.Execute();
 
             return new GameResult { Game = game };
