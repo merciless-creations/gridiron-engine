@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Gridiron.Engine.Domain.Time;
 using Gridiron.Engine.Simulation.Interfaces;
+using Gridiron.Engine.Simulation.Rules.TwoMinuteWarning;
 
 namespace Gridiron.Engine.Simulation.Actions.EventChecks
 {
@@ -9,9 +10,20 @@ namespace Gridiron.Engine.Simulation.Actions.EventChecks
     /// Checks if a quarter has expired and manages transitions between quarters.
     /// This action updates the game clock, determines if a quarter has ended,
     /// and advances the game to the next quarter when appropriate.
+    /// Also handles two-minute warning detection.
     /// </summary>
     public sealed class QuarterExpireCheck : IGameAction
     {
+        private readonly ITwoMinuteWarningRulesProvider _twoMinuteWarningRules;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="QuarterExpireCheck"/> class.
+        /// </summary>
+        /// <param name="twoMinuteWarningRules">The two-minute warning rules provider.</param>
+        public QuarterExpireCheck(ITwoMinuteWarningRulesProvider twoMinuteWarningRules)
+        {
+            _twoMinuteWarningRules = twoMinuteWarningRules;
+        }
         /// <summary>
         /// Executes the quarter expiration check, updates game time, and advances to the next quarter if needed.
         /// </summary>
@@ -27,8 +39,23 @@ namespace Gridiron.Engine.Simulation.Actions.EventChecks
         /// </remarks>
         public void Execute(Game game)
         {
+            // Calculate time before play (for two-minute warning detection)
+            int timeBeforePlay = game.CurrentQuarter.TimeRemaining + (int)game.CurrentPlay.ElapsedTime;
+
             //remove the current play elapsed time from the current quarter
             game.CurrentQuarter.TimeRemaining -= (int)game.CurrentPlay.ElapsedTime;
+
+            // Check for two-minute warning (must happen after clock is decremented)
+            if (_twoMinuteWarningRules.ShouldCallTwoMinuteWarning(
+                game.CurrentQuarter.QuarterType,
+                timeBeforePlay,
+                game.CurrentQuarter.TimeRemaining,
+                game.CurrentQuarter.TwoMinuteWarningCalled))
+            {
+                game.CurrentPlay.ClockStopped = true;
+                game.CurrentPlay.Result.LogInformation("⏱️  Two-minute warning");
+                game.CurrentQuarter.TwoMinuteWarningCalled = true;
+            }
 
             //see if we need to advance to the next quarter
             if (game.CurrentQuarter.TimeRemaining == 0)

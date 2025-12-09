@@ -6,6 +6,8 @@ using Gridiron.Engine.Simulation.Actions.EventChecks;
 using Gridiron.Engine.Simulation.Decision;
 using Gridiron.Engine.Simulation.Interfaces;
 using Gridiron.Engine.Simulation.Mechanics;
+using Gridiron.Engine.Simulation.Rules.TwoMinuteWarning;
+using Gridiron.Engine.Simulation.Rules.EndOfHalf;
 
 namespace Gridiron.Engine.Simulation.Actions
 {
@@ -18,16 +20,22 @@ namespace Gridiron.Engine.Simulation.Actions
         private readonly ISeedableRandom _rng;
         private readonly TimeoutDecisionEngine _timeoutDecisionEngine;
         private readonly TimeoutMechanic _timeoutMechanic;
+        private readonly ITwoMinuteWarningRulesProvider _twoMinuteWarningRules;
+        private readonly IEndOfHalfRulesProvider _endOfHalfRules;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PostPlay"/> class.
         /// </summary>
         /// <param name="rng">The random number generator for timeout decisions.</param>
-        public PostPlay(ISeedableRandom rng)
+        /// <param name="twoMinuteWarningRules">The two-minute warning rules provider.</param>
+        /// <param name="endOfHalfRules">The end-of-half rules provider.</param>
+        public PostPlay(ISeedableRandom rng, ITwoMinuteWarningRulesProvider twoMinuteWarningRules, IEndOfHalfRulesProvider endOfHalfRules)
         {
             _rng = rng;
             _timeoutDecisionEngine = new TimeoutDecisionEngine(rng);
             _timeoutMechanic = new TimeoutMechanic();
+            _twoMinuteWarningRules = twoMinuteWarningRules;
+            _endOfHalfRules = endOfHalfRules;
         }
 
         /// <summary>
@@ -47,10 +55,10 @@ namespace Gridiron.Engine.Simulation.Actions
             var scoreCheck = new ScoreCheck();
             scoreCheck.Execute(game);
 
-            var quarterExpireCheck = new QuarterExpireCheck();
+            var quarterExpireCheck = new QuarterExpireCheck(_twoMinuteWarningRules);
             quarterExpireCheck.Execute(game);
 
-            var halftimeCheck = new HalfExpireCheck();
+            var halftimeCheck = new HalfExpireCheck(_endOfHalfRules);
             halftimeCheck.Execute(game);
 
             // Check for stop the clock timeout (offense trailing late in half)

@@ -51,6 +51,14 @@ namespace Gridiron.Engine.Domain.Time
         public QuarterType QuarterType { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the two-minute warning has been called for this quarter.
+        /// NFL only - called when clock crosses 2:00 in 2nd and 4th quarters.
+        /// NCAA has no two-minute warning.
+        /// Resets to false at the start of each new quarter.
+        /// </summary>
+        public bool TwoMinuteWarningCalled { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Quarter"/> class.
         /// Quarter starts with 900 seconds (15 minutes) remaining.
         /// </summary>
