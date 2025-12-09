@@ -525,7 +525,8 @@ namespace Gridiron.Engine.Simulation.Plays
                 
                 // Fumble out of bounds stops clock
                 play.ClockStopped = true;
-                play.ElapsedTime += 5.0 + (_rng.NextDouble() * 3.0); // Only execution time
+                play.ElapsedTime += GameProbabilities.Timing.RUN_PLAY_BASE_TIME + 
+                                   (_rng.NextDouble() * GameProbabilities.Timing.RUN_PLAY_VARIANCE);
             }
             else if (recovery.RecoveredBy != null)
             {
@@ -566,7 +567,8 @@ namespace Gridiron.Engine.Simulation.Plays
                     
                     // Turnover stops clock
                     play.ClockStopped = true;
-                    play.ElapsedTime += 5.0 + (_rng.NextDouble() * 4.0); // Only execution time
+                    play.ElapsedTime += GameProbabilities.Timing.RUN_PLAY_BASE_TIME + 
+                                       (_rng.NextDouble() * GameProbabilities.Timing.RUN_PLAY_BREAKAWAY_VARIANCE);
                 }
                 else
                 {
