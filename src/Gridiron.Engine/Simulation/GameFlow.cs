@@ -10,6 +10,8 @@ using Gridiron.Engine.Simulation.PlayResults;
 using Gridiron.Engine.Simulation.Plays;
 using Gridiron.Engine.Simulation.SkillsCheckResults;
 using Gridiron.Engine.Simulation.SkillsChecks;
+using Gridiron.Engine.Simulation.Rules.TwoMinuteWarning;
+using Gridiron.Engine.Simulation.Rules.EndOfHalf;
 using Fumble = Gridiron.Engine.Simulation.Actions.Fumble;
 
 namespace Gridiron.Engine.Simulation
@@ -38,6 +40,12 @@ namespace Gridiron.Engine.Simulation
 
         // Overtime rules provider
         private readonly IOvertimeRulesProvider _overtimeRules;
+
+        // Two-minute warning rules provider
+        private readonly ITwoMinuteWarningRulesProvider _twoMinuteWarningRules;
+
+        // End-of-half rules provider
+        private readonly IEndOfHalfRulesProvider _endOfHalfRules;
 
         enum Trigger
         {
@@ -96,13 +104,17 @@ namespace Gridiron.Engine.Simulation
         /// <param name="rng">The random number generator for deterministic simulation.</param>
         /// <param name="logger">The logger for game events and debugging.</param>
         /// <param name="overtimeRules">The overtime rules provider (defaults to NFL Regular Season).</param>
+        /// <param name="twoMinuteWarningRules">The two-minute warning rules provider (defaults to NFL).</param>
+        /// <param name="endOfHalfRules">The end-of-half rules provider (defaults to NFL).</param>
         /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
-        public GameFlow(Game game, ISeedableRandom rng, ILogger<GameFlow> logger, IOvertimeRulesProvider? overtimeRules = null)
+        public GameFlow(Game game, ISeedableRandom rng, ILogger<GameFlow> logger, IOvertimeRulesProvider? overtimeRules = null, ITwoMinuteWarningRulesProvider? twoMinuteWarningRules = null, IEndOfHalfRulesProvider? endOfHalfRules = null)
         {
             _game = game ?? throw new ArgumentNullException(nameof(game));
             _rng = rng ?? throw new ArgumentNullException(nameof(rng));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _overtimeRules = overtimeRules ?? OvertimeRulesRegistry.Default;
+            _twoMinuteWarningRules = twoMinuteWarningRules ?? TwoMinuteWarningRulesRegistry.Default;
+            _endOfHalfRules = endOfHalfRules ?? EndOfHalfRulesRegistry.Default;
 
             // Set the game's logger so it can be used for play-by-play logging
             _game.Logger = logger;
@@ -467,7 +479,7 @@ namespace Gridiron.Engine.Simulation
             // PenaltyEnforcement (for yardage and down/distance mechanics).
 
             //check for penalties during and after the play, scores, injuries, quarter expiration
-            var postPlay = new PostPlay(_rng);
+            var postPlay = new PostPlay(_rng, _twoMinuteWarningRules, _endOfHalfRules);
             postPlay.Execute(_game);
 
             _machine.Fire(_nextPlayTrigger, _game.CurrentPlay.QuarterExpired);
