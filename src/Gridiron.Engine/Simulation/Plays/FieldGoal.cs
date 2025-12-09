@@ -160,7 +160,8 @@ namespace Gridiron.Engine.Simulation.Plays
             }
 
             // Bad snap takes 4-7 seconds (chaos)
-            play.ElapsedTime += 4.0 + (_rng.NextDouble() * 3.0);
+            play.ElapsedTime += GameProbabilities.Timing.FIELD_GOAL_BASE_TIME + 
+                               (_rng.NextDouble() * GameProbabilities.Timing.FIELD_GOAL_VARIANCE);
             play.PossessionChange = true; // Turnover on downs
             play.ClockStopped = true;
         }
@@ -316,7 +317,8 @@ namespace Gridiron.Engine.Simulation.Plays
             }
 
             // Blocked kicks take 3-6 seconds
-            play.ElapsedTime += 3.0 + (_rng.NextDouble() * 3.0);
+            play.ElapsedTime += GameProbabilities.Timing.FIELD_GOAL_BLOCKED_BASE_TIME + 
+                               (_rng.NextDouble() * GameProbabilities.Timing.FIELD_GOAL_BLOCKED_VARIANCE);
             play.ClockStopped = true;
         }
 
@@ -333,7 +335,7 @@ namespace Gridiron.Engine.Simulation.Plays
             {
                 play.IsGood = false;
                 play.Result.LogInformation($"No kicker available! Attempt fails!");
-                play.ElapsedTime += 2.0;
+                play.ElapsedTime += GameProbabilities.Timing.FIELD_GOAL_BLOCKED_RECOVERY_TIME;
                 play.PossessionChange = true;
                 return;
             }
@@ -403,7 +405,8 @@ namespace Gridiron.Engine.Simulation.Plays
             }
 
             // Field goal/PAT takes 2-3 seconds
-            play.ElapsedTime += 2.0 + (_rng.NextDouble() * 1.0);
+            play.ElapsedTime += GameProbabilities.Timing.FIELD_GOAL_BAD_SNAP_BASE_TIME + 
+                               (_rng.NextDouble() * GameProbabilities.Timing.FIELD_GOAL_BAD_SNAP_VARIANCE);
 
             // Possession changes regardless of make/miss (scoring or turnover on downs)
             play.PossessionChange = true;

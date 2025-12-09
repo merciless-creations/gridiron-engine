@@ -52,7 +52,7 @@ namespace Gridiron.Engine.Simulation.Plays
                 play.Result.LogInformation("No kicker available for kickoff!");
                 play.KickDistance = 40; // Short kick
                 play.Touchback = true;
-                play.ElapsedTime += 3.0;
+                play.ElapsedTime += GameProbabilities.Timing.KICKOFF_TOUCHBACK_TIME;
                 return;
             }
 
@@ -132,7 +132,8 @@ namespace Gridiron.Engine.Simulation.Plays
             }
 
             // Onside kicks take 4-6 seconds
-            play.ElapsedTime += 4.0 + (_rng.NextDouble() * 2.0);
+            play.ElapsedTime += GameProbabilities.Timing.KICKOFF_RETURN_BASE_TIME + 
+                               (_rng.NextDouble() * GameProbabilities.Timing.KICKOFF_RETURN_VARIANCE);
             play.ClockStopped = true; // Clock stops after onside kick
         }
 
@@ -163,7 +164,7 @@ namespace Gridiron.Engine.Simulation.Plays
                 // Penalty: Receiving team gets ball at 40-yard line
                 play.EndFieldPosition = 40;
                 play.Result.LogInformation($"{kicker.LastName} kicks it out of bounds! Ball placed at the 40-yard line.");
-                play.ElapsedTime += 3.0;
+                play.ElapsedTime += GameProbabilities.Timing.KICKOFF_OOB_TIME;
                 play.ClockStopped = true; // Clock stops after kickoff
                 return;
             }
@@ -175,7 +176,7 @@ namespace Gridiron.Engine.Simulation.Plays
                 play.PossessionChange = true;
                 play.EndFieldPosition = 25; // Touchback comes out to 25-yard line
                 play.Result.LogInformation($"{kicker.LastName} kicks it deep! Touchback. Ball at the 25-yard line.");
-                play.ElapsedTime += 3.0;
+                play.ElapsedTime += GameProbabilities.Timing.KICKOFF_TOUCHBACK_TIME;
                 play.ClockStopped = true; // Clock stops after kickoff
                 return;
             }
@@ -227,7 +228,7 @@ namespace Gridiron.Engine.Simulation.Plays
                 // No returner - ball downed where it lands
                 play.EndFieldPosition = 100 - landingSpot;
                 play.Result.LogInformation($"Kickoff lands and is downed at the {100 - landingSpot}-yard line.");
-                play.ElapsedTime += 5.0;
+                play.ElapsedTime += GameProbabilities.Timing.KICKOFF_ONSIDE_RECOVERED_TIME;
                 return;
             }
 
@@ -272,7 +273,7 @@ namespace Gridiron.Engine.Simulation.Plays
                 play.YardsGained = landingSpot - 35; // Net yards from kickoff spot
 
                 play.Result.LogInformation($"{returner.LastName} signals and makes the fair catch at the {fairCatchFieldPosition}-yard line.");
-                play.ElapsedTime += estimatedHangTime + 0.5;
+                play.ElapsedTime += estimatedHangTime + GameProbabilities.Timing.KICKOFF_HANG_TIME_BUFFER;
                 return; // No return attempt
             }
 
@@ -337,7 +338,8 @@ namespace Gridiron.Engine.Simulation.Plays
                 play.IsSafety = true;
                 play.EndFieldPosition = 0;
                 play.Result.LogInformation($"{returner.LastName} is tackled in the end zone! SAFETY!");
-                play.ElapsedTime += 5.0 + (_rng.NextDouble() * 2.0);
+                play.ElapsedTime += GameProbabilities.Timing.KICKOFF_LONG_RETURN_BASE_TIME + 
+                                   (_rng.NextDouble() * GameProbabilities.Timing.KICKOFF_LONG_RETURN_VARIANCE);
                 return;
             }
 
@@ -347,7 +349,8 @@ namespace Gridiron.Engine.Simulation.Plays
                 play.IsTouchdown = true;
                 play.EndFieldPosition = 100;
                 play.Result.LogInformation($"{returner.LastName} takes it back for a TOUCHDOWN! {landingSpot + returnYards} yards!");
-                play.ElapsedTime += 6.0 + (_rng.NextDouble() * 2.0);
+                play.ElapsedTime += GameProbabilities.Timing.KICKOFF_TD_RETURN_BASE_TIME + 
+                                   (_rng.NextDouble() * GameProbabilities.Timing.KICKOFF_TD_RETURN_VARIANCE);
                 return;
             }
 
@@ -396,7 +399,8 @@ namespace Gridiron.Engine.Simulation.Plays
             play.Result.LogInformation($"{returner.LastName} returns the kickoff {returnYards} yards to the {fieldPosition}-yard line.");
 
             // Kickoff return takes 5-8 seconds
-            play.ElapsedTime += 5.0 + (_rng.NextDouble() * 3.0);
+            play.ElapsedTime += GameProbabilities.Timing.KICKOFF_FAIR_CATCH_BASE_TIME + 
+                               (_rng.NextDouble() * GameProbabilities.Timing.KICKOFF_FAIR_CATCH_VARIANCE);
         }
 
         /// <summary>
@@ -437,7 +441,8 @@ namespace Gridiron.Engine.Simulation.Plays
 
                 play.Result.LogInformation($"{fumbler.LastName} fumbles! Ball goes out of bounds. Receiving team retains possession.");
                 play.EndFieldPosition = fumbleSpot;
-                play.ElapsedTime += 5.0 + (_rng.NextDouble() * 3.0);
+                play.ElapsedTime += GameProbabilities.Timing.KICKOFF_MUFF_OFFENSE_BASE_TIME + 
+                                   (_rng.NextDouble() * GameProbabilities.Timing.KICKOFF_MUFF_OFFENSE_VARIANCE);
             }
             else if (recovery.RecoveredBy != null)
             {
@@ -475,7 +480,8 @@ namespace Gridiron.Engine.Simulation.Plays
                     }
 
                     play.PossessionChange = false; // Kicking team retains possession
-                    play.ElapsedTime += 5.0 + (_rng.NextDouble() * 4.0);
+                    play.ElapsedTime += GameProbabilities.Timing.KICKOFF_MUFF_DEFENSE_BASE_TIME + 
+                                       (_rng.NextDouble() * GameProbabilities.Timing.KICKOFF_MUFF_DEFENSE_VARIANCE);
                 }
                 else
                 {
@@ -547,7 +553,8 @@ namespace Gridiron.Engine.Simulation.Plays
                 play.PossessionChange = true; // Receiving team gets possession
 
                 play.Result.LogInformation($"{recoverer.LastName} manages to fall on it! Receiving team keeps possession at the {fieldPosition}-yard line.");
-                play.ElapsedTime += 5.0 + (_rng.NextDouble() * 2.0);
+                play.ElapsedTime += GameProbabilities.Timing.KICKOFF_MUFF_OOB_BASE_TIME + 
+                                   (_rng.NextDouble() * GameProbabilities.Timing.KICKOFF_MUFF_OOB_VARIANCE);
             }
             else
             {
@@ -568,7 +575,8 @@ namespace Gridiron.Engine.Simulation.Plays
                 play.PossessionChange = false; // Kicking team retains possession
 
                 play.Result.LogInformation($"{recoverer.LastName} recovers for the kicking team! Great special teams play!");
-                play.ElapsedTime += 5.0 + (_rng.NextDouble() * 2.0);
+                play.ElapsedTime += GameProbabilities.Timing.KICKOFF_MUFF_OOB_BASE_TIME + 
+                                   (_rng.NextDouble() * GameProbabilities.Timing.KICKOFF_MUFF_OOB_VARIANCE);
             }
         }
 

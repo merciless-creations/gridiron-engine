@@ -404,7 +404,8 @@ namespace Gridiron.Engine.Simulation.Plays
                     // Update elapsed time
                     // Interception (Turnover) STOPS the clock
                     play.ClockStopped = true;
-                    play.ElapsedTime += 4.0 + (_rng.NextDouble() * 4.0); // Only execution time
+                    play.ElapsedTime += GameProbabilities.Timing.PASS_PLAY_SACK_BASE_TIME + 
+                                       (_rng.NextDouble() * GameProbabilities.Timing.PASS_PLAY_SACK_VARIANCE);
                 }
                 else
                 {
@@ -429,7 +430,8 @@ namespace Gridiron.Engine.Simulation.Plays
                     // Update elapsed time (pass plays take 4-7 seconds - slightly faster than runs)
                     // Incomplete pass STOPS the clock
                     play.ClockStopped = true;
-                    play.ElapsedTime += 4.0 + (_rng.NextDouble() * 3.0); // Only execution time
+                    play.ElapsedTime += GameProbabilities.Timing.PASS_PLAY_BASE_TIME + 
+                                       (_rng.NextDouble() * GameProbabilities.Timing.PASS_PLAY_VARIANCE);
                 }
             }
         }
@@ -672,7 +674,8 @@ namespace Gridiron.Engine.Simulation.Plays
                 
                 // Fumble out of bounds stops clock
                 play.ClockStopped = true;
-                play.ElapsedTime += 4.0 + (_rng.NextDouble() * 3.0);
+                play.ElapsedTime += GameProbabilities.Timing.PASS_PLAY_BASE_TIME + 
+                                   (_rng.NextDouble() * GameProbabilities.Timing.PASS_PLAY_VARIANCE);
             }
             else if (recovery.RecoveredBy != null)
             {
@@ -713,7 +716,8 @@ namespace Gridiron.Engine.Simulation.Plays
                     
                     // Turnover stops clock
                     play.ClockStopped = true;
-                    play.ElapsedTime += 4.0 + (_rng.NextDouble() * 4.0);
+                    play.ElapsedTime += GameProbabilities.Timing.PASS_PLAY_SACK_BASE_TIME + 
+                                       (_rng.NextDouble() * GameProbabilities.Timing.PASS_PLAY_SACK_VARIANCE);
                 }
                 else
                 {

@@ -144,7 +144,8 @@ namespace Gridiron.Engine.Simulation.Plays
             }
 
             // Bad snap plays take 4-8 seconds (chaos)
-            play.ElapsedTime += 4.0 + (_rng.NextDouble() * 4.0);
+            play.ElapsedTime += GameProbabilities.Timing.PUNT_BASE_TIME + 
+                               (_rng.NextDouble() * GameProbabilities.Timing.PUNT_VARIANCE);
             play.ClockStopped = true; // Turnover on downs or safety
         }
 
@@ -255,8 +256,9 @@ namespace Gridiron.Engine.Simulation.Plays
             }
 
             // Blocked punts take 3-6 seconds
-            play.ElapsedTime += 3.0 + (_rng.NextDouble() * 3.0);
-            play.ClockStopped = true; // Change of possession or score
+            play.ElapsedTime += GameProbabilities.Timing.PUNT_BLOCKED_BASE_TIME + 
+                               (_rng.NextDouble() * GameProbabilities.Timing.PUNT_BLOCKED_VARIANCE);
+            play.ClockStopped = true;// Change of possession or score
         }
 
         /// <summary>
@@ -311,7 +313,7 @@ namespace Gridiron.Engine.Simulation.Plays
                 play.PossessionChange = true;
 
                 play.Result.LogInformation($"{punter.LastName} punts {puntDistance} yards. The ball sails into the end zone for a touchback.");
-                play.ElapsedTime += hangTime + 0.5;
+                play.ElapsedTime += hangTime + GameProbabilities.Timing.PUNT_HANG_TIME_BUFFER;
                 return;
             }
 
@@ -462,7 +464,8 @@ namespace Gridiron.Engine.Simulation.Plays
                     play.Result.LogInformation($"{recoverer.LastName} recovers for the punting team! Great special teams play!");
                 }
 
-                play.ElapsedTime += hangTime + 2.0 + (_rng.NextDouble() * 2.0);
+                play.ElapsedTime += hangTime + GameProbabilities.Timing.PUNT_RETURN_BASE_TIME + 
+                                   (_rng.NextDouble() * GameProbabilities.Timing.PUNT_RETURN_VARIANCE);
                 return;
             }
 
@@ -552,7 +555,8 @@ namespace Gridiron.Engine.Simulation.Plays
             }
 
             // Punt returns take hang time + return time (2-6 seconds for return)
-            play.ElapsedTime += hangTime + 2.0 + (_rng.NextDouble() * 4.0);
+            play.ElapsedTime += hangTime + GameProbabilities.Timing.PUNT_RETURN_BASE_TIME + 
+                               (_rng.NextDouble() * GameProbabilities.Timing.PUNT_TD_RETURN_VARIANCE);
         }
 
         /// <summary>
