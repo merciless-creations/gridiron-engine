@@ -1,6 +1,7 @@
 using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
+using Gridiron.Engine.Simulation.Configuration;
 using System;
 
 namespace Gridiron.Engine.Simulation.SkillsCheckResults
@@ -38,15 +39,18 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             var kickerSkill = _kicker.Kicking;
 
             // Base distance centered around 60 yards
-            var baseDistance = 40.0 + (kickerSkill / 100.0) * 30.0;  // 40-70 yards range
+            var baseDistance = GameProbabilities.Yardage.KICKOFF_BASE_DISTANCE + 
+                              (kickerSkill / 100.0) * GameProbabilities.Yardage.KICKOFF_SKILL_RANGE;
 
             // Random variance ±10 yards
-            var randomFactor = (_rng.NextDouble() * 20.0) - 10.0;
+            var randomFactor = (_rng.NextDouble() * GameProbabilities.Yardage.KICKOFF_RANDOM_RANGE) + 
+                               GameProbabilities.Yardage.KICKOFF_RANDOM_OFFSET;
 
             var totalDistance = baseDistance + randomFactor;
 
             // Clamp to realistic range (30-80 yards)
-            Result = Math.Max(30.0, Math.Min(80.0, totalDistance));
+            Result = Math.Max(GameProbabilities.Yardage.KICKOFF_MIN_DISTANCE, 
+                             Math.Min(GameProbabilities.Yardage.KICKOFF_MAX_DISTANCE, totalDistance));
         }
     }
 }

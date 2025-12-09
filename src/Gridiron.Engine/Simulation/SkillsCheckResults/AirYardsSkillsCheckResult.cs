@@ -1,6 +1,7 @@
 using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
+using Gridiron.Engine.Simulation.Configuration;
 
 namespace Gridiron.Engine.Simulation.SkillsCheckResults
 {
@@ -38,11 +39,21 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
 
             var airYards = _passType switch
             {
-                PassType.Screen => _rng.Next(-3, 3),     // -3 to 2 yards (behind LOS to short)
-                PassType.Short => _rng.Next(3, Math.Max(4, Math.Min(12, yardsToGoal))),   // 3-11 yards
-                PassType.Forward => _rng.Next(8, Math.Max(9, Math.Min(20, yardsToGoal))), // 8-19 yards
-                PassType.Deep => _rng.Next(18, Math.Max(19, Math.Min(45, yardsToGoal))),  // 18-44 yards
-                _ => _rng.Next(5, Math.Max(6, Math.Min(15, yardsToGoal)))                 // Default 5-14 yards
+                PassType.Screen => _rng.Next(
+                    GameProbabilities.Yardage.SCREEN_MIN_YARDS, 
+                    GameProbabilities.Yardage.SCREEN_MAX_YARDS),
+                PassType.Short => _rng.Next(
+                    GameProbabilities.Yardage.SHORT_MIN_YARDS, 
+                    Math.Max(4, Math.Min(GameProbabilities.Yardage.SHORT_MAX_YARDS, yardsToGoal))),
+                PassType.Forward => _rng.Next(
+                    GameProbabilities.Yardage.FORWARD_MIN_YARDS, 
+                    Math.Max(9, Math.Min(GameProbabilities.Yardage.FORWARD_MAX_YARDS, yardsToGoal))),
+                PassType.Deep => _rng.Next(
+                    GameProbabilities.Yardage.DEEP_MIN_YARDS, 
+                    Math.Max(19, Math.Min(GameProbabilities.Yardage.DEEP_MAX_YARDS, yardsToGoal))),
+                _ => _rng.Next(
+                    GameProbabilities.Yardage.DEFAULT_PASS_MIN_YARDS, 
+                    Math.Max(6, Math.Min(GameProbabilities.Yardage.DEFAULT_PASS_MAX_YARDS, yardsToGoal)))
             };
 
             // Clamp result to available field (can't throw past end zone)

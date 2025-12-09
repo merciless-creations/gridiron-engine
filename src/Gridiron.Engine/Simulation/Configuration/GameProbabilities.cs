@@ -449,5 +449,290 @@ namespace Gridiron.Engine.Simulation.Configuration
             /// <summary>Yards gained on a spike play (always 0).</summary>
             public const int SPIKE_YARDS_GAINED = 0;
         }
+
+        /// <summary>
+        /// Yardage calculation constants for runs, passes, sacks, and yards after catch.
+        /// These values tune the base yardage formulas and variance ranges.
+        /// </summary>
+        public static class Yardage
+        {
+            // ========================================
+            // RUN YARDS
+            // ========================================
+
+            /// <summary>Base yards for a run play before skill/randomness applied.</summary>
+            public const double RUN_BASE_YARDS = 3.0;
+
+            /// <summary>Skill differential divisor for run yardage (affects impact of blocking vs tackling).</summary>
+            public const double RUN_SKILL_DENOMINATOR = 20.0;
+
+            /// <summary>Random variance range for run plays (multiplied by NextDouble).</summary>
+            public const double RUN_RANDOM_RANGE = 25.0;
+
+            /// <summary>Random variance offset for run plays (supports losses up to -15 yards).</summary>
+            public const double RUN_RANDOM_OFFSET = -15.0;
+
+            // ========================================
+            // SACK YARDS
+            // ========================================
+
+            /// <summary>Minimum sack loss in yards.</summary>
+            public const int SACK_MIN_LOSS = 2;
+
+            /// <summary>Maximum sack loss in yards (exclusive upper bound for Next()).</summary>
+            public const int SACK_MAX_LOSS = 11; // Next(2, 11) gives 2-10 yards
+
+            // ========================================
+            // AIR YARDS BY PASS TYPE
+            // ========================================
+
+            /// <summary>Screen pass: minimum air yards (behind LOS).</summary>
+            public const int SCREEN_MIN_YARDS = -3;
+
+            /// <summary>Screen pass: maximum air yards (exclusive upper bound).</summary>
+            public const int SCREEN_MAX_YARDS = 3;
+
+            /// <summary>Short pass: minimum air yards.</summary>
+            public const int SHORT_MIN_YARDS = 3;
+
+            /// <summary>Short pass: maximum air yards (before clamping).</summary>
+            public const int SHORT_MAX_YARDS = 12;
+
+            /// <summary>Forward pass: minimum air yards.</summary>
+            public const int FORWARD_MIN_YARDS = 8;
+
+            /// <summary>Forward pass: maximum air yards (before clamping).</summary>
+            public const int FORWARD_MAX_YARDS = 20;
+
+            /// <summary>Deep pass: minimum air yards.</summary>
+            public const int DEEP_MIN_YARDS = 18;
+
+            /// <summary>Deep pass: maximum air yards (before clamping).</summary>
+            public const int DEEP_MAX_YARDS = 45;
+
+            /// <summary>Default pass (fallback): minimum air yards.</summary>
+            public const int DEFAULT_PASS_MIN_YARDS = 5;
+
+            /// <summary>Default pass (fallback): maximum air yards (before clamping).</summary>
+            public const int DEFAULT_PASS_MAX_YARDS = 15;
+
+            // ========================================
+            // YARDS AFTER CATCH (YAC)
+            // ========================================
+
+            /// <summary>Base YAC before skill adjustments.</summary>
+            public const double YAC_BASE_YARDS = 3.0;
+
+            /// <summary>Skill denominator for YAC calculation.</summary>
+            public const double YAC_SKILL_DENOMINATOR = 20.0;
+
+            /// <summary>Random variance range for YAC.</summary>
+            public const double YAC_RANDOM_RANGE = 8.0;
+
+            /// <summary>Random variance offset for YAC.</summary>
+            public const double YAC_RANDOM_OFFSET = -2.0;
+
+            /// <summary>Yards when receiver is tackled immediately (no YAC opportunity).</summary>
+            public const int YAC_IMMEDIATE_TACKLE_MAX = 3; // Next(0, 3) gives 0-2 yards
+
+            // ========================================
+            // KICKING DISTANCE
+            // ========================================
+
+            /// <summary>Kickoff: base distance before skill adjustment.</summary>
+            public const double KICKOFF_BASE_DISTANCE = 40.0;
+
+            /// <summary>Kickoff: skill multiplier range (0-100 skill × 30.0 = 0-30 yards bonus).</summary>
+            public const double KICKOFF_SKILL_RANGE = 30.0;
+
+            /// <summary>Kickoff: random variance range.</summary>
+            public const double KICKOFF_RANDOM_RANGE = 20.0;
+
+            /// <summary>Kickoff: random variance offset.</summary>
+            public const double KICKOFF_RANDOM_OFFSET = -10.0;
+
+            /// <summary>Kickoff: minimum realistic distance.</summary>
+            public const double KICKOFF_MIN_DISTANCE = 30.0;
+
+            /// <summary>Kickoff: maximum realistic distance.</summary>
+            public const double KICKOFF_MAX_DISTANCE = 80.0;
+
+            /// <summary>Punt: base distance before skill adjustment.</summary>
+            public const double PUNT_BASE_DISTANCE = 30.0;
+
+            /// <summary>Punt: skill multiplier range.</summary>
+            public const double PUNT_SKILL_RANGE = 25.0;
+
+            /// <summary>Punt: random variance range.</summary>
+            public const double PUNT_RANDOM_RANGE = 25.0;
+
+            /// <summary>Punt: random variance offset.</summary>
+            public const double PUNT_RANDOM_OFFSET = -10.0;
+
+            /// <summary>Punt: minimum distance (shanked punt).</summary>
+            public const double PUNT_MIN_DISTANCE = 10.0;
+
+            /// <summary>Punt: maximum field boundary (110 yards - field position).</summary>
+            public const int PUNT_FIELD_BOUNDARY = 110;
+        }
+
+        /// <summary>
+        /// Play timing constants for elapsed time during play execution.
+        /// These values simulate how long plays take in real time (for game clock).
+        /// </summary>
+        public static class Timing
+        {
+            // ========================================
+            // PASS PLAY EXECUTION TIMES
+            // ========================================
+
+            /// <summary>Pass play (completion): base execution time.</summary>
+            public const double PASS_PLAY_BASE_TIME = 4.0;
+
+            /// <summary>Pass play (completion): execution time variance.</summary>
+            public const double PASS_PLAY_VARIANCE = 3.0;
+
+            /// <summary>Pass play (sack): base execution time.</summary>
+            public const double PASS_PLAY_SACK_BASE_TIME = 4.0;
+
+            /// <summary>Pass play (sack): execution time variance.</summary>
+            public const double PASS_PLAY_SACK_VARIANCE = 4.0;
+
+            // ========================================
+            // RUN PLAY EXECUTION TIMES
+            // ========================================
+
+            /// <summary>Run play: base execution time.</summary>
+            public const double RUN_PLAY_BASE_TIME = 5.0;
+
+            /// <summary>Run play: execution time variance.</summary>
+            public const double RUN_PLAY_VARIANCE = 3.0;
+
+            /// <summary>Run play (breakaway): execution time variance.</summary>
+            public const double RUN_PLAY_BREAKAWAY_VARIANCE = 4.0;
+
+            // ========================================
+            // FIELD GOAL EXECUTION TIMES
+            // ========================================
+
+            /// <summary>Field goal attempt: base time.</summary>
+            public const double FIELD_GOAL_BASE_TIME = 4.0;
+
+            /// <summary>Field goal attempt: variance.</summary>
+            public const double FIELD_GOAL_VARIANCE = 3.0;
+
+            /// <summary>Field goal (blocked): base time.</summary>
+            public const double FIELD_GOAL_BLOCKED_BASE_TIME = 3.0;
+
+            /// <summary>Field goal (blocked): variance.</summary>
+            public const double FIELD_GOAL_BLOCKED_VARIANCE = 3.0;
+
+            /// <summary>Field goal (blocked, recovery): fixed time.</summary>
+            public const double FIELD_GOAL_BLOCKED_RECOVERY_TIME = 2.0;
+
+            /// <summary>Field goal (bad snap): base time.</summary>
+            public const double FIELD_GOAL_BAD_SNAP_BASE_TIME = 2.0;
+
+            /// <summary>Field goal (bad snap): variance.</summary>
+            public const double FIELD_GOAL_BAD_SNAP_VARIANCE = 1.0;
+
+            // ========================================
+            // KICKOFF EXECUTION TIMES
+            // ========================================
+
+            /// <summary>Kickoff (touchback): fixed time.</summary>
+            public const double KICKOFF_TOUCHBACK_TIME = 3.0;
+
+            /// <summary>Kickoff (return): base time.</summary>
+            public const double KICKOFF_RETURN_BASE_TIME = 4.0;
+
+            /// <summary>Kickoff (return): variance.</summary>
+            public const double KICKOFF_RETURN_VARIANCE = 2.0;
+
+            /// <summary>Kickoff (out of bounds): fixed time.</summary>
+            public const double KICKOFF_OOB_TIME = 3.0;
+
+            /// <summary>Kickoff (onside, recovered by kicking team): fixed time.</summary>
+            public const double KICKOFF_ONSIDE_RECOVERED_TIME = 5.0;
+
+            /// <summary>Kickoff (hang time estimation buffer).</summary>
+            public const double KICKOFF_HANG_TIME_BUFFER = 0.5;
+
+            /// <summary>Kickoff (long return): base time.</summary>
+            public const double KICKOFF_LONG_RETURN_BASE_TIME = 5.0;
+
+            /// <summary>Kickoff (long return): variance.</summary>
+            public const double KICKOFF_LONG_RETURN_VARIANCE = 2.0;
+
+            /// <summary>Kickoff (TD return): base time.</summary>
+            public const double KICKOFF_TD_RETURN_BASE_TIME = 6.0;
+
+            /// <summary>Kickoff (TD return): variance.</summary>
+            public const double KICKOFF_TD_RETURN_VARIANCE = 2.0;
+
+            /// <summary>Kickoff (fair catch): base time.</summary>
+            public const double KICKOFF_FAIR_CATCH_BASE_TIME = 5.0;
+
+            /// <summary>Kickoff (fair catch): variance.</summary>
+            public const double KICKOFF_FAIR_CATCH_VARIANCE = 3.0;
+
+            /// <summary>Kickoff (muff, offense recovers): base time.</summary>
+            public const double KICKOFF_MUFF_OFFENSE_BASE_TIME = 5.0;
+
+            /// <summary>Kickoff (muff, offense recovers): variance.</summary>
+            public const double KICKOFF_MUFF_OFFENSE_VARIANCE = 3.0;
+
+            /// <summary>Kickoff (muff, defense recovers): base time.</summary>
+            public const double KICKOFF_MUFF_DEFENSE_BASE_TIME = 5.0;
+
+            /// <summary>Kickoff (muff, defense recovers): variance.</summary>
+            public const double KICKOFF_MUFF_DEFENSE_VARIANCE = 4.0;
+
+            /// <summary>Kickoff (muff, touchback): base time.</summary>
+            public const double KICKOFF_MUFF_TOUCHBACK_BASE_TIME = 5.0;
+
+            /// <summary>Kickoff (muff, touchback): variance.</summary>
+            public const double KICKOFF_MUFF_TOUCHBACK_VARIANCE = 3.0;
+
+            /// <summary>Kickoff (muff, out of bounds): base time.</summary>
+            public const double KICKOFF_MUFF_OOB_BASE_TIME = 5.0;
+
+            /// <summary>Kickoff (muff, out of bounds): variance.</summary>
+            public const double KICKOFF_MUFF_OOB_VARIANCE = 2.0;
+
+            // ========================================
+            // PUNT EXECUTION TIMES
+            // ========================================
+
+            /// <summary>Punt (normal): base time.</summary>
+            public const double PUNT_BASE_TIME = 4.0;
+
+            /// <summary>Punt (normal): variance.</summary>
+            public const double PUNT_VARIANCE = 4.0;
+
+            /// <summary>Punt (blocked): base time.</summary>
+            public const double PUNT_BLOCKED_BASE_TIME = 3.0;
+
+            /// <summary>Punt (blocked): variance.</summary>
+            public const double PUNT_BLOCKED_VARIANCE = 3.0;
+
+            /// <summary>Punt (downed/OOB/fair catch): hang time buffer.</summary>
+            public const double PUNT_HANG_TIME_BUFFER = 0.5;
+
+            /// <summary>Punt (touchback): hang time buffer.</summary>
+            public const double PUNT_TOUCHBACK_HANG_TIME_BUFFER = 1.0;
+
+            /// <summary>Punt (return): base time (added to hang time).</summary>
+            public const double PUNT_RETURN_BASE_TIME = 2.0;
+
+            /// <summary>Punt (return): variance.</summary>
+            public const double PUNT_RETURN_VARIANCE = 2.0;
+
+            /// <summary>Punt (TD return): base time (added to hang time).</summary>
+            public const double PUNT_TD_RETURN_BASE_TIME = 2.0;
+
+            /// <summary>Punt (TD return): variance.</summary>
+            public const double PUNT_TD_RETURN_VARIANCE = 4.0;
+        }
     }
 }

@@ -1,6 +1,7 @@
 using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
+using Gridiron.Engine.Simulation.Configuration;
 
 namespace Gridiron.Engine.Simulation.SkillsCheckResults
 {
@@ -32,7 +33,9 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
         public override void Execute(Game game)
         {
             // Calculate sack yardage loss (2-10 yards typically)
-            var sackYards = -1 * _rng.Next(2, 11);
+            var sackYards = -1 * _rng.Next(
+                GameProbabilities.Yardage.SACK_MIN_LOSS, 
+                GameProbabilities.Yardage.SACK_MAX_LOSS);
 
             // Don't go past own goal line (can't lose more yards than field position)
             var maxLoss = -1 * _fieldPosition;

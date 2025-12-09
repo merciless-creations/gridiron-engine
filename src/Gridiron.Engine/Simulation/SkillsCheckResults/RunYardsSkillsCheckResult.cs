@@ -1,6 +1,7 @@
 using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
+using Gridiron.Engine.Simulation.Configuration;
 using System.Linq;
 
 namespace Gridiron.Engine.Simulation.SkillsCheckResults
@@ -52,12 +53,14 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
 
             // Calculate base yardage (with randomness)
             var skillDifferential = offensivePower - defensivePower;
-            var baseYards = 3.0 + (skillDifferential / 20.0); // Average around 3-5 yards
+            var baseYards = GameProbabilities.Yardage.RUN_BASE_YARDS + 
+                            (skillDifferential / GameProbabilities.Yardage.RUN_SKILL_DENOMINATOR);
 
             // Add randomness (-15 to +10 yard variance)
             // This supports realistic big losses (sacks, backfield tackles, muffed snaps)
             // while keeping big gains reasonable (tackle breaks/breakaways handle explosive plays)
-            var randomFactor = (_rng.NextDouble() * 25) - 15;
+            var randomFactor = (_rng.NextDouble() * GameProbabilities.Yardage.RUN_RANDOM_RANGE) + 
+                               GameProbabilities.Yardage.RUN_RANDOM_OFFSET;
             var totalYards = baseYards + randomFactor;
 
             Result = (int)Math.Round(totalYards);

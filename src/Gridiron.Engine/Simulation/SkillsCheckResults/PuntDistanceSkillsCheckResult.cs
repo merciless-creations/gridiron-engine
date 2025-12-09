@@ -1,6 +1,7 @@
 using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
+using Gridiron.Engine.Simulation.Configuration;
 using System;
 
 namespace Gridiron.Engine.Simulation.SkillsCheckResults
@@ -44,18 +45,20 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             // Weaker punters (30 kicking): 25-40 yards
 
             var skillFactor = _punter.Kicking / 100.0;
-            var baseDistance = 30.0 + (skillFactor * 25.0); // 30-55 yard base
+            var baseDistance = GameProbabilities.Yardage.PUNT_BASE_DISTANCE + 
+                              (skillFactor * GameProbabilities.Yardage.PUNT_SKILL_RANGE);
 
             // Add randomness (-10 to +15 yard variance for realistic variance)
-            var randomFactor = (_rng.NextDouble() * 25.0) - 10.0;
+            var randomFactor = (_rng.NextDouble() * GameProbabilities.Yardage.PUNT_RANDOM_RANGE) + 
+                               GameProbabilities.Yardage.PUNT_RANDOM_OFFSET;
             var totalDistance = baseDistance + randomFactor;
 
             // Ensure minimum punt distance (shanked punt: 10 yards)
-            totalDistance = Math.Max(10.0, totalDistance);
+            totalDistance = Math.Max(GameProbabilities.Yardage.PUNT_MIN_DISTANCE, totalDistance);
 
             // Clamp to field boundaries
             // Can't punt beyond opponent's end zone (110 yards - field position gives max distance to back of end zone)
-            var maxDistance = 110 - _fieldPosition;
+            var maxDistance = GameProbabilities.Yardage.PUNT_FIELD_BOUNDARY - _fieldPosition;
             totalDistance = Math.Min(totalDistance, maxDistance);
 
             Result = (int)Math.Round(totalDistance);

@@ -43,16 +43,18 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             if (!yacCheck.Occurred)
             {
                 // Tackled immediately (0-2 yards)
-                Result = _rng.Next(0, 3);
+                Result = _rng.Next(0, GameProbabilities.Yardage.YAC_IMMEDIATE_TACKLE_MAX);
                 return;
             }
 
             // Good YAC opportunity - receiver breaks tackles
             var yacPotential = (_receiver.Speed + _receiver.Agility + _receiver.Rushing) / 3.0;
-            var baseYAC = 3.0 + (yacPotential / 20.0); // 3-8 yards typically
+            var baseYAC = GameProbabilities.Yardage.YAC_BASE_YARDS + 
+                         (yacPotential / GameProbabilities.Yardage.YAC_SKILL_DENOMINATOR);
 
             // Add randomness (-2 to +6 yards)
-            var randomFactor = (_rng.NextDouble() * 8) - 2;
+            var randomFactor = (_rng.NextDouble() * GameProbabilities.Yardage.YAC_RANDOM_RANGE) + 
+                               GameProbabilities.Yardage.YAC_RANDOM_OFFSET;
             var totalYAC = Math.Max(0, (int)Math.Round(baseYAC + randomFactor));
 
             // Chance for big play after catch if receiver is fast
