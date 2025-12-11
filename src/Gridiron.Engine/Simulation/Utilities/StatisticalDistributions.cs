@@ -1,4 +1,5 @@
 using Gridiron.Engine.Domain.Helpers;
+using Gridiron.Engine.Simulation.Configuration;
 using System;
 
 namespace Gridiron.Engine.Simulation.Utilities
@@ -68,20 +69,20 @@ namespace Gridiron.Engine.Simulation.Utilities
         /// <returns>Run yardage (can be negative for TFL)</returns>
         public static int RunYards(ISeedableRandom rng, double skillModifier = 0.0)
         {
-            // Log-normal parameters tuned for NFL run distribution
-            // mu=1.1, sigma=0.7 produces mean ~3.7, with right skew
-            const double mu = 1.1;
-            const double sigma = 0.7;
+            // Use centralized configuration from GameProbabilities
+            var mu = GameProbabilities.YardageDistributions.RUN_MU;
+            var sigma = GameProbabilities.YardageDistributions.RUN_SIGMA;
+            var shift = GameProbabilities.YardageDistributions.RUN_SHIFT;
+            var skillMultiplier = GameProbabilities.YardageDistributions.RUN_SKILL_MULTIPLIER;
 
             // Generate base yards from log-normal (always positive)
             var baseYards = LogNormal(rng, mu, sigma);
 
             // Shift down to allow negatives (TFL)
-            // Subtract ~1 so that low rolls can go negative
-            var shiftedYards = baseYards - 1.0;
+            var shiftedYards = baseYards - shift;
 
             // Apply skill modifier (better skills = more yards)
-            var finalYards = shiftedYards + (skillModifier * 2.0);
+            var finalYards = shiftedYards + (skillModifier * skillMultiplier);
 
             return (int)Math.Round(finalYards);
         }

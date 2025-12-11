@@ -897,7 +897,8 @@ namespace Gridiron.Engine.Tests.Helpers
         /// <summary>
         /// Sets the two random values to produce a specific target yard output from log-normal distribution.
         /// This is the preferred method for deterministic tests when you need a specific yard result.
-        /// The calculation accounts for the log-normal distribution parameters (mu=1.1, sigma=0.7).
+        /// The calculation accounts for the log-normal distribution parameters from GameProbabilities.
+        /// Current values: mu=1.5, sigma=0.7, shift=2.8.
         /// </summary>
         /// <param name="targetYards">The desired yard output from the distribution</param>
         /// <param name="skillModifier">The skill modifier that will be applied (default 0.0)</param>
@@ -907,9 +908,10 @@ namespace Gridiron.Engine.Tests.Helpers
             // Result = round(exp(mu + sigma * z) - shift + skillModifier * 2)
             // targetYards = round(baseYards - shift + skillMod * 2)
             // We need baseYards = targetYards + shift - skillMod * 2
-            const double mu = 1.1;
-            const double sigma = 0.7;
-            const double shift = 1.0;
+            // Using parameters from GameProbabilities.YardageDistributions
+            const double mu = 1.5;      // RUN_MU
+            const double sigma = 0.7;   // RUN_SIGMA
+            const double shift = 2.8;   // RUN_SHIFT
 
             double neededBaseYards = targetYards + shift - (skillModifier * 2.0);
 

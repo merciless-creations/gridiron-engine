@@ -756,13 +756,25 @@ namespace Gridiron.Engine.Simulation.Configuration
             // - Some negative runs (TFL)
 
             /// <summary>Log-normal location parameter (mu) for run yards.</summary>
-            public const double RUN_MU = 1.1;
+            /// <remarks>
+            /// mu=1.5 gives median of exp(1.5)=4.48 yards before shift.
+            /// Combined with shift=2.2, produces median ~2.3 yards.
+            /// </remarks>
+            public const double RUN_MU = 1.5;
 
             /// <summary>Log-normal scale parameter (sigma) for run yards.</summary>
+            /// <remarks>
+            /// sigma=0.7 controls spread of distribution.
+            /// Higher sigma = more variance, more breakaways.
+            /// </remarks>
             public const double RUN_SIGMA = 0.7;
 
             /// <summary>Shift value to allow negative yards (subtracted from log-normal output).</summary>
-            public const double RUN_SHIFT = 1.0;
+            /// <remarks>
+            /// shift=2.8 produces ~15% negative runs (TFL) after rounding.
+            /// Higher shift needed because rounding converts -0.5 to 0.49 to 0.
+            /// </remarks>
+            public const double RUN_SHIFT = 2.8;
 
             /// <summary>Skill modifier multiplier for run yards.</summary>
             public const double RUN_SKILL_MULTIPLIER = 2.0;
