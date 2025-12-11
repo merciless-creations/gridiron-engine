@@ -348,8 +348,16 @@ namespace Gridiron.Engine.Tests
                 }
             }
 
-            // Act & Assert - with logarithmic modifier, skill diff of ~8 gives:
-            // modifier = log(1 + 8/10) * 0.15 ≈ 0.088
+            // Act & Assert - Skill differential calculation:
+            // Offensive power = (passingPower + receivingPower) / 2
+            //   passingPower = (QB.Passing*2 + QB.Awareness) / 3 = (80*2 + 75) / 3 = 78.33
+            //   receivingPower = (WR.Catching + WR.Speed + WR.Agility) / 3 = (80 + 78 + 75) / 3 = 77.67
+            //   Offensive power = (78.33 + 77.67) / 2 = 78
+            // Coverage power = avg of (Coverage + Speed + Awareness) / 3 = (70 + 70 + 70) / 3 = 70
+            // Skill diff = 78 - 70 = 8
+            //
+            // With logarithmic modifier: log(1 + 8/10) * 0.15 ≈ 0.088
+            // Base completion probability: 0.60
             // Without pressure: ~68.8% probability (0.60 + 0.088)
             var rng = new TestFluentSeedableRandom()
                 .PassCompletionCheck(0.68); // 0.68 < 0.688 = completion

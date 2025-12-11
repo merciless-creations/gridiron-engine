@@ -256,24 +256,22 @@ passPlay.PassSegments[0].AirYards, $"Air yards should be clamped to end zone dis
         [TestMethod]
         public void GoalLine_Own3_NegativeYards_SafetyPreventsOvershooting()
         {
-            // Arrange - Loss at own 3 should clamp to safety, not go negative beyond 0
-            var game = CreateGameAtFieldPosition(3, Possession.Home);
-            SetPlayerSkills(game, 35, 90);
+            // Arrange - Loss at own 1 should result in safety
+            // Use extreme skill differential to guarantee negative yards
+            var game = CreateGameAtFieldPosition(1, Possession.Home);
+            SetPlayerSkills(game, 30, 95); // Very weak offense vs elite defense
 
-            var rng = RunPlayScenarios.TackleForLoss(lossYards: 5); // Would be -5 but clamped to -3
+            var rng = RunPlayScenarios.TackleForLoss(lossYards: 5); // Aim for significant loss
 
             // Act
             ExecuteRunPlayWithResult(game, rng);
 
-            // Assert - with logarithmic skill modifiers, the outcome may vary
+            // Assert - verify safety scenario
             var runPlay = (RunPlay)game.CurrentPlay!;
-            // Test the core logic: field position shouldn't go negative
-            Assert.IsGreaterThanOrEqualTo(0, game.FieldPosition, "Field position should not go negative");
-            // If we got a safety (field position = 0), verify the score
-            if (game.FieldPosition == 0)
-            {
-                Assert.AreEqual(2, game.AwayScore, "Safety should be scored when field position is 0");
-            }
+            // Field position should be clamped at 0 (safety)
+            Assert.AreEqual(0, game.FieldPosition, "Field position should be 0 (safety)");
+            Assert.IsLessThan(0, runPlay.YardsGained, "Should be a loss of yards");
+            Assert.AreEqual(2, game.AwayScore, "Safety should be scored");
         }
 
         #endregion

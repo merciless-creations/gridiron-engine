@@ -175,17 +175,20 @@ namespace Gridiron.Engine.Tests
         [TestMethod]
         public void TurnoverOnDowns_NegativeYardage_ChangesFieldPosition()
         {
-            // Arrange - 4th and 2 at the 50, loss for turnover
+            // Arrange - 4th and 2 at the 50, need loss for turnover
+            // Use extreme skill differential to guarantee negative yards
             var game = CreateGameAtDown(Downs.Fourth, 2, 50, Possession.Home);
-            SetPlayerSkills(game, 70, 100); // Weak offense vs strong defense = negative/no gain yards
-            var rng = CreateRngForRunPlay(-1, blockingSucceeds: false); // Tackled for loss (or minimal gain)
+            SetPlayerSkills(game, 30, 95); // Very weak offense vs elite defense = guaranteed loss
+            var rng = CreateRngForRunPlay(-2, blockingSucceeds: false); // Tackled for loss
 
             // Act
             ExecuteRunPlayWithResult(game, rng);
 
-            // Assert
-            Assert.IsTrue(game.CurrentPlay!.PossessionChange, "Should still be turnover on downs");
-            Assert.IsLessThanOrEqualTo(50, game.FieldPosition, "Field position should not exceed 50 (no first down)");
+            // Assert - verify turnover on downs with loss
+            var runPlay = (RunPlay)game.CurrentPlay!;
+            Assert.IsTrue(game.CurrentPlay.PossessionChange, "Should be turnover on downs");
+            Assert.IsLessThan(0, runPlay.YardsGained, "Should be a loss of yards");
+            Assert.IsLessThan(50, game.FieldPosition, "Field position should be less than 50 (loss of yards)");
 
             // Add to game.Plays so PrePlay can check previous play
             game.Plays.Add(game.CurrentPlay);
@@ -197,8 +200,7 @@ namespace Gridiron.Engine.Tests
 
             // Assert - Away gets possession at the field position after the play
             Assert.AreEqual(Possession.Away, game.CurrentPlay.Possession, "Away should get possession");
-            // Field position depends on yards gained/lost - verify possession change occurred
-            Assert.IsLessThanOrEqualTo(50, game.FieldPosition, "Away starts at or behind the 50 (turnover at/behind original spot)");
+            Assert.IsLessThan(50, game.FieldPosition, "Away starts behind the 50 (turnover with loss)");
         }
 
         #endregion

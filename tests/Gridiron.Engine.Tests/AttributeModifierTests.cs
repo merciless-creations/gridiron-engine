@@ -180,14 +180,14 @@ namespace Gridiron.Engine.Tests
         [TestMethod]
         public void Calculate_ProducesExpectedModifierTable()
         {
-            // These values come from Issue #27 specification
-            // | Rating | Expected Modifier |
-            // |--------|-------------------|
-            // | 30     | -10.4%            |
-            // | 50     | 0%                |
-            // | 70     | +10.4%            |
-            // | 90     | +15.9%            |
-            // | 99     | +17.6%            |
+            // Expected values from the formula: sign(diff) * log(1 + |diff|/10) * 0.15
+            // | Rating | Diff | Calculation                        | Modifier |
+            // |--------|------|---------------------------------------|----------|
+            // | 30     | -20  | -log(1 + 20/10) * 0.15 = -log(3)*0.15 | -16.5%   |
+            // | 50     | 0    | 0                                     | 0%       |
+            // | 70     | +20  | log(1 + 20/10) * 0.15 = log(3)*0.15   | +16.5%   |
+            // | 90     | +40  | log(1 + 40/10) * 0.15 = log(5)*0.15   | +24.1%   |
+            // | 99     | +49  | log(1 + 49/10) * 0.15 = log(5.9)*0.15 | +26.6%   |
 
             var modifier30 = AttributeModifier.Calculate(30.0);
             var modifier50 = AttributeModifier.Calculate(50.0);
@@ -195,25 +195,18 @@ namespace Gridiron.Engine.Tests
             var modifier90 = AttributeModifier.Calculate(90.0);
             var modifier99 = AttributeModifier.Calculate(99.0);
 
-            Console.WriteLine($"Rating 30: {modifier30 * 100:F1}% (expected: -10.4%)");
+            Console.WriteLine($"Rating 30: {modifier30 * 100:F1}% (expected: -16.5%)");
             Console.WriteLine($"Rating 50: {modifier50 * 100:F1}% (expected: 0%)");
-            Console.WriteLine($"Rating 70: {modifier70 * 100:F1}% (expected: +10.4%)");
-            Console.WriteLine($"Rating 90: {modifier90 * 100:F1}% (expected: +15.9%)");
-            Console.WriteLine($"Rating 99: {modifier99 * 100:F1}% (expected: +17.6%)");
+            Console.WriteLine($"Rating 70: {modifier70 * 100:F1}% (expected: +16.5%)");
+            Console.WriteLine($"Rating 90: {modifier90 * 100:F1}% (expected: +24.1%)");
+            Console.WriteLine($"Rating 99: {modifier99 * 100:F1}% (expected: +26.6%)");
 
-            // Note: The formula in Issue #27 uses /10 * 0.15, which gives slightly different
-            // values than shown in the table. The actual math:
-            // Rating 30: sign(-20) * log(1 + 20/10) * 0.15 = -log(3) * 0.15 ≈ -0.165
-            // Rating 70: sign(20) * log(1 + 20/10) * 0.15 = log(3) * 0.15 ≈ 0.165
-            // Rating 90: sign(40) * log(1 + 40/10) * 0.15 = log(5) * 0.15 ≈ 0.241
-            // Rating 99: sign(49) * log(1 + 49/10) * 0.15 = log(5.9) * 0.15 ≈ 0.266
-
-            // The key behaviors we're testing:
-            Assert.AreEqual(0.0, modifier50, 0.01, "Rating 50 should be ~0%");
-            Assert.IsTrue(modifier30 < 0, "Rating 30 should be negative");
-            Assert.IsTrue(modifier70 > 0, "Rating 70 should be positive");
-            Assert.IsTrue(Math.Abs(modifier30) < Math.Abs(modifier70) + 0.01,
-                "Modifier should be approximately symmetric");
+            // Precise assertions matching the formula
+            Assert.AreEqual(0.0, modifier50, TOLERANCE, "Rating 50 should be 0%");
+            Assert.AreEqual(-0.165, modifier30, 0.001, "Rating 30 should be ~-16.5%");
+            Assert.AreEqual(0.165, modifier70, 0.001, "Rating 70 should be ~+16.5%");
+            Assert.AreEqual(0.241, modifier90, 0.001, "Rating 90 should be ~+24.1%");
+            Assert.AreEqual(0.266, modifier99, 0.001, "Rating 99 should be ~+26.6%");
 
             // Verify diminishing returns at extremes
             var jump50to70 = modifier70 - modifier50;

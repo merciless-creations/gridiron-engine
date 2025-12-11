@@ -6,15 +6,15 @@ namespace Gridiron.Engine.Simulation.Utilities
     /// Provides logarithmic attribute modifier calculations for game balance.
     ///
     /// The logarithmic curve produces diminishing returns at skill extremes:
-    /// - Rating 30: -10.4% modifier
+    /// - Rating 30: -16.5% modifier
     /// - Rating 50: 0% modifier (baseline)
-    /// - Rating 70: +10.4% modifier
-    /// - Rating 90: +15.9% modifier
-    /// - Rating 99: +17.6% modifier
+    /// - Rating 70: +16.5% modifier
+    /// - Rating 90: +24.1% modifier
+    /// - Rating 99: +26.6% modifier
     ///
     /// This prevents elite players from being unstoppable while still making
-    /// skill differences meaningful. The jump from 90->99 (+1.7%) matters less
-    /// than 50->60 (+6.1%), enabling "any given Sunday" upset potential.
+    /// skill differences meaningful. The jump from 90->99 (+2.5%) matters less
+    /// than 50->60 (+10.4%), enabling "any given Sunday" upset potential.
     /// </summary>
     public static class AttributeModifier
     {
@@ -36,12 +36,12 @@ namespace Gridiron.Engine.Simulation.Utilities
         /// <param name="rating">The player's attribute rating (typically 0-99).</param>
         /// <param name="baseline">The baseline rating representing no modifier (default 50).</param>
         /// <returns>
-        /// A modifier value, typically in the range -0.18 to +0.18.
+        /// A modifier value, typically in the range -0.27 to +0.27.
         /// Positive values indicate above-baseline performance.
         /// </returns>
         /// <example>
         /// // Elite QB vs average coverage
-        /// var modifier = AttributeModifier.Calculate(90); // Returns ~0.159 (+15.9%)
+        /// var modifier = AttributeModifier.Calculate(90); // Returns ~0.241 (+24.1%)
         /// completionProbability += modifier;
         /// </example>
         public static double Calculate(double rating, double baseline = 50.0)
