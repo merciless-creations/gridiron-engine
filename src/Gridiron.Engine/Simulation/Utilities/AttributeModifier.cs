@@ -36,7 +36,7 @@ namespace Gridiron.Engine.Simulation.Utilities
         /// <param name="rating">The player's attribute rating (typically 0-99).</param>
         /// <param name="baseline">The baseline rating representing no modifier (default 50).</param>
         /// <returns>
-        /// A modifier value, typically in the range -0.27 to +0.27.
+        /// A modifier value in the range -0.269 to +0.266 for ratings 0-99.
         /// Positive values indicate above-baseline performance.
         /// </returns>
         /// <example>

@@ -64,7 +64,9 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             // Adjust based on skill differential
             // Uses logarithmic curve for diminishing returns at skill extremes
             var skillDiff = coverageSkill - qbSkill;
-            interceptionProbability += AttributeModifier.FromDifferential(skillDiff) * 0.5; // Scale down for INT probability
+            // Scale by 0.5 to keep interception probability in realistic range (typically 1%-5%)
+            // Full modifier would swing probability too dramatically for rare events like INTs
+            interceptionProbability += AttributeModifier.FromDifferential(skillDiff) * 0.5;
 
             // Pressure increases interception chance (bad throws)
             if (_underPressure)
