@@ -864,6 +864,7 @@ namespace Gridiron.Engine.Tests.Helpers
         /// Sets run base yards random factor. Used to calculate base yardage before blocks/breaks.
         /// Valid range: 0.0 to 1.0
         /// </summary>
+        [Obsolete("Use RunYardsLogNormal() instead - run yards now uses log-normal distribution")]
         public TestFluentSeedableRandom RunBaseYardsRandom(double value)
         {
             ValidateRandomFactor(value, nameof(RunBaseYardsRandom),
@@ -871,6 +872,77 @@ namespace Gridiron.Engine.Tests.Helpers
                 "Formula: baseYards + (value * 25.0) - 15.0 yields variable yards based on blocking/skills. " +
                 "Lower values (< 0.2) often result in losses. Higher values (> 0.8) result in good gains.");
             _doubleQueue.Enqueue(value);
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the two random values for log-normal run yards distribution (Box-Muller transform).
+        /// This produces realistic NFL run distributions: most runs 2-4 yards, occasional breakaways.
+        /// Valid range: 0.0 to 1.0 for both values (must be > 0 for u1 to avoid log(0))
+        /// </summary>
+        /// <param name="u1">First uniform random value (0.0-1.0, used for log transform)</param>
+        /// <param name="u2">Second uniform random value (0.0-1.0, used for cos transform)</param>
+        public TestFluentSeedableRandom RunYardsLogNormal(double u1, double u2)
+        {
+            if (u1 <= 0.0 || u1 > 1.0)
+                throw new ArgumentOutOfRangeException(nameof(u1),
+                    $"Log-normal u1 must be > 0 and <= 1.0 (to avoid log(0)). Got: {u1}");
+            ValidateRandomFactor(u2, nameof(RunYardsLogNormal),
+                "Second random value for Box-Muller transform in log-normal distribution.");
+            _doubleQueue.Enqueue(u1);
+            _doubleQueue.Enqueue(u2);
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the two random values to produce a specific target yard output from log-normal distribution.
+        /// This is the preferred method for deterministic tests when you need a specific yard result.
+        /// The calculation accounts for the log-normal distribution parameters (mu=1.1, sigma=0.7).
+        /// </summary>
+        /// <param name="targetYards">The desired yard output from the distribution</param>
+        /// <param name="skillModifier">The skill modifier that will be applied (default 0.0)</param>
+        public TestFluentSeedableRandom RunYardsForTarget(int targetYards, double skillModifier = 0.0)
+        {
+            // Reverse the calculation:
+            // Result = round(exp(mu + sigma * z) - shift + skillModifier * 2)
+            // targetYards = round(baseYards - shift + skillMod * 2)
+            // We need baseYards = targetYards + shift - skillMod * 2
+            const double mu = 1.1;
+            const double sigma = 0.7;
+            const double shift = 1.0;
+
+            double neededBaseYards = targetYards + shift - (skillModifier * 2.0);
+
+            // baseYards must be > 0 for log to work
+            if (neededBaseYards <= 0)
+                neededBaseYards = 0.1;
+
+            // z = (ln(baseYards) - mu) / sigma
+            double z = (Math.Log(neededBaseYards) - mu) / sigma;
+
+            // Using u2 = 0 so cos(2*pi*0) = 1, then z = sqrt(-2*log(u1))
+            // u1 = exp(-z^2 / 2)
+            double u1;
+            if (z >= 0)
+            {
+                // Positive z: u2=0 gives cos=1, so z = sqrt(-2*log(u1))
+                u1 = Math.Exp(-z * z / 2.0);
+            }
+            else
+            {
+                // Negative z: u2=0.5 gives cos=-1, so -z = sqrt(-2*log(u1))
+                u1 = Math.Exp(-z * z / 2.0);
+                // Use u2=0.5 for negative z
+                _doubleQueue.Enqueue(Math.Max(0.001, Math.Min(0.999, u1)));
+                _doubleQueue.Enqueue(0.5);
+                return this;
+            }
+
+            // Clamp u1 to valid range
+            u1 = Math.Max(0.001, Math.Min(0.999, u1));
+
+            _doubleQueue.Enqueue(u1);
+            _doubleQueue.Enqueue(0.0);  // cos(0) = 1 for positive z
             return this;
         }
 

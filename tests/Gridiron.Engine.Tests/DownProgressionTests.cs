@@ -461,34 +461,14 @@ namespace Gridiron.Engine.Tests
 
         private TestFluentSeedableRandom CreateRngForRunPlay(int desiredYards, bool blockingSucceeds)
         {
-            // IMPORTANT: Two-step rounding process in the actual code:
-            // Step 1: RunYardsSkillsCheckResult.Execute() does: Result = (int)Math.Round(totalYards)
-            // Step 2: Run.Execute() does: adjustedYards = (int)(baseYards * blockingModifier)
-            //
-            // The rounding happens BEFORE the blocking modifier is applied!
-            // So we must use Ceiling to account for this.
-
-            double targetBase;
-            if (blockingSucceeds)
-            {
-                // We need roundedBase such that (int)(roundedBase * 1.2) = desiredYards
-                // Use Ceiling because Math.Round happens BEFORE the 1.2x modifier
-                // Example: desiredYards=3 → 3/1.2=2.5 → Ceiling(2.5)=3 → Round(3)=3 → (int)(3*1.2)=3 ✓
-                targetBase = Math.Ceiling(desiredYards / 1.2);
-            }
-            else
-            {
-                // We need roundedBase such that (int)(roundedBase * 0.8) = desiredYards
-                // Use Ceiling because Math.Round happens BEFORE the 0.8x modifier
-                targetBase = Math.Ceiling(desiredYards / 0.8);
-            }
-
-            // randomFactor = targetBase - 3.0
-            double randomFactor = targetBase - 3.0;
-
-            // Solve for NextDouble: randomFactor = (NextDouble * 25) - 15
-            double nextDouble = (randomFactor + 15.0) / 25.0;
-            nextDouble = Math.Max(0.0, Math.Min(1.0, nextDouble)); // Clamp to [0, 1]
+            // Run.cs applies a blocking modifier: adjustedYards = (int)(baseYards * blockingModifier)
+            // blockingModifier = 1.2 (good blocking) or 0.8 (bad blocking)
+            // We need to calculate what baseYards produces desiredYards after the modifier.
+            double blockingModifier = blockingSucceeds ? 1.2 : 0.8;
+            // To get (int)(baseYards * modifier) = desiredYards, we need:
+            // baseYards * modifier >= desiredYards (before truncation)
+            // So baseYards = ceil(desiredYards / modifier)
+            int baseYards = (int)Math.Ceiling(desiredYards / blockingModifier);
 
             double blockingCheckValue = blockingSucceeds ? 0.3 : 0.7; // < 0.5 succeeds, >= 0.5 fails
 
@@ -497,7 +477,7 @@ namespace Gridiron.Engine.Tests
                 .RunDirection(2)                      // Direction (middle)
                 .RunBlockingCheck(blockingCheckValue) // Explicit blocking success/failure
                 .BlockingPenaltyCheck(0.99)           // No penalty
-                .RunBaseYardsRandom(nextDouble)       // Base yards calculation
+                .RunYardsForTarget(baseYards)         // Calculate u1/u2 for base yards (before modifier)
                 .TackleBreakCheck(0.9)                // No tackle break
                 .BreakawayCheck(0.9)                  // No breakaway
                 .TacklePenaltyCheck(0.99)             // No penalty

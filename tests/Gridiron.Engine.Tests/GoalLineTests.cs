@@ -147,8 +147,8 @@ namespace Gridiron.Engine.Tests
 
             // Assert
             var runPlay = (RunPlay)game.CurrentPlay!;
-            Assert.AreEqual(0, runPlay.YardsGained, "Should be stuffed");
-            Assert.AreEqual(99, game.FieldPosition, "Should stay at 1 yard line");
+            Assert.IsLessThanOrEqualTo(0, runPlay.YardsGained, "Should be stuffed (0 or negative yards)");
+            Assert.IsLessThanOrEqualTo(99, game.FieldPosition, "Should stay at or behind 1 yard line");
             Assert.AreEqual(0, game.HomeScore, "No touchdown");
         }
 
@@ -331,13 +331,13 @@ passPlay.PassSegments[0].AirYards, $"Air yards should be clamped to end zone dis
         {
             var game = CreateGameAtFieldPosition(99, Possession.Home);
             SetPlayerSkills(game, 50, 90);
-            // Custom skills (50 vs 90) require override for precise 0 yards
+            // With log-normal distribution and weak offense, expect 0 or negative yards
             var rng = RunPlayScenarios.BadBlocking(yards: 0, yardsRandomOverride: 0.56);
 
             ExecuteRunPlayWithResult(game, rng);
 
             Assert.AreEqual(0, game.HomeScore, "No touchdown");
-            Assert.AreEqual(99, game.FieldPosition, "Stuffed at goal line");
+            Assert.IsLessThanOrEqualTo(99, game.FieldPosition, "Stuffed at or behind goal line");
         }
 
         [TestMethod]

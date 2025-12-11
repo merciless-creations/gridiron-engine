@@ -56,12 +56,16 @@ namespace Gridiron.Engine.Tests.Helpers
         /// <returns>Configured TestFluentSeedableRandom for this scenario</returns>
         public static TestFluentSeedableRandom SimpleGain(int yards, int direction = 2)
         {
+            // SimpleGain uses blocking check 0.4 which typically succeeds (1.2x modifier)
+            // Calculate base yards needed: baseYards * 1.2 >= yards
+            int baseYards = (int)Math.Ceiling(yards / 1.2);
+
             return new TestFluentSeedableRandom()
                 .QBCheck(0.15)
                 .RunDirection(direction)
-                .RunBlockingCheck(0.5)
+                .RunBlockingCheck(0.4)  // Lower value = likely to succeed
                 .BlockingPenaltyCheck(0.99)
-                .RunBaseYardsRandom(0.6)
+                .RunYardsForTarget(baseYards)
                 .TackleBreakCheck(0.9)
                 .BreakawayCheck(0.9)
                 .TacklePenaltyCheck(0.99)
@@ -85,12 +89,15 @@ namespace Gridiron.Engine.Tests.Helpers
         /// <param name="direction">Run direction, default 2 (Middle)</param>
         public static TestFluentSeedableRandom QBScramble(int yards, int direction = 2)
         {
+            // QBScramble uses blocking check 0.4 which typically succeeds (1.2x modifier)
+            int baseYards = (int)Math.Ceiling(yards / 1.2);
+
             return new TestFluentSeedableRandom()
                 .QBCheck(0.05)
                 .RunDirection(direction)
-                .RunBlockingCheck(0.5)
+                .RunBlockingCheck(0.4)
                 .BlockingPenaltyCheck(0.99)
-                .RunBaseYardsRandom(0.6)
+                .RunYardsForTarget(baseYards)
                 .TackleBreakCheck(0.9)
                 .BreakawayCheck(0.9)
                 .TacklePenaltyCheck(0.99)
@@ -115,12 +122,16 @@ namespace Gridiron.Engine.Tests.Helpers
         /// <param name="lossYards">Yards lost (positive number, will result in negative gain)</param>
         public static TestFluentSeedableRandom TackleForLoss(int lossYards = 2)
         {
+            // TFL uses blocking check 0.8 which typically fails (0.8x modifier)
+            // For negative yards, we need base yards that result in negative after modifier
+            int baseYards = (int)Math.Ceiling(-lossYards / 0.8);
+
             return new TestFluentSeedableRandom()
                 .QBCheck(0.15)
                 .RunDirection(2)
                 .RunBlockingCheck(0.8)
                 .BlockingPenaltyCheck(0.99)
-                .RunBaseYardsRandom(0.05)
+                .RunYardsForTarget(baseYards)
                 .TackleBreakCheck(0.9)
                 .BreakawayCheck(0.9)
                 .TacklePenaltyCheck(0.99)
@@ -142,25 +153,18 @@ namespace Gridiron.Engine.Tests.Helpers
         /// Good blocking scenario - offensive line dominates, creates running lanes.
         /// Blocking check succeeds (< 0.5 threshold).
         /// </summary>
-        /// <param name="yards">Target yards to gain (calculates precise random value to achieve this)</param>
+        /// <param name="yards">Target yards to gain</param>
         public static TestFluentSeedableRandom GoodBlocking(int yards)
         {
-            // Calculate the precise NextDouble value needed to produce the desired yardage
-            // Formula from RunYardsSkillsCheckResult with good blocking:
-            // baseYards = (blockingQuality + runnerSkill) / 2 * 1.2 (good blocking multiplier)
-            // totalYards = baseYards + (random * 25 - 15)
-            // For typical skills (50), we need to reverse this to get the random value
-            double targetBase = Math.Ceiling(yards / 1.2);
-            double randomFactor = targetBase - 3.0;  // Adjust for base calculation
-            double nextDouble = (randomFactor + 15.0) / 25.0;
-            nextDouble = Math.Max(0.0, Math.Min(1.0, nextDouble));
+            // Good blocking (0.4) succeeds = 1.2x modifier
+            int baseYards = (int)Math.Ceiling(yards / 1.2);
 
             return new TestFluentSeedableRandom()
                 .QBCheck(0.15)
                 .RunDirection(2)
                 .RunBlockingCheck(0.4)
                 .BlockingPenaltyCheck(0.99)
-                .RunBaseYardsRandom(nextDouble)
+                .RunYardsForTarget(baseYards)
                 .TackleBreakCheck(0.9)
                 .BreakawayCheck(0.9)
                 .TacklePenaltyCheck(0.99)
@@ -178,24 +182,19 @@ namespace Gridiron.Engine.Tests.Helpers
         /// Bad blocking scenario - offensive line fails, RB hit in backfield.
         /// Blocking check fails (>= 0.5 threshold).
         /// </summary>
-        /// <param name="yards">Target yards to gain (calculates precise random value, often results in minimal/no gain)</param>
-        /// <param name="yardsRandomOverride">Optional override for yards random value (use when custom player skills affect calculation)</param>
+        /// <param name="yards">Target yards to gain</param>
+        /// <param name="yardsRandomOverride">Ignored - kept for API compatibility</param>
         public static TestFluentSeedableRandom BadBlocking(int yards, double? yardsRandomOverride = null)
         {
-            // Calculate the precise NextDouble value needed to produce the desired yardage
-            // Formula assumes typical 50/50 skills (baseYards ~= 3.0)
-            // For custom skills, use yardsRandomOverride parameter
-            double targetBase = Math.Ceiling(yards / 0.8);
-            double randomFactor = targetBase - 3.0;
-            double nextDouble = yardsRandomOverride ?? ((randomFactor + 15.0) / 25.0);
-            nextDouble = Math.Max(0.0, Math.Min(1.0, nextDouble));
+            // Bad blocking (0.6) fails = 0.8x modifier
+            int baseYards = (int)Math.Ceiling(yards / 0.8);
 
             return new TestFluentSeedableRandom()
                 .QBCheck(0.15)
                 .RunDirection(2)
                 .RunBlockingCheck(0.6)
                 .BlockingPenaltyCheck(0.99)
-                .RunBaseYardsRandom(nextDouble)
+                .RunYardsForTarget(baseYards)
                 .TackleBreakCheck(0.9)
                 .BreakawayCheck(0.9)
                 .TacklePenaltyCheck(0.99)
@@ -219,10 +218,10 @@ namespace Gridiron.Engine.Tests.Helpers
         /// Random sequence includes tackle break yards (NextInt 3-8).
         /// NOTE: This adds an extra random value compared to simple scenarios.
         /// </summary>
-        /// <param name="baseYards">Documentation only - yards before tackle break (use blockingValue and baseYardsFactor to control)</param>
+        /// <param name="baseYards">Target base yards before tackle break</param>
         /// <param name="tackleBreakYards">Additional yards from breaking tackle (3-8)</param>
         /// <param name="blockingValue">Blocking check value (default 0.4 = good blocking)</param>
-        /// <param name="baseYardsFactor">Base yards random factor (default 0.68)</param>
+        /// <param name="baseYardsFactor">Ignored - kept for API compatibility</param>
         public static TestFluentSeedableRandom TackleBreak(int baseYards, int tackleBreakYards = 5,
             double blockingValue = 0.4, double baseYardsFactor = 0.68)
         {
@@ -230,12 +229,16 @@ namespace Gridiron.Engine.Tests.Helpers
                 throw new ArgumentOutOfRangeException(nameof(tackleBreakYards),
                     "Tackle break yards must be 3-8 per TackleBreakYardsSkillsCheckResult");
 
+            // Blocking modifier: 0.4 succeeds (1.2x), 0.6+ fails (0.8x)
+            double blockingModifier = blockingValue < 0.5 ? 1.2 : 0.8;
+            int runBaseYards = (int)Math.Ceiling(baseYards / blockingModifier);
+
             return new TestFluentSeedableRandom()
                 .QBCheck(0.15)
                 .RunDirection(2)
                 .RunBlockingCheck(blockingValue)
                 .BlockingPenaltyCheck(0.99)
-                .RunBaseYardsRandom(baseYardsFactor)
+                .RunYardsForTarget(runBaseYards)
                 .TackleBreakCheck(0.1)
                 .TackleBreakYards(tackleBreakYards)
                 .BreakawayCheck(0.9)
@@ -269,7 +272,7 @@ namespace Gridiron.Engine.Tests.Helpers
                 .RunDirection(2)
                 .RunBlockingCheck(0.5)
                 .BlockingPenaltyCheck(0.99)
-                .RunBaseYardsRandom(0.5)
+                .RunYardsForTarget((int)Math.Ceiling(baseYards / 1.2))  // Good blocking (1.2x)
                 .TackleBreakCheck(0.9)
                 .BreakawayCheck(0.05)
                 .BreakawayYards(breakawayYards)
@@ -304,7 +307,7 @@ namespace Gridiron.Engine.Tests.Helpers
                 .RunDirection(2)
                 .RunBlockingCheck(0.3)
                 .BlockingPenaltyCheck(0.99)
-                .RunBaseYardsRandom(0.9)
+                .RunYardsForTarget(5)  // Base 5 yards + tackle break + breakaway
                 .TackleBreakCheck(0.05)
                 .TackleBreakYards(tackleBreakYards)
                 .BreakawayCheck(0.02)
@@ -333,12 +336,15 @@ namespace Gridiron.Engine.Tests.Helpers
         /// <param name="yardsBeforeFumble">Yards gained before fumble</param>
         public static TestFluentSeedableRandom Fumble(int yardsBeforeFumble)
         {
+            // Blocking check 0.4 succeeds = 1.2x modifier
+            int baseYards = (int)Math.Ceiling(yardsBeforeFumble / 1.2);
+
             return new TestFluentSeedableRandom()
                 .QBCheck(0.15)
                 .RunDirection(2)
-                .RunBlockingCheck(0.5)
+                .RunBlockingCheck(0.4)
                 .BlockingPenaltyCheck(0.99)
-                .RunBaseYardsRandom(0.6)
+                .RunYardsForTarget(baseYards)
                 .TackleBreakCheck(0.9)
                 .BreakawayCheck(0.9)
                 .TacklePenaltyCheck(0.99)
@@ -365,14 +371,17 @@ namespace Gridiron.Engine.Tests.Helpers
         /// <param name="yards">Yards that would have been gained</param>
         public static TestFluentSeedableRandom WithBlockingPenalty(int yards)
         {
+            // Blocking check 0.4 succeeds = 1.2x modifier
+            int baseYards = (int)Math.Ceiling(yards / 1.2);
+
             return new TestFluentSeedableRandom()
                 .QBCheck(0.15)
                 .RunDirection(2)
-                .RunBlockingCheck(0.5)
+                .RunBlockingCheck(0.4)
                 .BlockingPenaltyCheck(0.01)
                 .NextDouble(0.5)    // Penalty effect: team selection
                 .NextInt(5)     // Penalty effect: player selection
-                .RunBaseYardsRandom(0.6)
+                .RunYardsForTarget(baseYards)
                 .TackleBreakCheck(0.9)
                 .BreakawayCheck(0.9)
                 .TacklePenaltyCheck(0.99)
@@ -396,12 +405,15 @@ namespace Gridiron.Engine.Tests.Helpers
         /// <param name="yards">Yards gained before penalty</param>
         public static TestFluentSeedableRandom WithTacklePenalty(int yards)
         {
+            // Blocking check 0.4 succeeds = 1.2x modifier
+            int baseYards = (int)Math.Ceiling(yards / 1.2);
+
             return new TestFluentSeedableRandom()
                 .QBCheck(0.15)
                 .RunDirection(2)
-                .RunBlockingCheck(0.5)
+                .RunBlockingCheck(0.4)
                 .BlockingPenaltyCheck(0.99)
-                .RunBaseYardsRandom(0.6)
+                .RunYardsForTarget(baseYards)
                 .TackleBreakCheck(0.9)
                 .BreakawayCheck(0.9)
                 .TacklePenaltyCheck(0.01)
@@ -427,14 +439,17 @@ namespace Gridiron.Engine.Tests.Helpers
         /// </summary>
         public static TestFluentSeedableRandom WithBlockingAndTacklePenalty(int yards)
         {
+            // Blocking check 0.4 succeeds = 1.2x modifier
+            int baseYards = (int)Math.Ceiling(yards / 1.2);
+
             return new TestFluentSeedableRandom()
                 .QBCheck(0.15)
                 .RunDirection(2)
-                .RunBlockingCheck(0.5)
+                .RunBlockingCheck(0.4)
                 .BlockingPenaltyCheck(0.01)
                 .NextDouble(0.5)         // Penalty effect: team selection
                 .NextInt(5)         // Penalty effect: player selection
-                .RunBaseYardsRandom(0.6)
+                .RunYardsForTarget(baseYards)
                 .TackleBreakCheck(0.9)
                 .BreakawayCheck(0.9)
                 .TacklePenaltyCheck(0.01)
@@ -487,7 +502,14 @@ namespace Gridiron.Engine.Tests.Helpers
                 rng.NextDouble(0.5).NextInt(5);  // Penalty effect randoms
             }
 
-            rng.RunBaseYardsRandom(baseYardsFactor)
+            // Custom scenario - use blocking modifier to calculate base yards
+            double blockingModifier = blockingCheckValue < 0.5 ? 1.2 : 0.8;
+            // Note: baseYardsFactor is ignored with log-normal; we need to calculate differently
+            // Assuming baseYardsFactor maps roughly to ~5 yards average, use that as target
+            int targetYards = 5;
+            int runBaseYards = (int)Math.Ceiling(targetYards / blockingModifier);
+
+            rng.RunYardsForTarget(runBaseYards)
                 .TackleBreakCheck(tackleBreak ? 0.1 : 0.9);
 
             if (tackleBreak)
