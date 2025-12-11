@@ -1,3 +1,4 @@
+using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -256,7 +257,7 @@ namespace Gridiron.Engine.Tests
             // Act
             for (int i = 0; i < SAMPLE_SIZE; i++)
             {
-                samples.Add(StatisticalDistributions.PassYards(rng, StatisticalDistributions.PassType.Screen, 0.0));
+                samples.Add(StatisticalDistributions.PassYards(rng, PassType.Screen, 0.0));
             }
 
             var mean = samples.Average();
@@ -276,7 +277,7 @@ namespace Gridiron.Engine.Tests
             // Act
             for (int i = 0; i < SAMPLE_SIZE; i++)
             {
-                samples.Add(StatisticalDistributions.PassYards(rng, StatisticalDistributions.PassType.Short, 0.0));
+                samples.Add(StatisticalDistributions.PassYards(rng, PassType.Short, 0.0));
             }
 
             var mean = samples.Average();
@@ -296,7 +297,7 @@ namespace Gridiron.Engine.Tests
             // Act
             for (int i = 0; i < SAMPLE_SIZE; i++)
             {
-                samples.Add(StatisticalDistributions.PassYards(rng, StatisticalDistributions.PassType.Medium, 0.0));
+                samples.Add(StatisticalDistributions.PassYards(rng, PassType.Forward, 0.0));
             }
 
             var mean = samples.Average();
@@ -316,7 +317,7 @@ namespace Gridiron.Engine.Tests
             // Act
             for (int i = 0; i < SAMPLE_SIZE; i++)
             {
-                samples.Add(StatisticalDistributions.PassYards(rng, StatisticalDistributions.PassType.Deep, 0.0));
+                samples.Add(StatisticalDistributions.PassYards(rng, PassType.Deep, 0.0));
             }
 
             var mean = samples.Average();
@@ -327,16 +328,24 @@ namespace Gridiron.Engine.Tests
         }
 
         [TestMethod]
-        public void PassYards_AlwaysAtLeastOneYard()
+        public void PassYards_RespectsMinimumByType()
         {
             // Arrange
             var rng = new SeedableRandom(SEED);
 
-            // Act & Assert
+            // Act & Assert - Screen passes can be negative (behind LOS)
             for (int i = 0; i < SAMPLE_SIZE; i++)
             {
-                var yards = StatisticalDistributions.PassYards(rng, StatisticalDistributions.PassType.Screen, 0.0);
-                Assert.IsTrue(yards >= 1, $"Pass completions should be at least 1 yard. Got: {yards}");
+                var screenYards = StatisticalDistributions.PassYards(rng, PassType.Screen, 0.0);
+                Assert.IsTrue(screenYards >= -3, $"Screen pass minimum is -3. Got: {screenYards}");
+            }
+
+            // Short passes have minimum 1 yard
+            rng = new SeedableRandom(SEED);
+            for (int i = 0; i < SAMPLE_SIZE; i++)
+            {
+                var shortYards = StatisticalDistributions.PassYards(rng, PassType.Short, 0.0);
+                Assert.IsTrue(shortYards >= 1, $"Short pass minimum is 1. Got: {shortYards}");
             }
         }
 

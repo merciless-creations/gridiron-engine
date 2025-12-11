@@ -1,3 +1,4 @@
+using Gridiron.Engine.Domain;
 using System;
 
 namespace Gridiron.Engine.Tests.Helpers
@@ -61,6 +62,22 @@ namespace Gridiron.Engine.Tests.Helpers
     /// </summary>
     public static class PassPlayScenarios
     {
+        #region Helper Methods
+
+        /// <summary>
+        /// Converts a passType probability value to a PassType enum.
+        /// Screen: &lt; 0.15, Short: 0.15-0.50, Forward: 0.50-0.85, Deep: &gt; 0.85
+        /// </summary>
+        private static PassType GetPassTypeFromProbability(double passTypeValue)
+        {
+            if (passTypeValue < 0.15) return PassType.Screen;
+            if (passTypeValue < 0.50) return PassType.Short;
+            if (passTypeValue < 0.85) return PassType.Forward;
+            return PassType.Deep;
+        }
+
+        #endregion
+
         #region Completed Pass Scenarios
 
         /// <summary>
@@ -72,7 +89,7 @@ namespace Gridiron.Engine.Tests.Helpers
         /// </summary>
         /// <param name="airYards">Yards ball travels in air</param>
         /// <param name="immediateTackleYards">Yards after catch when tackled immediately (0-2)</param>
-        /// <param name="passType">Pass type value: Screen<0.15, Short 0.15-0.50, Forward 0.50-0.85, Deep>0.85</param>
+        /// <param name="passType">Pass type value: Screen&lt;0.15, Short 0.15-0.50, Forward 0.50-0.85, Deep&gt;0.85</param>
         /// <param name="pressure">Whether QB is under pressure</param>
         public static TestFluentSeedableRandom CompletedPassImmediateTackle(
             int airYards = 10,
@@ -86,7 +103,7 @@ namespace Gridiron.Engine.Tests.Helpers
                 .QBPressureCheck(pressure ? 0.2 : 0.8) // Pressure or not
                 .ReceiverSelection(0.5)                // Weighted receiver selection
                 .PassTypeDetermination(passType)       // Pass type (default: Forward)
-                .AirYards(airYards)                    // Distance in air
+                .AirYardsForTarget(airYards, GetPassTypeFromProbability(passType)) // Distance in air (normal distribution)
                 .PassCompletionCheck(0.5)              // Completion succeeds
                 .TacklePenaltyCheck(0.99)
                 .YACOpportunityCheck(0.8)              // YAC fails (tackled immediately)
@@ -129,7 +146,7 @@ namespace Gridiron.Engine.Tests.Helpers
                 .QBPressureCheck(0.8)                  // No pressure
                 .ReceiverSelection(receiverSelection)  // Weighted receiver selection (customizable)
                 .PassTypeDetermination(passType)       // Pass type (customizable)
-                .AirYards(airYards)                    // Distance in air
+                .AirYardsForTarget(airYards, GetPassTypeFromProbability(passType)) // Distance in air (normal distribution)
                 .PassCompletionCheck(0.5)              // Completion succeeds
                 .YACOpportunityCheck(0.3)              // YAC succeeds!
                 .YACRandomFactor(yacFactor)            // YAC variance
@@ -163,7 +180,7 @@ namespace Gridiron.Engine.Tests.Helpers
                 .QBPressureCheck(0.5)
                 .ReceiverSelection(0.5)
                 .PassTypeDetermination(0.10)           // Screen (< 0.15)
-                .AirYards(airYards)
+                .AirYardsForTarget(airYards, PassType.Screen)
                 .PassCompletionCheck(0.5)
                 .YACOpportunityCheck(0.3)              // Usually good YAC on screens
                 .YACRandomFactor(yacFactor)
@@ -220,12 +237,12 @@ namespace Gridiron.Engine.Tests.Helpers
         public static TestFluentSeedableRandom IncompletePass(bool withPressure = false)
         {
             return new TestFluentSeedableRandom()
-                .PassProtectionCheck(withPressure ? 0.8 : 0.3) // More pressure = less protection
+                .PassProtectionCheck(withPressure ? 0.35 : 0.3) // 0.35 = barely protected (not sack even with skill disadvantage)
                 .BlockingPenaltyCheck(0.99)
                 .QBPressureCheck(withPressure ? 0.2 : 0.5) // Pressure affects completion
                 .ReceiverSelection(0.5)
                 .PassTypeDetermination(0.6)            // Forward pass
-                .AirYards(8)
+                .AirYardsForTarget(8, PassType.Forward)
                 .PassCompletionCheck(0.9)              // FAILS (incomplete)
                 .CoveragePenaltyCheck(0.99)
                 .InterceptionOccurredCheck(0.99)       // No interception
@@ -289,7 +306,7 @@ namespace Gridiron.Engine.Tests.Helpers
                 .QBPressureCheck(0.2)                  // Pressure increases INT chance
                 .ReceiverSelection(0.5)
                 .PassTypeDetermination(0.6)
-                .AirYards(10)
+                .AirYardsForTarget(10, PassType.Forward)
                 .PassCompletionCheck(0.9)              // Incomplete
                 .CoveragePenaltyCheck(0.99)
                 .InterceptionOccurredCheck(0.01)       // INTERCEPTION!
@@ -315,7 +332,7 @@ namespace Gridiron.Engine.Tests.Helpers
                 .QBPressureCheck(0.2)
                 .ReceiverSelection(0.5)
                 .PassTypeDetermination(0.6)
-                .AirYards(10)
+                .AirYardsForTarget(10, PassType.Forward)
                 .PassCompletionCheck(0.9)
                 .CoveragePenaltyCheck(0.99)
                 .InterceptionOccurredCheck(0.01)       // INTERCEPTION!
@@ -349,7 +366,7 @@ namespace Gridiron.Engine.Tests.Helpers
                 .QBPressureCheck(0.8)
                 .ReceiverSelection(0.5)
                 .PassTypeDetermination(0.6)
-                .AirYards(airYards)
+                .AirYardsForTarget(airYards, PassType.Forward)
                 .PassCompletionCheck(0.5)
                 .TacklePenaltyCheck(0.99)
                 .YACOpportunityCheck(0.8)
@@ -376,7 +393,7 @@ namespace Gridiron.Engine.Tests.Helpers
                 .QBPressureCheck(0.8)
                 .ReceiverSelection(0.5)
                 .PassTypeDetermination(0.6)
-                .AirYards(airYards)
+                .AirYardsForTarget(airYards, PassType.Forward)
                 .PassCompletionCheck(0.5)              // Completion succeeds
                 .YACOpportunityCheck(0.8)              // YAC fails - tackled immediately
                 .ImmediateTackleYards(2)               // 2 yards after catch
@@ -425,7 +442,7 @@ namespace Gridiron.Engine.Tests.Helpers
                 .QBPressureCheck(0.5)
                 .ReceiverSelection(0.5)
                 .PassTypeDetermination(0.6)
-                .AirYards(20)                          // Deep ball = more likely PI
+                .AirYardsForTarget(20, PassType.Forward) // Deep ball = more likely PI
                 .PassCompletionCheck(0.9)              // Incomplete
                 .CoveragePenaltyCheck(0.01)
                 .InterceptionOccurredCheck(0.99)       // No interception
@@ -454,7 +471,7 @@ namespace Gridiron.Engine.Tests.Helpers
                 .QBPressureCheck(0.8)
                 .ReceiverSelection(0.5)
                 .PassTypeDetermination(0.6)
-                .AirYards(airYards)
+                .AirYardsForTarget(airYards, PassType.Forward)
                 .PassCompletionCheck(0.5)              // Completion succeeds
                 .YACOpportunityCheck(0.8)              // YAC fails - tackled immediately
                 .ImmediateTackleYards(2)               // 2 yards after catch
@@ -482,7 +499,7 @@ namespace Gridiron.Engine.Tests.Helpers
                 .QBPressureCheck(0.8)
                 .ReceiverSelection(0.5)
                 .PassTypeDetermination(0.6)
-                .AirYards(airYards)
+                .AirYardsForTarget(airYards, PassType.Forward)
                 .PassCompletionCheck(0.9)               // Incomplete
                 .CoveragePenaltyCheck(0.01)             // Coverage penalty occurs
                 .NextDouble(0.5)                        // Penalty effect: team selection
@@ -503,7 +520,7 @@ namespace Gridiron.Engine.Tests.Helpers
                 .QBPressureCheck(0.8)
                 .ReceiverSelection(0.5)
                 .PassTypeDetermination(0.6)
-                .AirYards(airYards)
+                .AirYardsForTarget(airYards, PassType.Forward)
                 .PassCompletionCheck(0.9)               // Incomplete
                 .CoveragePenaltyCheck(0.01)             // Coverage penalty occurs
                 .NextDouble(0.5)                        // Penalty effect: team selection
@@ -583,7 +600,7 @@ namespace Gridiron.Engine.Tests.Helpers
                     .QBPressureCheck(pressure ? 0.2 : 0.8)
                     .ReceiverSelection(0.5)
                     .PassTypeDetermination(passTypeValue)
-                    .AirYards(airYards)
+                    .AirYardsForTarget(airYards, GetPassTypeFromProbability(passTypeValue))
                     .PassCompletionCheck(completes ? 0.5 : 0.9);
 
                 if (completes)

@@ -138,15 +138,14 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var game = _testGame.GetGame();
             var rng = new TestFluentSeedableRandom()
-                .AirYards(1);
+                .AirYardsForTarget(1, PassType.Screen); // Target 1 yard screen pass
 
             // Act
             var airYardsResult = new AirYardsSkillsCheckResult(rng, PassType.Screen, 25);
             airYardsResult.Execute(game);
 
-            // Assert - Screen passes range from -3 to 2 yards
-            Assert.IsGreaterThanOrEqualTo(-3, airYardsResult.Result);
-            Assert.IsLessThan(3, airYardsResult.Result);
+            // Assert - Target 1 yard, screen min is -3, so we expect ~1
+            Assert.AreEqual(1, airYardsResult.Result);
         }
 
         [TestMethod]
@@ -155,15 +154,14 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var game = _testGame.GetGame();
             var rng = new TestFluentSeedableRandom()
-                .AirYards(5);
+                .AirYardsForTarget(7, PassType.Short); // Target 7 yard short pass
 
             // Act
             var airYardsResult = new AirYardsSkillsCheckResult(rng, PassType.Short, 25);
             airYardsResult.Execute(game);
 
-            // Assert - Short passes range from 3 to 11 yards
-            Assert.IsGreaterThanOrEqualTo(3, airYardsResult.Result);
-            Assert.IsLessThan(12, airYardsResult.Result);
+            // Assert - Target 7 yards, short min is 1
+            Assert.AreEqual(7, airYardsResult.Result);
         }
 
         [TestMethod]
@@ -172,15 +170,14 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var game = _testGame.GetGame();
             var rng = new TestFluentSeedableRandom()
-                .AirYards(12);
+                .AirYardsForTarget(14, PassType.Forward); // Target 14 yard medium pass
 
             // Act
             var airYardsResult = new AirYardsSkillsCheckResult(rng, PassType.Forward, 25);
             airYardsResult.Execute(game);
 
-            // Assert - Forward passes range from 8 to 19 yards
-            Assert.IsGreaterThanOrEqualTo(8, airYardsResult.Result);
-            Assert.IsLessThan(20, airYardsResult.Result);
+            // Assert - Target 14 yards, forward min is 5
+            Assert.AreEqual(14, airYardsResult.Result);
         }
 
         [TestMethod]
@@ -189,34 +186,30 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var game = _testGame.GetGame();
             var rng = new TestFluentSeedableRandom()
-                .AirYards(30);
+                .AirYardsForTarget(30, PassType.Deep); // Target 30 yard deep pass
 
             // Act
             var airYardsResult = new AirYardsSkillsCheckResult(rng, PassType.Deep, 25);
             airYardsResult.Execute(game);
 
-            // Assert - Deep passes range from 18 to 44 yards
-            Assert.IsGreaterThanOrEqualTo(18, airYardsResult.Result);
-            Assert.IsLessThan(45, airYardsResult.Result);
+            // Assert - Target 30 yards, deep min is 15
+            Assert.AreEqual(30, airYardsResult.Result);
         }
 
         [TestMethod]
         public void AirYardsSkillsCheckResult_DeepPassNearGoalLine_ClampedToFieldPosition()
         {
-            // Arrange - At the 10 yard line, only 10 yards to goal
+            // Arrange - At the 90 yard line, only 10 yards to goal
             var game = _testGame.GetGame();
             var rng = new TestFluentSeedableRandom()
-                .AirYards(18); // Deep pass would be 18-44, but clamped to 10
+                .AirYardsForTarget(25, PassType.Deep); // Target 25 yards, but clamped to 10
 
             // Act
             var airYardsResult = new AirYardsSkillsCheckResult(rng, PassType.Deep, 90);
             airYardsResult.Execute(game);
 
-            // Assert - Should be clamped to yards to goal (10 yards, not 18)
-            // Deep pass at 90 yard line: Next(18, Max(19, Min(45, 10))) = Next(18, 19) returns 18
-            // Final clamping: Result = Math.Min(18, 10) = 10
-            Assert.IsGreaterThanOrEqualTo(10, airYardsResult.Result);
-            Assert.IsLessThan(11, airYardsResult.Result); // Clamped to actual field distance
+            // Assert - Distribution would produce ~25 yards, but clamped to 10 (yards to goal)
+            Assert.AreEqual(10, airYardsResult.Result);
         }
 
         [TestMethod]
@@ -225,15 +218,14 @@ namespace Gridiron.Engine.Tests
             // Arrange - At the 95 yard line, only 5 yards to goal
             var game = _testGame.GetGame();
             var rng = new TestFluentSeedableRandom()
-                .AirYards(4);
+                .AirYardsForTarget(7, PassType.Short); // Target 7 yards, but clamped to 5
 
             // Act
             var airYardsResult = new AirYardsSkillsCheckResult(rng, PassType.Short, 95);
             airYardsResult.Execute(game);
 
-            // Assert - Short pass at 95 yard line: Next(3, Max(4, Min(12, 5))) = Next(3, 5)
-            Assert.IsGreaterThanOrEqualTo(3, airYardsResult.Result);
-            Assert.IsLessThan(5, airYardsResult.Result);
+            // Assert - Distribution would produce ~7 yards, but clamped to 5 (yards to goal)
+            Assert.AreEqual(5, airYardsResult.Result);
         }
 
         #endregion

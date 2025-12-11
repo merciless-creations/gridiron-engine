@@ -255,23 +255,28 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var game = CreateGameWithPassPlay();
 
-            // Set one receiver to have very high catching (weighted selection should favor this one)
-            var eliteReceiver = game.CurrentPlay!.OffensePlayersOnField.Find(p => p.Position == Positions.WR);
-            eliteReceiver!.Catching = 95;
+            // Get all eligible receivers and set one to elite catching
+            var receivers = game.CurrentPlay!.OffensePlayersOnField.Where(p =>
+                p.Position == Positions.WR || p.Position == Positions.TE || p.Position == Positions.RB).ToList();
+
+            // Set first receiver in the list to elite catching
+            var firstReceiver = receivers[0];
+            firstReceiver.Catching = 95;
 
             // Set others to low catching
-            foreach (var player in game.CurrentPlay.OffensePlayersOnField)
+            foreach (var player in receivers.Skip(1))
             {
-                if (player != eliteReceiver &&
-                    (player.Position == Positions.WR || player.Position == Positions.TE || player.Position == Positions.RB))
-                {
-                    player.Catching = 40;
-                }
+                player.Catching = 40;
             }
+
+            // Calculate selection value to hit first receiver's bucket
+            // First receiver bucket is [0, 95/total]. Use low value to ensure selection.
+            var totalCatching = receivers.Sum(r => r.Catching);
+            var selectionValue = 0.5 * firstReceiver.Catching / totalCatching; // Middle of first bucket
 
             SetPlayerSkills(game, 70, 70);
 
-            var rng = PassPlayScenarios.CompletedPassWithYAC(airYards: 10, yacFactor: 0.5, hasBigPlay: false, receiverSelection: 0.9, protectionValue: 0.8);
+            var rng = PassPlayScenarios.CompletedPassWithYAC(airYards: 10, yacFactor: 0.5, hasBigPlay: false, receiverSelection: selectionValue, protectionValue: 0.7);
 
             // Act
             var pass = new Pass(rng);
@@ -279,8 +284,8 @@ namespace Gridiron.Engine.Tests
 
             // Assert
             var passPlay = (PassPlay)game.CurrentPlay;
-            Assert.AreEqual(eliteReceiver, passPlay.PassSegments[0].Receiver,
-                "High weighted random should select elite receiver");
+            Assert.AreEqual(firstReceiver, passPlay.PassSegments[0].Receiver,
+                $"Selection value {selectionValue:F3} should select first receiver with catching {firstReceiver.Catching}");
         }
 
         #endregion

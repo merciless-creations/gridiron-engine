@@ -217,7 +217,7 @@ namespace Gridiron.Engine.Tests
                 .QBPressureCheck(0.5)            // No pressure
                 .ReceiverSelection(0.5)
                 .PassTypeDetermination(0.6)      // Forward pass
-                .AirYards(10)
+                .AirYardsForTarget(10, PassType.Forward)
                 .PassCompletionCheck(0.9)        // INCOMPLETE (> 0.75)
                 .CoveragePenaltyCheck(0.99)      // No penalty - only checked on incomplete
                 .InterceptionOccurredCheck(0.99) // No interception
@@ -248,7 +248,7 @@ namespace Gridiron.Engine.Tests
                 .QBPressureCheck(0.5)
                 .ReceiverSelection(0.5)
                 .PassTypeDetermination(0.6)
-                .AirYards(15)
+                .AirYardsForTarget(15, PassType.Forward)
                 .PassCompletionCheck(0.9)        // INCOMPLETE
                 .CoveragePenaltyCheck(0.99)      // No penalty - only checked on incomplete
                 .InterceptionOccurredCheck(0.99) // No interception

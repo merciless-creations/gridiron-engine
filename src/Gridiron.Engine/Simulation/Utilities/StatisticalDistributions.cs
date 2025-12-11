@@ -1,3 +1,4 @@
+using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.Configuration;
 using System;
@@ -103,64 +104,61 @@ namespace Gridiron.Engine.Simulation.Utilities
         #region Pass Yardage Distribution
 
         /// <summary>
-        /// Pass type enumeration for distribution selection.
-        /// </summary>
-        public enum PassType
-        {
-            Screen,
-            Short,
-            Medium,
-            Deep
-        }
-
-        /// <summary>
-        /// Generates pass yardage using normal distribution based on pass type.
+        /// Generates pass air yards using normal distribution based on pass type.
+        /// Uses centralized configuration from GameProbabilities.YardageDistributions.
         ///
         /// NFL averages by pass type:
         /// - Screen: ~4 yards (high completion %, low variance)
         /// - Short: ~7 yards (slants, curls, out routes)
-        /// - Medium: ~14 yards (crossing routes, intermediate)
+        /// - Forward/Medium: ~14 yards (crossing routes, intermediate)
         /// - Deep: ~30 yards (go routes, posts) - lower completion %
         /// </summary>
         /// <param name="rng">Random number generator</param>
-        /// <param name="passType">Type of pass attempt</param>
-        /// <param name="skillModifier">Skill differential modifier</param>
-        /// <returns>Pass yardage (for completions)</returns>
+        /// <param name="passType">Type of pass attempt (domain PassType)</param>
+        /// <param name="skillModifier">Skill differential modifier (-1.0 to +1.0 typical)</param>
+        /// <returns>Pass air yards (minimum 1 for screen, varies by type)</returns>
         public static int PassYards(ISeedableRandom rng, PassType passType, double skillModifier = 0.0)
         {
             double mean, stdDev;
+            int minYards;
 
             switch (passType)
             {
                 case PassType.Screen:
-                    mean = 4.0;
-                    stdDev = 3.0;
+                    mean = GameProbabilities.YardageDistributions.PASS_SCREEN_MEAN;
+                    stdDev = GameProbabilities.YardageDistributions.PASS_SCREEN_STDDEV;
+                    minYards = -3; // Screens can be behind LOS
                     break;
                 case PassType.Short:
-                    mean = 7.0;
-                    stdDev = 3.5;
+                    mean = GameProbabilities.YardageDistributions.PASS_SHORT_MEAN;
+                    stdDev = GameProbabilities.YardageDistributions.PASS_SHORT_STDDEV;
+                    minYards = 1;
                     break;
-                case PassType.Medium:
-                    mean = 14.0;
-                    stdDev = 5.0;
+                case PassType.Forward: // "Forward" in domain = "Medium" in NFL terminology
+                    mean = GameProbabilities.YardageDistributions.PASS_MEDIUM_MEAN;
+                    stdDev = GameProbabilities.YardageDistributions.PASS_MEDIUM_STDDEV;
+                    minYards = 5;
                     break;
                 case PassType.Deep:
-                    mean = 30.0;
-                    stdDev = 10.0;
+                    mean = GameProbabilities.YardageDistributions.PASS_DEEP_MEAN;
+                    stdDev = GameProbabilities.YardageDistributions.PASS_DEEP_STDDEV;
+                    minYards = 15;
                     break;
                 default:
-                    mean = 10.0;
-                    stdDev = 5.0;
+                    // Lateral, Backward, or unknown - use short pass defaults
+                    mean = GameProbabilities.YardageDistributions.PASS_SHORT_MEAN;
+                    stdDev = GameProbabilities.YardageDistributions.PASS_SHORT_STDDEV;
+                    minYards = 1;
                     break;
             }
 
             // Apply skill modifier to mean
-            var adjustedMean = mean + (skillModifier * 3.0);
+            var adjustedMean = mean + (skillModifier * GameProbabilities.YardageDistributions.PASS_SKILL_MULTIPLIER);
 
             var yards = Normal(rng, adjustedMean, stdDev);
 
-            // Floor at 1 yard for completions (can't have 0 or negative completion yards)
-            return Math.Max(1, (int)Math.Round(yards));
+            // Floor at minimum yards for pass type (screens can be negative)
+            return Math.Max(minYards, (int)Math.Round(yards));
         }
 
         /// <summary>
@@ -168,7 +166,8 @@ namespace Gridiron.Engine.Simulation.Utilities
         /// </summary>
         public static int PassYards(ISeedableRandom rng, double mean, double stdDev, double skillModifier)
         {
-            var adjustedMean = mean + (skillModifier * 3.0);
+            var skillMultiplier = GameProbabilities.YardageDistributions.PASS_SKILL_MULTIPLIER;
+            var adjustedMean = mean + (skillModifier * skillMultiplier);
             var yards = Normal(rng, adjustedMean, stdDev);
             return Math.Max(1, (int)Math.Round(yards));
         }
