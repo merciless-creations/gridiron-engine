@@ -213,13 +213,13 @@ namespace Gridiron.Engine.Tests
 
             var rng = new TestFluentSeedableRandom()
                 .PassProtectionCheck(0.3)        // Protection holds
-                .NextDouble(0.99)                // Blocking penalty check (no penalty)
+                .BlockingPenaltyCheck(0.99)      // No penalty
                 .QBPressureCheck(0.5)            // No pressure
                 .ReceiverSelection(0.5)
                 .PassTypeDetermination(0.6)      // Forward pass
                 .AirYards(10)
                 .PassCompletionCheck(0.9)        // INCOMPLETE (> 0.75)
-                .NextDouble(0.99)                // Coverage penalty check (no penalty) - only on incomplete
+                .CoveragePenaltyCheck(0.99)      // No penalty - only checked on incomplete
                 .InterceptionOccurredCheck(0.99) // No interception
                 .ElapsedTimeRandomFactor(0.5);
 
@@ -244,13 +244,13 @@ namespace Gridiron.Engine.Tests
 
             var rng = new TestFluentSeedableRandom()
                 .PassProtectionCheck(0.3)
-                .NextDouble(0.99)                // Blocking penalty check (no penalty)
+                .BlockingPenaltyCheck(0.99)      // No penalty
                 .QBPressureCheck(0.5)
                 .ReceiverSelection(0.5)
                 .PassTypeDetermination(0.6)
                 .AirYards(15)
                 .PassCompletionCheck(0.9)        // INCOMPLETE
-                .NextDouble(0.99)                // Coverage penalty check (no penalty) - only on incomplete
+                .CoveragePenaltyCheck(0.99)      // No penalty - only checked on incomplete
                 .InterceptionOccurredCheck(0.99) // No interception
                 .ElapsedTimeRandomFactor(0.5);
 
@@ -493,20 +493,20 @@ namespace Gridiron.Engine.Tests
             double blockingCheckValue = blockingSucceeds ? 0.3 : 0.7; // < 0.5 succeeds, >= 0.5 fails
 
             return new TestFluentSeedableRandom()
-                .NextDouble(0.15)                     // QB check (RB)
-                .NextInt(2)                           // Direction
+                .QBCheck(0.15)                        // QB check (RB gets handoff)
+                .RunDirection(2)                      // Direction (middle)
                 .RunBlockingCheck(blockingCheckValue) // Explicit blocking success/failure
-                .NextDouble(0.99)                     // Blocking penalty check (no penalty)
-                .NextDouble(nextDouble)               // Base yards calculation
+                .BlockingPenaltyCheck(0.99)           // No penalty
+                .RunBaseYardsRandom(nextDouble)       // Base yards calculation
                 .TackleBreakCheck(0.9)                // No tackle break
                 .BreakawayCheck(0.9)                  // No breakaway
-                .NextDouble(0.99)                     // Tackle penalty check (no penalty)
+                .TacklePenaltyCheck(0.99)             // No penalty
                 // Injury checks (ball carrier + 2 tacklers)
-                .InjuryOccurredCheck(0.99)  // Ball carrier no injury
-                .TacklerInjuryGateCheck(0.9)   // Tackler 1 skip
-                .TacklerInjuryGateCheck(0.9)   // Tackler 2 skip
-                .FumbleCheck(0.99)             // No fumble
-                .OutOfBoundsCheck(0.99)        // Out of bounds check
+                .InjuryOccurredCheck(0.99)            // Ball carrier no injury
+                .TacklerInjuryGateCheck(0.9)          // Tackler 1 skip
+                .TacklerInjuryGateCheck(0.9)          // Tackler 2 skip
+                .FumbleCheck(0.99)                    // No fumble
+                .OutOfBoundsCheck(0.99)               // Out of bounds check
                 .ElapsedTimeRandomFactor(0.5)         // Play execution time (5-8 seconds)
                 .RunoffTimeRandomFactor(0.5);         // Time between plays (25-35 seconds)
         }

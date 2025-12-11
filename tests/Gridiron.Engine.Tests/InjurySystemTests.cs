@@ -155,7 +155,7 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var defenders = CreateDefenders(1);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.029); // Just under 3%
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.029); // Just under 3%
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 1, false, false, false);
             var game = _testGame.GetGame();
@@ -172,7 +172,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.029);
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.029);
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Pass, player, 1, false, false, false);
             var game = _testGame.GetGame();
@@ -189,7 +189,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.049);
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.049);
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Kickoff, player, 1, false, false, false);
             var game = _testGame.GetGame();
@@ -206,7 +206,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.039);
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.039);
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Punt, player, 1, false, false, false);
             var game = _testGame.GetGame();
@@ -223,7 +223,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.059); // Just under 6%
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.059); // Just under 6%
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Pass, player, 1, false, false, true); // isSack=true
             var game = _testGame.GetGame();
@@ -240,7 +240,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.041); // 3% * 1.4 = 4.2%
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.041); // 3% * 1.4 = 4.2%
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 3, false, false, false);
             var game = _testGame.GetGame();
@@ -257,7 +257,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.035); // 3% * 1.2 = 3.6%
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.035); // 3% * 1.2 = 3.6%
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 1, false, true, false); // isBigPlay=true
             var game = _testGame.GetGame();
@@ -274,7 +274,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.014); // 3% * 0.5 = 1.5%
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.014); // 3% * 0.5 = 1.5%
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 1, true, false, false); // isOutOfBounds=true
             var game = _testGame.GetGame();
@@ -292,7 +292,7 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(100); // Very injury-prone
                                                          // Fragility=100: 3% * (0.5 + 100/100) = 3% * 1.5 = 4.5%
-            var rng = new TestFluentSeedableRandom().NextDouble(0.044); // Just under 4.5%
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.044); // Just under 4.5%
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 1, false, false, false);
             var game = _testGame.GetGame();
@@ -310,7 +310,7 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(0); // Very durable
                                                        // Fragility=0: 3% * (0.5 + 0/100) = 3% * 0.5 = 1.5%
-            var rng = new TestFluentSeedableRandom().NextDouble(0.02); // Well over 1.5%
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.02); // Well over 1.5%
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 1, false, false, false);
             var game = _testGame.GetGame();
@@ -328,7 +328,7 @@ namespace Gridiron.Engine.Tests
             // Arrange - QB sack (2x) + Gang tackle (1.4x) + Big play (1.2x)
             // Expected: 3% * 2.0 * 1.4 * 1.2 = ~10.08%
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.099);
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.099);
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Pass, player, 3, false, true, true);
             var game = _testGame.GetGame();
@@ -345,7 +345,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.95); // Well above threshold
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.95); // Well above threshold
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 1, false, false, false);
             var game = _testGame.GetGame();
@@ -362,7 +362,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.029);
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.029);
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 1, false, false, false);
             var game = _testGame.GetGame();
@@ -379,7 +379,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.029);
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.029);
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 2, false, false, false);
             var game = _testGame.GetGame();
@@ -396,7 +396,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.041); // 3% * 1.4 = 4.2%
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.041); // 3% * 1.4 = 4.2%
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 3, false, false, false);
             var game = _testGame.GetGame();
@@ -413,7 +413,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.041);
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.041);
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 4, false, false, false);
             var game = _testGame.GetGame();
@@ -431,7 +431,7 @@ namespace Gridiron.Engine.Tests
             // Arrange - Out of bounds (0.5x) and Big play (1.2x)
             // Expected: 3% * 0.5 * 1.2 = 1.8%
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.017);
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.017);
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 1, true, true, false);
             var game = _testGame.GetGame();
@@ -448,7 +448,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange - typical run play scenario
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.029);
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.029);
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 2, false, false, false);
             var game = _testGame.GetGame();
@@ -465,7 +465,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange - Best case: low fragility, out of bounds, no big play, single defender
             var player = CreatePlayerWithFragility(20);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.009); // Very low
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.009); // Very low
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 1, true, false, false);
             var game = _testGame.GetGame();
@@ -482,7 +482,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange - Worst case: QB sack + gang tackle + big play + high fragility
             var player = CreatePlayerWithFragility(80);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.15); // 15%
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.15); // 15%
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Pass, player, 4, false, true, true);
             var game = _testGame.GetGame();
@@ -499,8 +499,8 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng1 = new TestFluentSeedableRandom().NextDouble(0.029);
-            var rng2 = new TestFluentSeedableRandom().NextDouble(0.029);
+            var rng1 = new TestFluentSeedableRandom().InjuryOccurredCheck(0.029);
+            var rng2 = new TestFluentSeedableRandom().InjuryOccurredCheck(0.029);
             var game = _testGame.GetGame();
 
             var check1 = new InjuryOccurredSkillsCheck(rng1, PlayType.Run, player, 1, false, false, false);
@@ -519,7 +519,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.029);
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.029);
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 0, false, false, false);
             var game = _testGame.GetGame();
@@ -536,7 +536,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng = new TestFluentSeedableRandom().NextDouble(0.024); // Below 2.5% (between run/pass and kickoff)
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.024); // Below 2.5% (between run/pass and kickoff)
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.FieldGoal, player, 1, false, false, false);
             var game = _testGame.GetGame();
@@ -554,7 +554,7 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             player.CurrentInjury = new Injury { Type = InjuryType.Ankle, Severity = InjurySeverity.Minor, InjuredPlayer = player };
-            var rng = new TestFluentSeedableRandom().NextDouble(0.029);
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.029);
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 1, false, false, false);
             var game = _testGame.GetGame();
@@ -573,7 +573,7 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(100);
             // Fragility=100: 3% * (0.5 + 100/100) = 3% * 1.5 = 4.5%
-            var rng = new TestFluentSeedableRandom().NextDouble(0.044); // Just under 4.5%
+            var rng = new TestFluentSeedableRandom().InjuryOccurredCheck(0.044); // Just under 4.5%
 
             var check = new InjuryOccurredSkillsCheck(rng, PlayType.Run, player, 1, false, false, false);
             var game = _testGame.GetGame();
@@ -595,9 +595,9 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-        .NextDouble(0.5)  // Severity (< 0.6 = Minor)
-         .NextDouble(0.3)  // Injury type
-           .NextInt(2);      // Recovery time range
+                .InjurySeverityCheck(0.5)  // Severity (< 0.6 = Minor)
+                .InjuryTypeCheck(0.3)      // Injury type
+                .InjuryRecoveryTime(2);    // Recovery time range
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Run);
             var game = _testGame.GetGame();
@@ -615,9 +615,9 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-             .NextDouble(0.7)  // Severity (0.6-0.9 = Moderate)
-                     .NextDouble(0.3)  // Injury type
-                 .NextInt(0);   // Not used for moderate
+                .InjurySeverityCheck(0.7)  // Severity (0.6-0.9 = Moderate)
+                .InjuryTypeCheck(0.3)      // Injury type
+                .NextInt(0);    // Not used for moderate
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Run);
             var game = _testGame.GetGame();
@@ -635,9 +635,9 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-        .NextDouble(0.95)  // Severity (>= 0.9 = Game-ending)
-          .NextDouble(0.3)   // Injury type
-  .NextInt(0);       // Not used for game-ending
+                .InjurySeverityCheck(0.95)  // Severity (>= 0.9 = Game-ending)
+                .InjuryTypeCheck(0.3)       // Injury type
+                .NextInt(0);     // Not used for game-ending
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Run);
             var game = _testGame.GetGame();
@@ -655,8 +655,8 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-       .NextDouble(0.5)   // Minor severity
-           .NextDouble(0.05)  // Ankle (< 0.25)
+       .InjurySeverityCheck(0.5)   // Minor severity
+           .InjuryTypeCheck(0.05)  // Ankle (< 0.25)
      .NextInt(2);
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Run);
@@ -675,8 +675,8 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-    .NextDouble(0.5)   // Minor severity
-    .NextDouble(0.50)  // Knee (0.40-0.65 for RB)
+    .InjurySeverityCheck(0.5)   // Minor severity
+    .InjuryTypeCheck(0.50)  // Knee (0.40-0.65 for RB)
        .NextInt(2);
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Run);
@@ -695,8 +695,8 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-           .NextDouble(0.5)   // Minor severity
-           .NextDouble(0.65)  // Shoulder (0.50-0.75)
+           .InjurySeverityCheck(0.5)   // Minor severity
+           .InjuryTypeCheck(0.65)  // Shoulder (0.50-0.75)
                 .NextInt(2);
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Run);
@@ -715,8 +715,8 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-            .NextDouble(0.5)   // Minor severity
-             .NextDouble(0.77)  // Concussion (0.75-0.80 for RB)
+            .InjurySeverityCheck(0.5)   // Minor severity
+             .InjuryTypeCheck(0.77)  // Concussion (0.75-0.80 for RB)
            .NextInt(2);
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Run);
@@ -735,8 +735,8 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-              .NextDouble(0.5)   // Minor severity
-                 .NextDouble(0.95)  // Hamstring (>= 0.90)
+              .InjurySeverityCheck(0.5)   // Minor severity
+                 .InjuryTypeCheck(0.95)  // Hamstring (>= 0.90)
                    .NextInt(2);
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Run);
@@ -755,8 +755,8 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-     .NextDouble(0.5)   // Minor
-            .NextDouble(0.3)
+     .InjurySeverityCheck(0.5)   // Minor
+            .InjuryTypeCheck(0.3)
        .NextInt(2);
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Run);
@@ -775,8 +775,8 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-        .NextDouble(0.7)   // Moderate
-                  .NextDouble(0.3)
+        .InjurySeverityCheck(0.7)   // Moderate
+                  .InjuryTypeCheck(0.3)
          .NextInt(0);
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Run);
@@ -795,8 +795,8 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-    .NextDouble(0.95)  // Game-ending
-  .NextDouble(0.3)
+    .InjurySeverityCheck(0.95)  // Game-ending
+  .InjuryTypeCheck(0.3)
             .NextInt(0);
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Run);
@@ -815,9 +815,9 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-            .NextDouble(0.5)
-                .NextDouble(0.3)
-      .NextInt(2);
+                .InjurySeverityCheck(0.5)
+                .InjuryTypeCheck(0.3)
+                .InjuryRecoveryTime(2);
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Run);
             var game = _testGame.GetGame();
@@ -837,9 +837,9 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-   .NextDouble(0.5)
-    .NextDouble(0.3)
-         .NextInt(2);
+                .InjurySeverityCheck(0.5)
+                .InjuryTypeCheck(0.3)
+                .InjuryRecoveryTime(2);
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Pass);
             var game = _testGame.GetGame();
@@ -857,9 +857,9 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-     .NextDouble(0.5)
- .NextDouble(0.3)
-        .NextInt(2);
+                .InjurySeverityCheck(0.5)
+                .InjuryTypeCheck(0.3)
+                .InjuryRecoveryTime(2);
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Kickoff);
             var game = _testGame.GetGame();
@@ -877,9 +877,9 @@ namespace Gridiron.Engine.Tests
             // Arrange
             var player = CreatePlayerWithFragility(50);
             var rng = new TestFluentSeedableRandom()
-           .NextDouble(0.5)
-      .NextDouble(0.3)
-              .NextInt(2);
+                .InjurySeverityCheck(0.5)
+                .InjuryTypeCheck(0.3)
+                .InjuryRecoveryTime(2);
 
             var result = new InjuryEffectSkillsCheckResult(rng, player, PlayType.Punt);
             var game = _testGame.GetGame();
@@ -896,8 +896,8 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange
             var player = CreatePlayerWithFragility(50);
-            var rng1 = new TestFluentSeedableRandom().NextDouble(0.5).NextDouble(0.3).NextInt(2);
-            var rng2 = new TestFluentSeedableRandom().NextDouble(0.5).NextDouble(0.3).NextInt(2);
+            var rng1 = new TestFluentSeedableRandom().InjurySeverityCheck(0.5).InjuryTypeCheck(0.3).NextInt(2);
+            var rng2 = new TestFluentSeedableRandom().InjurySeverityCheck(0.5).InjuryTypeCheck(0.3).NextInt(2);
             var game = _testGame.GetGame();
 
             var result1 = new InjuryEffectSkillsCheckResult(rng1, player, PlayType.Run);
@@ -920,13 +920,13 @@ namespace Gridiron.Engine.Tests
             var game = _testGame.GetGame();
 
             // Test exactly 0.6 (boundary between minor and moderate)
-            var rng1 = new TestFluentSeedableRandom().NextDouble(0.6).NextDouble(0.3).NextInt(0);
+            var rng1 = new TestFluentSeedableRandom().InjurySeverityCheck(0.6).InjuryTypeCheck(0.3).NextInt(0);
             var result1 = new InjuryEffectSkillsCheckResult(rng1, player, PlayType.Run);
             result1.Execute(game);
             Assert.AreEqual(InjurySeverity.Moderate, result1.Result.Severity, "0.6 should be moderate");
 
             // Test exactly 0.9 (boundary between moderate and game-ending)
-            var rng2 = new TestFluentSeedableRandom().NextDouble(0.9).NextDouble(0.3).NextInt(0);
+            var rng2 = new TestFluentSeedableRandom().InjurySeverityCheck(0.9).InjuryTypeCheck(0.3).NextInt(0);
             var result2 = new InjuryEffectSkillsCheckResult(rng2, player, PlayType.Run);
             result2.Execute(game);
             Assert.AreEqual(InjurySeverity.GameEnding, result2.Result.Severity, "0.9 should be game-ending");
@@ -942,13 +942,13 @@ namespace Gridiron.Engine.Tests
             var game = _testGame.GetGame();
 
             // Test a value that should land in ankle range (0-0.40)
-            var rng1 = new TestFluentSeedableRandom().NextDouble(0.5).NextDouble(0.20).NextInt(2);
+            var rng1 = new TestFluentSeedableRandom().InjurySeverityCheck(0.5).InjuryTypeCheck(0.20).NextInt(2);
             var result1 = new InjuryEffectSkillsCheckResult(rng1, player, PlayType.Run);
             result1.Execute(game);
             Assert.AreEqual(InjuryType.Ankle, result1.Result.InjuryType, "0.20 should be ankle for RB");
 
             // Test a value that should land in knee range (0.40-0.65)
-            var rng2 = new TestFluentSeedableRandom().NextDouble(0.5).NextDouble(0.50).NextInt(2);
+            var rng2 = new TestFluentSeedableRandom().InjurySeverityCheck(0.5).InjuryTypeCheck(0.50).NextInt(2);
             var result2 = new InjuryEffectSkillsCheckResult(rng2, player, PlayType.Run);
             result2.Execute(game);
             Assert.AreEqual(InjuryType.Knee, result2.Result.InjuryType, "0.50 should be knee for RB");
@@ -963,31 +963,31 @@ namespace Gridiron.Engine.Tests
             var game = _testGame.GetGame();
 
             // Test ankle (0.20 in range 0-0.40)
-            var rng1 = new TestFluentSeedableRandom().NextDouble(0.5).NextDouble(0.20).NextInt(2);
+            var rng1 = new TestFluentSeedableRandom().InjurySeverityCheck(0.5).InjuryTypeCheck(0.20).NextInt(2);
             var result1 = new InjuryEffectSkillsCheckResult(rng1, player, PlayType.Run);
             result1.Execute(game);
             Assert.AreEqual(InjuryType.Ankle, result1.Result.InjuryType);
 
             // Test knee (0.50 in range 0.40-0.65)
-            var rng2 = new TestFluentSeedableRandom().NextDouble(0.5).NextDouble(0.50).NextInt(2);
+            var rng2 = new TestFluentSeedableRandom().InjurySeverityCheck(0.5).InjuryTypeCheck(0.50).NextInt(2);
             var result2 = new InjuryEffectSkillsCheckResult(rng2, player, PlayType.Run);
             result2.Execute(game);
             Assert.AreEqual(InjuryType.Knee, result2.Result.InjuryType);
 
             // Test shoulder (0.70 in range 0.65-0.75)
-            var rng3 = new TestFluentSeedableRandom().NextDouble(0.5).NextDouble(0.70).NextInt(2);
+            var rng3 = new TestFluentSeedableRandom().InjurySeverityCheck(0.5).InjuryTypeCheck(0.70).NextInt(2);
             var result3 = new InjuryEffectSkillsCheckResult(rng3, player, PlayType.Run);
             result3.Execute(game);
             Assert.AreEqual(InjuryType.Shoulder, result3.Result.InjuryType);
 
             // Test concussion (0.77 in range 0.75-0.80)
-            var rng4 = new TestFluentSeedableRandom().NextDouble(0.5).NextDouble(0.77).NextInt(2);
+            var rng4 = new TestFluentSeedableRandom().InjurySeverityCheck(0.5).InjuryTypeCheck(0.77).NextInt(2);
             var result4 = new InjuryEffectSkillsCheckResult(rng4, player, PlayType.Run);
             result4.Execute(game);
             Assert.AreEqual(InjuryType.Concussion, result4.Result.InjuryType);
 
             // Test hamstring (0.90 in range 0.80-1.0)
-            var rng5 = new TestFluentSeedableRandom().NextDouble(0.5).NextDouble(0.90).NextInt(2);
+            var rng5 = new TestFluentSeedableRandom().InjurySeverityCheck(0.5).InjuryTypeCheck(0.90).NextInt(2);
             var result5 = new InjuryEffectSkillsCheckResult(rng5, player, PlayType.Run);
             result5.Execute(game);
             Assert.AreEqual(InjuryType.Hamstring, result5.Result.InjuryType);
@@ -1001,19 +1001,19 @@ namespace Gridiron.Engine.Tests
             var game = _testGame.GetGame();
 
             // Test minor (0.3 in range 0-0.6)
-            var rng1 = new TestFluentSeedableRandom().NextDouble(0.3).NextDouble(0.3).NextInt(2);
+            var rng1 = new TestFluentSeedableRandom().InjuryTypeCheck(0.3).InjuryTypeCheck(0.3).NextInt(2);
             var result1 = new InjuryEffectSkillsCheckResult(rng1, player, PlayType.Run);
             result1.Execute(game);
             Assert.AreEqual(InjurySeverity.Minor, result1.Result.Severity);
 
             // Test moderate (0.7 in range 0.6-0.9)
-            var rng2 = new TestFluentSeedableRandom().NextDouble(0.7).NextDouble(0.3).NextInt(0);
+            var rng2 = new TestFluentSeedableRandom().InjurySeverityCheck(0.7).InjuryTypeCheck(0.3).NextInt(0);
             var result2 = new InjuryEffectSkillsCheckResult(rng2, player, PlayType.Run);
             result2.Execute(game);
             Assert.AreEqual(InjurySeverity.Moderate, result2.Result.Severity);
 
             // Test game-ending (0.95 in range 0.9-1.0)
-            var rng3 = new TestFluentSeedableRandom().NextDouble(0.95).NextDouble(0.3).NextInt(0);
+            var rng3 = new TestFluentSeedableRandom().InjurySeverityCheck(0.95).InjuryTypeCheck(0.3).NextInt(0);
             var result3 = new InjuryEffectSkillsCheckResult(rng3, player, PlayType.Run);
             result3.Execute(game);
             Assert.AreEqual(InjurySeverity.GameEnding, result3.Result.Severity);

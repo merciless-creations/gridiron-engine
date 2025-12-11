@@ -285,7 +285,7 @@ namespace Gridiron.Engine.Tests
         public void PlayerSelection_SinglePlayerReturnsPlayer()
         {
             var penalty = new OffensiveHoldingPenalty();
-            var rng = new SeedableRandom();
+            var rng = new SeedableRandom(12345);
 
             var player = new Player { Position = Positions.G };
             var players = new List<Player> { player };
@@ -299,7 +299,7 @@ namespace Gridiron.Engine.Tests
         public void PlayerSelection_EmptyListReturnsNull()
         {
             var penalty = new OffensiveHoldingPenalty();
-            var rng = new SeedableRandom();
+            var rng = new SeedableRandom(12345);
 
             var players = new List<Player>();
 

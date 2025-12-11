@@ -42,7 +42,7 @@ namespace Gridiron.Engine.Tests
             var rng = new TestFluentSeedableRandom()
                 .InterceptionReturnBase(0.3)      // 8 + (0.3 * 7) = 10.1 yards base
                 .InterceptionReturnVariance(0.2)   // (0.2 * 30) - 5 = 1 yard variance
-                .NextDouble(0.99);                 // No fumble during return
+                .FumbleCheck(0.99);                // No fumble during return
 
             // Act
             var result = new InterceptionSkillsCheckResult(rng, qb, receiver, offense, defense, interceptionSpot);
@@ -87,7 +87,7 @@ namespace Gridiron.Engine.Tests
             var rng = new TestFluentSeedableRandom()
                 .InterceptionReturnBase(1.0)       // Maximum base return (15 yards)
                 .InterceptionReturnVariance(1.0)   // Maximum variance (+25 yards)
-                .NextDouble(0.99);                 // No fumble
+                .FumbleCheck(0.99);                // No fumble
 
             // Act
             var result = new InterceptionSkillsCheckResult(rng, qb, receiver, offense, defense, interceptionSpot);
@@ -127,7 +127,7 @@ namespace Gridiron.Engine.Tests
             var rng = new TestFluentSeedableRandom()
                 .InterceptionReturnBase(0.3)       // Smaller return
                 .InterceptionReturnVariance(0.2)   // Less variance
-                .NextDouble(0.005)                 // FUMBLE during return! (well below 1.125% threshold)
+                .FumbleCheck(0.005)                // FUMBLE during return! (well below 1.125% threshold)
                 // FumbleRecoverySkillsCheckResult sequence:
                 .NextDouble(0.5)                   // Out of bounds check (0.5 > 0.12 = not OOB)
                 .NextDouble(0.5)                   // Bounce direction (0.5 = forward bounce)
@@ -172,7 +172,7 @@ namespace Gridiron.Engine.Tests
             var rng = new TestFluentSeedableRandom()
                 .InterceptionReturnBase(0.0)       // Minimum return
                 .InterceptionReturnVariance(0.0)   // Minimum variance
-                .NextDouble(0.99);                 // No fumble
+                .FumbleCheck(0.99);                // No fumble
 
             // Act
             var result = new InterceptionSkillsCheckResult(rng, qb, receiver, offense, defense, interceptionSpot);
@@ -224,7 +224,7 @@ namespace Gridiron.Engine.Tests
             var rng = new TestFluentSeedableRandom()
                 .InterceptionReturnBase(0.5)
                 .InterceptionReturnVariance(0.5)
-                .NextDouble(0.99); // No fumble
+                .FumbleCheck(0.99); // No fumble
 
             // Act
             var result = new InterceptionSkillsCheckResult(rng, qb, receiver, offense, defense, interceptionSpot);

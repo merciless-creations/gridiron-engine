@@ -96,7 +96,7 @@ namespace Gridiron.Engine.Tests
 
             // Assert - With empty lists, both teams get default power (50), no rushers (0 vs 4 standard = -4 * 0.15 = -0.6)
             // Base 1.0 + skill diff (0) + rusher impact (-0.6) = 0.4
-            Assert.IsTrue(pressure >= 0.0 && pressure <= 2.5, $"Pressure {pressure} should be within valid bounds");
+            Assert.AreEqual(0.4, pressure, 0.001, "Empty lists: 1.0 + 0 + (-0.6) = 0.4");
         }
 
         [TestMethod]
@@ -116,8 +116,9 @@ namespace Gridiron.Engine.Tests
             var pressure = LineBattleCalculator.CalculateDPressureFactor(emptyOffense, defense, isPassPlay: true);
 
             // Assert - Defense has power 70, offense gets default 50, skill diff +20 = +0.2
-            // Should favor defense
-            Assert.IsTrue(pressure > 1.0, $"Pressure {pressure} should favor defense when offense is empty");
+            // 4 rushers vs 4 standard = 0 rusher impact
+            // Base 1.0 + skill diff (+0.2) + rusher impact (0) = 1.2
+            Assert.AreEqual(1.2, pressure, 0.001, "Empty offense vs 70-power defense: 1.0 + 0.2 + 0 = 1.2");
         }
 
         [TestMethod]
@@ -139,8 +140,8 @@ namespace Gridiron.Engine.Tests
 
             // Assert - Offense has power 70, defense gets default 50, skill diff -20 = -0.2
             // Plus 0 rushers vs 4 standard = -0.6 rusher impact
-            // Should heavily favor offense (low pressure)
-            Assert.IsTrue(pressure < 1.0, $"Pressure {pressure} should favor offense when defense is empty");
+            // Base 1.0 + skill diff (-0.2) + rusher impact (-0.6) = 0.2
+            Assert.AreEqual(0.2, pressure, 0.001, "70-power offense vs empty defense: 1.0 - 0.2 - 0.6 = 0.2");
         }
 
         [TestMethod]
@@ -153,8 +154,9 @@ namespace Gridiron.Engine.Tests
             // Act
             var pressure = LineBattleCalculator.CalculateDPressureFactor(emptyOffense, emptyDefense, isPassPlay: false);
 
-            // Assert
-            Assert.IsTrue(pressure >= 0.0 && pressure <= 2.5, $"Pressure {pressure} should be within valid bounds for run play");
+            // Assert - Same formula as pass play with empty lists
+            // Base 1.0 + skill diff (0) + rusher impact (-0.6) = 0.4
+            Assert.AreEqual(0.4, pressure, 0.001, "Empty lists (run): 1.0 + 0 + (-0.6) = 0.4");
         }
 
         #endregion
@@ -182,9 +184,10 @@ namespace Gridiron.Engine.Tests
             // Act
             var pressure = LineBattleCalculator.CalculateDPressureFactor(offense, defense, isPassPlay: true);
 
-            // Assert - Offense gets default power (50), defense has 70 power
-            // Should favor defense
-            Assert.IsTrue(pressure > 1.0, $"Pressure {pressure} should favor defense when offense has no blockers");
+            // Assert - QB/WR are not blockers, so offense gets default power (50)
+            // Defense has power 70 (average of (70+70+70)/3 = 70), 4 rushers = standard
+            // Base 1.0 + skill diff (+0.2) + rusher impact (0) = 1.2
+            Assert.AreEqual(1.2, pressure, 0.001, "No blockers vs 70-power defense: 1.0 + 0.2 + 0 = 1.2");
         }
 
         [TestMethod]
@@ -208,8 +211,10 @@ namespace Gridiron.Engine.Tests
             // Act
             var pressure = LineBattleCalculator.CalculateDPressureFactor(offense, defense, isPassPlay: true);
 
-            // Assert - Defense gets default pass rush power (50), 0 rushers means low pressure
-            Assert.IsTrue(pressure < 1.0, $"Pressure {pressure} should be low when defense has no rushers");
+            // Assert - DBs are not rushers, so defense gets default power (50)
+            // Offense has power 70, 0 rushers vs 4 standard = -0.6
+            // Base 1.0 + skill diff (-0.2) + rusher impact (-0.6) = 0.2
+            Assert.AreEqual(0.2, pressure, 0.001, "70-power offense vs no rushers: 1.0 - 0.2 - 0.6 = 0.2");
         }
 
         #endregion
