@@ -25,7 +25,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange - Set up a game where home team will be tackled in their own end zone
             var game = _testGame.GetGame();
-            var rng = new SeedableRandom();
+            var rng = new SeedableRandom(12345);
 
             // Add initial kickoff to simulate game in progress
             var kickoff = new KickoffPlay
@@ -91,7 +91,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange - Set up a game where away team forces a safety on home team
             var game = _testGame.GetGame();
-            var rng = new SeedableRandom();
+            var rng = new SeedableRandom(12345);
 
             // Add initial kickoff
             var kickoff = new KickoffPlay
@@ -151,7 +151,7 @@ namespace Gridiron.Engine.Tests
         {
             // Arrange - Punt results in safety (bad snap into end zone)
             var game = _testGame.GetGame();
-            var rng = new SeedableRandom();
+            var rng = new SeedableRandom(12345);
 
             var kickoff = new KickoffPlay
             {

@@ -25,7 +25,7 @@ namespace Gridiron.Engine.Tests
         [TestMethod]
         public void GameTest()
         {
-            var rng = new SeedableRandom();
+            var rng = new SeedableRandom(12345);
             var teams = TestTeams.CreateTestTeams();
             var game = GameHelper.GetNewGame(teams.HomeTeam, teams.VisitorTeam);
             var logger = CreateLogger();
@@ -37,7 +37,7 @@ namespace Gridiron.Engine.Tests
         [TestMethod]
         public void GetGraphTest()
         {
-            var rng = new SeedableRandom();
+            var rng = new SeedableRandom(12345);
             var teams = TestTeams.CreateTestTeams();
             var game = GameHelper.GetNewGame(teams.HomeTeam, teams.VisitorTeam);
             var logger = CreateLogger();
@@ -49,7 +49,7 @@ namespace Gridiron.Engine.Tests
         [TestMethod]
         public void GameTestWithPlayByPlayCapture()
         {
-            var rng = new SeedableRandom();
+            var rng = new SeedableRandom(12345);
             var teams = TestTeams.CreateTestTeams();
             var game = GameHelper.GetNewGame(teams.HomeTeam, teams.VisitorTeam);
 
