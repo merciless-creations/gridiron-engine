@@ -171,6 +171,59 @@ Separate **decision logic** ("should we do X?") from **game mechanics** ("X was 
 - Do not add formation/play-name logic to the engine
 - Test edge cases (overtime, safeties, two-point conversions, end-of-half scenarios)
 
+## Testing Guidelines
+
+### Core Principle: Deterministic Tests
+
+**ALL tests must be deterministic.** Tests must produce consistent results every time they run.
+
+**Forbidden patterns:**
+- Random values without fixed seeds
+- Conditional assertions based on random outcomes
+- Time-dependent assertions without mocking
+- Tests that depend on external state
+
+### Required: Use Fluent RNG Methods
+
+**ALL unit tests MUST use `TestFluentSeedableRandom` with fluent methods.**
+
+Located in: `tests/Gridiron.Engine.Tests/Helpers/TestFluentSeedableRandom.cs`
+
+```csharp
+// ✅ CORRECT - Use fluent methods with descriptive names
+var rng = new TestFluentSeedableRandom()
+    .PassProtectionCheck(0.5)      // Protection holds
+    .PassCompletionCheck(0.3)      // Pass completes
+    .AirYards(15)                  // 15 yards in air
+    .YACOpportunityCheck(0.8)      // No YAC opportunity
+    .ImmediateTackleYards(1);      // 1 yard after catch
+
+// ❌ WRONG - Do not use raw arrays or generic methods
+var rng = new TestFluentSeedableRandom();
+rng.__NextDouble = new double[] { 0.5, 0.3, 0.8 };  // DEPRECATED
+rng.NextDouble(0.5).NextDouble(0.3);                 // Not descriptive
+```
+
+**Why fluent methods:**
+1. **Self-documenting** - Each method name explains what the value controls
+2. **Validated** - Methods validate ranges and provide helpful error messages
+3. **Deterministic** - Values are consumed in order, making tests reproducible
+4. **Debuggable** - Clear error messages when values run out
+
+**Common fluent methods:**
+| Method | Range | Purpose |
+|--------|-------|---------|
+| `PassProtectionCheck(double)` | 0.0-1.0 | < ~0.75 = protection holds |
+| `PassCompletionCheck(double)` | 0.0-1.0 | < completion% = complete |
+| `InterceptionOccurredCheck(double)` | 0.0-1.0 | < INT% = intercepted |
+| `RunBlockingCheck(double)` | 0.0-1.0 | Success of run blocking |
+| `FumbleCheck(double)` | 0.0-1.0 | < ~1-3% = fumble occurs |
+| `FieldGoalMakeCheck(double)` | 0.0-1.0 | < make% = kick good |
+| `AirYards(int)` | -10 to 100 | Pass distance in air |
+| `RunYards(int)` | -10 to 99 | Yards gained on run |
+
+See `TestFluentSeedableRandom.cs` for the full list with documentation.
+
 ## Git Workflow
 
 > ⛔ **ABSOLUTE RULE: NEVER COMMIT OR PUSH DIRECTLY TO MASTER OR MAIN** ⛔
