@@ -1,5 +1,6 @@
 using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,11 +28,17 @@ namespace Gridiron.Engine.Simulation.Calculators
         /// <param name="defensivePlayers">All defensive players on field</param>
         /// <param name="isPassPlay">True for pass protection, false for run blocking</param>
         /// <returns>Defensive pressure factor (0.0 to 2.5+)</returns>
+        /// <exception cref="ArgumentNullException">Thrown when offensivePlayers or defensivePlayers is null</exception>
         public static double CalculateDPressureFactor(
             List<Player> offensivePlayers,
             List<Player> defensivePlayers,
             bool isPassPlay = true)
         {
+            if (offensivePlayers == null)
+                throw new ArgumentNullException(nameof(offensivePlayers));
+            if (defensivePlayers == null)
+                throw new ArgumentNullException(nameof(defensivePlayers));
+
             // Calculate base power ratings
             double offensivePower = isPassPlay
                 ? TeamPowerCalculator.CalculatePassBlockingPower(offensivePlayers)
