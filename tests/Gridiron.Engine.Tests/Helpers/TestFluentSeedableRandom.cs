@@ -173,12 +173,94 @@ namespace Gridiron.Engine.Tests.Helpers
         /// Sets the air yards value for the pass (distance ball travels in the air).
         /// Typical ranges by pass type: Screen (-3 to 3), Short (3-12), Forward (8-20), Deep (18-45)
         /// </summary>
+        [Obsolete("Use AirYardsNormal() or AirYardsForTarget() instead - air yards now uses normal distribution")]
         public TestFluentSeedableRandom AirYards(int value)
         {
             ValidateYardage(value, nameof(AirYards), -10, 100,
                 "Distance ball travels in air. Typical ranges: Screen (-3 to 3), Short (3-12), Forward (8-20), Deep (18-45). " +
                 "Limited by yards to goal line.");
             _intQueue.Enqueue(value);
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the two random values for air yards using normal distribution (Box-Muller transform).
+        /// This is the low-level method when you need explicit control over the random values.
+        /// </summary>
+        /// <param name="u1">First uniform random value (0.0-1.0, used for magnitude). Must be > 0.</param>
+        /// <param name="u2">Second uniform random value (0.0-1.0, used for sign/angle).</param>
+        public TestFluentSeedableRandom AirYardsNormal(double u1, double u2)
+        {
+            if (u1 <= 0.0 || u1 > 1.0)
+                throw new ArgumentOutOfRangeException(nameof(u1),
+                    $"Normal distribution u1 must be > 0 and <= 1.0 (to avoid log(0)). Got: {u1}");
+            ValidateRandomFactor(u2, nameof(AirYardsNormal),
+                "Second random value for Box-Muller transform in normal distribution.");
+            _doubleQueue.Enqueue(u1);
+            _doubleQueue.Enqueue(u2);
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the two random values to produce a specific target air yard output from normal distribution.
+        /// This is the preferred method for deterministic tests when you need a specific yard result.
+        /// </summary>
+        /// <param name="targetYards">The desired air yard output.</param>
+        /// <param name="passType">The pass type (affects mean and stddev).</param>
+        /// <param name="skillModifier">The skill modifier that will be applied (default 0.0).</param>
+        public TestFluentSeedableRandom AirYardsForTarget(int targetYards, Domain.PassType passType, double skillModifier = 0.0)
+        {
+            // Get distribution parameters for pass type
+            double mean, stdDev;
+            switch (passType)
+            {
+                case Domain.PassType.Screen:
+                    mean = Simulation.Configuration.GameProbabilities.YardageDistributions.PASS_SCREEN_MEAN;
+                    stdDev = Simulation.Configuration.GameProbabilities.YardageDistributions.PASS_SCREEN_STDDEV;
+                    break;
+                case Domain.PassType.Short:
+                    mean = Simulation.Configuration.GameProbabilities.YardageDistributions.PASS_SHORT_MEAN;
+                    stdDev = Simulation.Configuration.GameProbabilities.YardageDistributions.PASS_SHORT_STDDEV;
+                    break;
+                case Domain.PassType.Forward:
+                    mean = Simulation.Configuration.GameProbabilities.YardageDistributions.PASS_MEDIUM_MEAN;
+                    stdDev = Simulation.Configuration.GameProbabilities.YardageDistributions.PASS_MEDIUM_STDDEV;
+                    break;
+                case Domain.PassType.Deep:
+                    mean = Simulation.Configuration.GameProbabilities.YardageDistributions.PASS_DEEP_MEAN;
+                    stdDev = Simulation.Configuration.GameProbabilities.YardageDistributions.PASS_DEEP_STDDEV;
+                    break;
+                default:
+                    mean = Simulation.Configuration.GameProbabilities.YardageDistributions.PASS_SHORT_MEAN;
+                    stdDev = Simulation.Configuration.GameProbabilities.YardageDistributions.PASS_SHORT_STDDEV;
+                    break;
+            }
+
+            // Apply skill modifier
+            var skillMultiplier = Simulation.Configuration.GameProbabilities.YardageDistributions.PASS_SKILL_MULTIPLIER;
+            var adjustedMean = mean + (skillModifier * skillMultiplier);
+
+            // Reverse the calculation: z = (targetYards - adjustedMean) / stdDev
+            double z = (targetYards - adjustedMean) / stdDev;
+
+            // Using u2 = 0 so cos(2*pi*0) = 1, then z = sqrt(-2*log(u1))
+            // u1 = exp(-z^2 / 2)
+            double u1;
+            if (z >= 0)
+            {
+                u1 = Math.Exp(-z * z / 2.0);
+                u1 = Math.Max(0.001, Math.Min(0.999, u1));
+                _doubleQueue.Enqueue(u1);
+                _doubleQueue.Enqueue(0.0);  // cos(0) = 1 for positive z
+            }
+            else
+            {
+                // Negative z: u2=0.5 gives cos(pi) = -1, so -z = sqrt(-2*log(u1))
+                u1 = Math.Exp(-z * z / 2.0);
+                u1 = Math.Max(0.001, Math.Min(0.999, u1));
+                _doubleQueue.Enqueue(u1);
+                _doubleQueue.Enqueue(0.5);  // cos(pi) = -1 for negative z
+            }
             return this;
         }
 
@@ -864,6 +946,7 @@ namespace Gridiron.Engine.Tests.Helpers
         /// Sets run base yards random factor. Used to calculate base yardage before blocks/breaks.
         /// Valid range: 0.0 to 1.0
         /// </summary>
+        [Obsolete("Use RunYardsLogNormal() instead - run yards now uses log-normal distribution")]
         public TestFluentSeedableRandom RunBaseYardsRandom(double value)
         {
             ValidateRandomFactor(value, nameof(RunBaseYardsRandom),
@@ -871,6 +954,79 @@ namespace Gridiron.Engine.Tests.Helpers
                 "Formula: baseYards + (value * 25.0) - 15.0 yields variable yards based on blocking/skills. " +
                 "Lower values (< 0.2) often result in losses. Higher values (> 0.8) result in good gains.");
             _doubleQueue.Enqueue(value);
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the two random values for log-normal run yards distribution (Box-Muller transform).
+        /// This produces realistic NFL run distributions: most runs 2-4 yards, occasional breakaways.
+        /// Valid range: 0.0 to 1.0 for both values (must be > 0 for u1 to avoid log(0))
+        /// </summary>
+        /// <param name="u1">First uniform random value (0.0-1.0, used for log transform)</param>
+        /// <param name="u2">Second uniform random value (0.0-1.0, used for cos transform)</param>
+        public TestFluentSeedableRandom RunYardsLogNormal(double u1, double u2)
+        {
+            if (u1 <= 0.0 || u1 > 1.0)
+                throw new ArgumentOutOfRangeException(nameof(u1),
+                    $"Log-normal u1 must be > 0 and <= 1.0 (to avoid log(0)). Got: {u1}");
+            ValidateRandomFactor(u2, nameof(RunYardsLogNormal),
+                "Second random value for Box-Muller transform in log-normal distribution.");
+            _doubleQueue.Enqueue(u1);
+            _doubleQueue.Enqueue(u2);
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the two random values to produce a specific target yard output from log-normal distribution.
+        /// This is the preferred method for deterministic tests when you need a specific yard result.
+        /// The calculation accounts for the log-normal distribution parameters from GameProbabilities.
+        /// Current values: mu=1.5, sigma=0.7, shift=2.8.
+        /// </summary>
+        /// <param name="targetYards">The desired yard output from the distribution</param>
+        /// <param name="skillModifier">The skill modifier that will be applied (default 0.0)</param>
+        public TestFluentSeedableRandom RunYardsForTarget(int targetYards, double skillModifier = 0.0)
+        {
+            // Reverse the calculation:
+            // Result = round(exp(mu + sigma * z) - shift + skillModifier * 2)
+            // targetYards = round(baseYards - shift + skillMod * 2)
+            // We need baseYards = targetYards + shift - skillMod * 2
+            // Using parameters from GameProbabilities.YardageDistributions
+            const double mu = 1.5;      // RUN_MU
+            const double sigma = 0.7;   // RUN_SIGMA
+            const double shift = 2.8;   // RUN_SHIFT
+
+            double neededBaseYards = targetYards + shift - (skillModifier * 2.0);
+
+            // baseYards must be > 0 for log to work
+            if (neededBaseYards <= 0)
+                neededBaseYards = 0.1;
+
+            // z = (ln(baseYards) - mu) / sigma
+            double z = (Math.Log(neededBaseYards) - mu) / sigma;
+
+            // Using u2 = 0 so cos(2*pi*0) = 1, then z = sqrt(-2*log(u1))
+            // u1 = exp(-z^2 / 2)
+            double u1;
+            if (z >= 0)
+            {
+                // Positive z: u2=0 gives cos=1, so z = sqrt(-2*log(u1))
+                u1 = Math.Exp(-z * z / 2.0);
+            }
+            else
+            {
+                // Negative z: u2=0.5 gives cos=-1, so -z = sqrt(-2*log(u1))
+                u1 = Math.Exp(-z * z / 2.0);
+                // Use u2=0.5 for negative z
+                _doubleQueue.Enqueue(Math.Max(0.001, Math.Min(0.999, u1)));
+                _doubleQueue.Enqueue(0.5);
+                return this;
+            }
+
+            // Clamp u1 to valid range
+            u1 = Math.Max(0.001, Math.Min(0.999, u1));
+
+            _doubleQueue.Enqueue(u1);
+            _doubleQueue.Enqueue(0.0);  // cos(0) = 1 for positive z
             return this;
         }
 

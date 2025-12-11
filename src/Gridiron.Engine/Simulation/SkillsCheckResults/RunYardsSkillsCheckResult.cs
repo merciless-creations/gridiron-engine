@@ -2,6 +2,7 @@ using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
 using Gridiron.Engine.Simulation.Configuration;
+using Gridiron.Engine.Simulation.Utilities;
 using System.Linq;
 
 namespace Gridiron.Engine.Simulation.SkillsCheckResults
@@ -39,8 +40,11 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
 
         /// <summary>
         /// Executes the calculation to determine base run yardage.
-        /// Compares offensive power (blockers + ball carrier) vs defensive power (tacklers).
-        /// Average run is 3-5 yards with variance from -15 to +10 yards.
+        /// Uses log-normal distribution for realistic NFL run patterns:
+        /// - Most runs cluster around 2-4 yards
+        /// - Occasional breakaway runs (15+ yards)
+        /// - Some negative runs (TFL)
+        /// Skill differential affects the outcome.
         /// </summary>
         /// <param name="game">The current game context.</param>
         public override void Execute(Game game)
@@ -51,19 +55,14 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             // Calculate defensive power
             var defensivePower = CalculateDefensivePower();
 
-            // Calculate base yardage (with randomness)
+            // Calculate skill modifier (normalized to roughly -1 to +1 range)
+            // Power values typically range 40-80, so differential is roughly -40 to +40
             var skillDifferential = offensivePower - defensivePower;
-            var baseYards = GameProbabilities.Yardage.RUN_BASE_YARDS + 
-                            (skillDifferential / GameProbabilities.Yardage.RUN_SKILL_DENOMINATOR);
+            var skillModifier = skillDifferential / GameProbabilities.YardageDistributions.SKILL_DIFFERENTIAL_NORMALIZER;
 
-            // Add randomness (-15 to +10 yard variance)
-            // This supports realistic big losses (sacks, backfield tackles, muffed snaps)
-            // while keeping big gains reasonable (tackle breaks/breakaways handle explosive plays)
-            var randomFactor = (_rng.NextDouble() * GameProbabilities.Yardage.RUN_RANDOM_RANGE) + 
-                               GameProbabilities.Yardage.RUN_RANDOM_OFFSET;
-            var totalYards = baseYards + randomFactor;
-
-            Result = (int)Math.Round(totalYards);
+            // Use log-normal distribution for realistic run yardage
+            // This produces right-skewed results: most runs 2-4 yards, occasional breakaways
+            Result = StatisticalDistributions.RunYards(_rng, skillModifier);
         }
 
         /// <summary>

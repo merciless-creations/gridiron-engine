@@ -298,7 +298,7 @@ namespace Gridiron.Engine.Tests
 
             // Arrange
             var game = _testGame.GetGame();
-            var rng = new SeedableRandom(12345);
+            var rng = new SeedableRandom(54321);  // Updated seed for log-normal distribution
             var logger = new InMemoryLogger<Game>();
             game.Logger = logger;
 

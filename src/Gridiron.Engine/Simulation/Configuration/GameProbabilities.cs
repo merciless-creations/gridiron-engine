@@ -734,5 +734,120 @@ namespace Gridiron.Engine.Simulation.Configuration
             /// <summary>Punt (TD return): variance.</summary>
             public const double PUNT_TD_RETURN_VARIANCE = 4.0;
         }
+
+        /// <summary>
+        /// Statistical distribution parameters for realistic yardage generation.
+        /// These values control the shape of log-normal (runs) and normal (passes) distributions.
+        ///
+        /// NFL Target Statistics:
+        /// - Run plays: Mean ~4.3 yards, Median ~3 yards, right-skewed
+        /// - Breakaway runs (15+): ~5% of runs
+        /// - Negative runs (TFL): ~15% of runs
+        /// - Pass completions: Mean ~11.5 yards (varies by pass type)
+        /// </summary>
+        public static class YardageDistributions
+        {
+            // ========================================
+            // RUN YARDAGE (LOG-NORMAL DISTRIBUTION)
+            // ========================================
+            // Log-normal produces right-skewed distribution:
+            // - Most runs cluster around 2-4 yards
+            // - Occasional breakaway runs (15+ yards)
+            // - Some negative runs (TFL)
+
+            /// <summary>Log-normal location parameter (mu) for run yards.</summary>
+            /// <remarks>
+            /// mu=1.5 gives median of exp(1.5)=4.48 yards before shift.
+            /// Combined with shift=2.2, produces median ~2.3 yards.
+            /// </remarks>
+            public const double RUN_MU = 1.5;
+
+            /// <summary>Log-normal scale parameter (sigma) for run yards.</summary>
+            /// <remarks>
+            /// sigma=0.7 controls spread of distribution.
+            /// Higher sigma = more variance, more breakaways.
+            /// </remarks>
+            public const double RUN_SIGMA = 0.7;
+
+            /// <summary>Shift value to allow negative yards (subtracted from log-normal output).</summary>
+            /// <remarks>
+            /// shift=2.8 produces ~15% negative runs (TFL) after rounding.
+            /// Higher shift needed because rounding converts -0.5 to 0.49 to 0.
+            /// </remarks>
+            public const double RUN_SHIFT = 2.8;
+
+            /// <summary>Skill modifier multiplier for run yards.</summary>
+            public const double RUN_SKILL_MULTIPLIER = 2.0;
+
+            /// <summary>
+            /// Normalizer for skill differential calculation.
+            /// Power values typically range 40-80, so differential is roughly -40 to +40.
+            /// Dividing by this value normalizes to roughly -1 to +1 range.
+            /// </summary>
+            public const double SKILL_DIFFERENTIAL_NORMALIZER = 40.0;
+
+            // ========================================
+            // PASS YARDAGE (NORMAL DISTRIBUTION BY TYPE)
+            // ========================================
+
+            /// <summary>Screen pass: mean yardage.</summary>
+            public const double PASS_SCREEN_MEAN = 4.0;
+
+            /// <summary>Screen pass: standard deviation.</summary>
+            public const double PASS_SCREEN_STDDEV = 3.0;
+
+            /// <summary>Short pass: mean yardage.</summary>
+            public const double PASS_SHORT_MEAN = 7.0;
+
+            /// <summary>Short pass: standard deviation.</summary>
+            public const double PASS_SHORT_STDDEV = 3.5;
+
+            /// <summary>Medium pass: mean yardage.</summary>
+            public const double PASS_MEDIUM_MEAN = 14.0;
+
+            /// <summary>Medium pass: standard deviation.</summary>
+            public const double PASS_MEDIUM_STDDEV = 5.0;
+
+            /// <summary>Deep pass: mean yardage.</summary>
+            public const double PASS_DEEP_MEAN = 30.0;
+
+            /// <summary>Deep pass: standard deviation.</summary>
+            public const double PASS_DEEP_STDDEV = 10.0;
+
+            /// <summary>Skill modifier multiplier for pass yards.</summary>
+            public const double PASS_SKILL_MULTIPLIER = 3.0;
+
+            // ========================================
+            // SACK YARDAGE (NORMAL DISTRIBUTION)
+            // ========================================
+
+            /// <summary>Sack: mean loss in yards.</summary>
+            public const double SACK_MEAN = 7.0;
+
+            /// <summary>Sack: standard deviation.</summary>
+            public const double SACK_STDDEV = 2.0;
+
+            /// <summary>Sack: minimum loss (floor).</summary>
+            public const double SACK_MIN_LOSS = 1.0;
+
+            /// <summary>Sack: maximum loss (ceiling).</summary>
+            public const double SACK_MAX_LOSS = 15.0;
+
+            // ========================================
+            // TACKLE FOR LOSS (NORMAL DISTRIBUTION)
+            // ========================================
+
+            /// <summary>Tackle for loss: mean loss in yards.</summary>
+            public const double TFL_MEAN = 2.0;
+
+            /// <summary>Tackle for loss: standard deviation.</summary>
+            public const double TFL_STDDEV = 1.0;
+
+            /// <summary>Tackle for loss: minimum loss (floor).</summary>
+            public const double TFL_MIN_LOSS = 1.0;
+
+            /// <summary>Tackle for loss: maximum loss (ceiling).</summary>
+            public const double TFL_MAX_LOSS = 5.0;
+        }
     }
 }
