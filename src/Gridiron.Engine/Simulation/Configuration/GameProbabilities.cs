@@ -779,6 +779,13 @@ namespace Gridiron.Engine.Simulation.Configuration
             /// <summary>Skill modifier multiplier for run yards.</summary>
             public const double RUN_SKILL_MULTIPLIER = 2.0;
 
+            /// <summary>
+            /// Normalizer for skill differential calculation.
+            /// Power values typically range 40-80, so differential is roughly -40 to +40.
+            /// Dividing by this value normalizes to roughly -1 to +1 range.
+            /// </summary>
+            public const double SKILL_DIFFERENTIAL_NORMALIZER = 40.0;
+
             // ========================================
             // PASS YARDAGE (NORMAL DISTRIBUTION BY TYPE)
             // ========================================
