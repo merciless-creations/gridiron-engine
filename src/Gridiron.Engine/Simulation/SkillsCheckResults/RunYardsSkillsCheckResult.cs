@@ -55,10 +55,10 @@ namespace Gridiron.Engine.Simulation.SkillsCheckResults
             // Calculate defensive power
             var defensivePower = CalculateDefensivePower();
 
-            // Calculate skill modifier (normalized to roughly -1 to +1 range)
-            // Power values typically range 40-80, so differential is roughly -40 to +40
+            // Calculate skill modifier using logarithmic curve for diminishing returns
+            // at skill extremes - elite vs average has meaningful but not overwhelming impact
             var skillDifferential = offensivePower - defensivePower;
-            var skillModifier = skillDifferential / GameProbabilities.YardageDistributions.SKILL_DIFFERENTIAL_NORMALIZER;
+            var skillModifier = AttributeModifier.FromDifferential(skillDifferential);
 
             // Use log-normal distribution for realistic run yardage
             // This produces right-skewed results: most runs 2-4 yards, occasional breakaways

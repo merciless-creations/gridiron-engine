@@ -2,6 +2,7 @@ using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
 using Gridiron.Engine.Simulation.Configuration;
+using Gridiron.Engine.Simulation.Utilities;
 using System.Linq;
 
 namespace Gridiron.Engine.Simulation.SkillsChecks
@@ -51,9 +52,10 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
                 : 50;
 
             // Calculate break tackle probability (base rate for elite backs)
+            // Uses logarithmic curve for diminishing returns at skill extremes
             var skillDifferential = ballCarrierPower - tacklerPower;
             var breakProbability = GameProbabilities.Rushing.TACKLE_BREAK_BASE_PROBABILITY
-                + (skillDifferential / GameProbabilities.Rushing.TACKLE_BREAK_SKILL_DENOMINATOR);
+                + AttributeModifier.FromDifferential(skillDifferential);
 
             // Clamp to reasonable bounds
             breakProbability = Math.Max(

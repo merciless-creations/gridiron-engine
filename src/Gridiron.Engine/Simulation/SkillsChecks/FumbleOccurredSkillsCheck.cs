@@ -2,6 +2,7 @@
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
 using Gridiron.Engine.Simulation.Configuration;
+using Gridiron.Engine.Simulation.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,9 +69,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
 
             // Ball carrier security factor
             // Use Awareness as proxy for ball security (higher = better)
+            // Uses logarithmic curve for diminishing returns at skill extremes
             var carrierSecurity = _ballCarrier.Awareness; // 0-100
-            var securityFactor = 1.0 - (carrierSecurity / 200.0); // 0.5 to 1.0 multiplier
-            fumbleProbability *= securityFactor;
+            // Negative modifier reduces fumble chance (good security), positive increases it
+            var securityModifier = -AttributeModifier.Calculate(carrierSecurity);
+            fumbleProbability *= (1.0 + securityModifier);
 
             // Defensive pressure factor
             // Find best defender (highest strength + speed)
@@ -80,9 +83,11 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
 
             if (bestDefender != null)
             {
+                // Uses logarithmic curve for diminishing returns at skill extremes
                 var defenderPressure = (bestDefender.Strength + bestDefender.Speed) / 2.0; // 0-100
-                var pressureFactor = 0.5 + (defenderPressure / 200.0); // 0.5 to 1.0 multiplier
-                fumbleProbability *= pressureFactor;
+                // Positive modifier increases fumble chance (good defender)
+                var pressureModifier = AttributeModifier.Calculate(defenderPressure);
+                fumbleProbability *= (1.0 + pressureModifier);
             }
 
             // Number of defenders (gang tackles increase fumbles)

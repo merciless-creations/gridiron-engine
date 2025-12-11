@@ -2,6 +2,7 @@ using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
 using Gridiron.Engine.Simulation.Configuration;
+using Gridiron.Engine.Simulation.Utilities;
 using System.Linq;
 
 namespace Gridiron.Engine.Simulation.SkillsChecks
@@ -54,9 +55,10 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
                 : 50;
 
             // Calculate success probability (base rate adjusted by skill differential)
+            // Uses logarithmic curve for diminishing returns at skill extremes
             var skillDifferential = offensiveBlockingPower - defensivePower;
             var successProbability = GameProbabilities.Rushing.BLOCKING_SUCCESS_BASE_PROBABILITY
-                + (skillDifferential / GameProbabilities.Rushing.BLOCKING_SUCCESS_SKILL_DENOMINATOR);
+                + AttributeModifier.FromDifferential(skillDifferential);
 
             // Clamp to reasonable bounds
             successProbability = Math.Max(

@@ -348,18 +348,20 @@ namespace Gridiron.Engine.Tests
                 }
             }
 
-            // Act & Assert - without pressure: ~63% probability (+7.67 skill advantage)
+            // Act & Assert - with logarithmic modifier, skill diff of ~8 gives:
+            // modifier = log(1 + 8/10) * 0.15 ≈ 0.088
+            // Without pressure: ~68.8% probability (0.60 + 0.088)
             var rng = new TestFluentSeedableRandom()
-                .PassCompletionCheck(0.62); // 0.62 < 0.63 = completion
+                .PassCompletionCheck(0.68); // 0.68 < 0.688 = completion
 
             var completionCheck = new PassCompletionSkillsCheck(rng, qb, receiver, false);
             completionCheck.Execute(game);
 
             Assert.IsTrue(completionCheck.Occurred);
 
-            // With pressure: ~43% probability (20% reduction)
+            // With pressure: ~48.8% probability (68.8% - 20% reduction)
             rng = new TestFluentSeedableRandom()
-                .PassCompletionCheck(0.44); // 0.44 > 0.43 = incompletion
+                .PassCompletionCheck(0.50); // 0.50 > 0.488 = incompletion
 
             completionCheck = new PassCompletionSkillsCheck(rng, qb, receiver, true);
             completionCheck.Execute(game);

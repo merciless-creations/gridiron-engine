@@ -2,6 +2,7 @@ using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
 using Gridiron.Engine.Simulation.Configuration;
+using Gridiron.Engine.Simulation.Utilities;
 using System;
 
 namespace Gridiron.Engine.Simulation.SkillsChecks
@@ -84,7 +85,8 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             }
 
             // Adjust for kicker skill
-            var kickerSkillFactor = (_kicker.Kicking - 50) / GameProbabilities.FieldGoals.FG_MAKE_SKILL_DENOMINATOR;
+            // Uses logarithmic curve for diminishing returns at skill extremes
+            var kickerSkillFactor = AttributeModifier.Calculate(_kicker.Kicking);
             baseMakeProbability += kickerSkillFactor;
 
             // Clamp probability to reasonable bounds

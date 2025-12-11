@@ -2,6 +2,7 @@ using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
 using Gridiron.Engine.Simulation.Configuration;
+using Gridiron.Engine.Simulation.Utilities;
 using System.Linq;
 
 namespace Gridiron.Engine.Simulation.SkillsChecks
@@ -62,9 +63,10 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             var offensivePower = (passingPower + receivingPower) / 2.0;
 
             // Calculate completion probability (base rate adjusted by skills)
+            // Uses logarithmic curve for diminishing returns at skill extremes
             var skillDifferential = offensivePower - coveragePower;
             var completionProbability = GameProbabilities.Passing.COMPLETION_BASE_PROBABILITY
-                + (skillDifferential / GameProbabilities.Passing.COMPLETION_SKILL_DENOMINATOR);
+                + AttributeModifier.FromDifferential(skillDifferential);
 
             // Pressure reduces completion chance significantly
             if (_underPressure)

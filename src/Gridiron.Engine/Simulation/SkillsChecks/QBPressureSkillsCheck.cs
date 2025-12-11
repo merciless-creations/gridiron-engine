@@ -2,6 +2,7 @@ using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
 using Gridiron.Engine.Simulation.Configuration;
+using Gridiron.Engine.Simulation.Utilities;
 using System.Linq;
 
 namespace Gridiron.Engine.Simulation.SkillsChecks
@@ -53,9 +54,10 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
                 : 50;
 
             // Calculate pressure probability (base rate adjusted by rush vs protection)
+            // Uses logarithmic curve for diminishing returns at skill extremes
             var skillDifferential = passRushPower - protectionPower;
             var pressureProbability = GameProbabilities.Passing.QB_PRESSURE_BASE_PROBABILITY
-                + (skillDifferential / GameProbabilities.Passing.QB_PRESSURE_SKILL_DENOMINATOR);
+                + AttributeModifier.FromDifferential(skillDifferential);
 
             // Clamp to reasonable bounds
             pressureProbability = Math.Max(

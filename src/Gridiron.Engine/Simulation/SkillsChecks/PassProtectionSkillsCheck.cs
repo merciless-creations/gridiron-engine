@@ -2,6 +2,7 @@ using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
 using Gridiron.Engine.Simulation.Configuration;
+using Gridiron.Engine.Simulation.Utilities;
 using System.Linq;
 
 namespace Gridiron.Engine.Simulation.SkillsChecks
@@ -57,9 +58,10 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
                 : 50;
 
             // Calculate protection success probability (base rate adjusted by skill differential)
+            // Uses logarithmic curve for diminishing returns at skill extremes
             var skillDifferential = offensiveProtection - passRushPower;
             var protectionProbability = GameProbabilities.Passing.PASS_PROTECTION_BASE_PROBABILITY
-                + (skillDifferential / GameProbabilities.Passing.PASS_PROTECTION_SKILL_DENOMINATOR);
+                + AttributeModifier.FromDifferential(skillDifferential);
 
             // Clamp to reasonable bounds (sacks are relatively rare)
             protectionProbability = Math.Max(

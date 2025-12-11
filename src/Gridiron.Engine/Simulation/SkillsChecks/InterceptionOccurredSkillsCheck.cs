@@ -2,6 +2,7 @@ using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
 using Gridiron.Engine.Simulation.Configuration;
+using Gridiron.Engine.Simulation.Utilities;
 using System.Linq;
 
 namespace Gridiron.Engine.Simulation.SkillsChecks
@@ -61,8 +62,9 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
             var interceptionProbability = GameProbabilities.Passing.INTERCEPTION_BASE_PROBABILITY;
 
             // Adjust based on skill differential
+            // Uses logarithmic curve for diminishing returns at skill extremes
             var skillDiff = coverageSkill - qbSkill;
-            interceptionProbability += skillDiff / 500.0; // +/-0.2% per 10 skill points difference
+            interceptionProbability += AttributeModifier.FromDifferential(skillDiff) * 0.5; // Scale down for INT probability
 
             // Pressure increases interception chance (bad throws)
             if (_underPressure)
