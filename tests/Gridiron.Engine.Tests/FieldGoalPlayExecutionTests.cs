@@ -519,11 +519,11 @@ namespace Gridiron.Engine.Tests
             var play = (FieldGoalPlay)game.CurrentPlay!;
 
             // Use NextDouble value that would NOT block for short kick
-            // Extra points: 1.5% base, so 0.03 would NOT block
-            // This test requires a specific block check value, so using Custom builder
+            // Extra points: 1.5% base, but logarithmic skill modifier may adjust
+            // Use a higher value to ensure no block with any skill differential
             var rng = new TestFluentSeedableRandom()
                 .NextDouble(0.99)  // No bad snap
-                .NextDouble(0.03)  // Would NOT block PAT (> 1.5%)
+                .NextDouble(0.15)  // Would NOT block PAT (well above base 1.5% + max modifier ~2.7% ≈ 4.2%)
                 .NextDouble(0.5)   // Make check
                 .NextDouble(0.99)  // No kicker penalty
                 .NextDouble(0.5);  // Elapsed time

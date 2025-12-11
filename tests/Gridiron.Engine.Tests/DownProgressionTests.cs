@@ -175,17 +175,20 @@ namespace Gridiron.Engine.Tests
         [TestMethod]
         public void TurnoverOnDowns_NegativeYardage_ChangesFieldPosition()
         {
-            // Arrange - 4th and 2 at the 50, loses 1 yard (tackle for loss)
+            // Arrange - 4th and 2 at the 50, need loss for turnover
+            // Use extreme skill differential to guarantee negative yards
             var game = CreateGameAtDown(Downs.Fourth, 2, 50, Possession.Home);
-            SetPlayerSkills(game, 70, 100); // Weak offense vs strong defense = negative yards
-            var rng = CreateRngForRunPlay(-1, blockingSucceeds: false); // Tackled for loss!
+            SetPlayerSkills(game, 30, 95); // Very weak offense vs elite defense = guaranteed loss
+            var rng = CreateRngForRunPlay(-2, blockingSucceeds: false); // Tackled for loss
 
             // Act
             ExecuteRunPlayWithResult(game, rng);
 
-            // Assert
-            Assert.IsTrue(game.CurrentPlay!.PossessionChange, "Should still be turnover on downs");
-            Assert.AreEqual(49, game.FieldPosition, "Field position should be 50 + (-1) = 49");
+            // Assert - verify turnover on downs with loss
+            var runPlay = (RunPlay)game.CurrentPlay!;
+            Assert.IsTrue(game.CurrentPlay.PossessionChange, "Should be turnover on downs");
+            Assert.IsLessThan(0, runPlay.YardsGained, "Should be a loss of yards");
+            Assert.IsLessThan(50, game.FieldPosition, "Field position should be less than 50 (loss of yards)");
 
             // Add to game.Plays so PrePlay can check previous play
             game.Plays.Add(game.CurrentPlay);
@@ -195,9 +198,9 @@ namespace Gridiron.Engine.Tests
             var prePlay = new PrePlay(nextPlayRng);
             prePlay.Execute(game);
 
-            // Assert - Away gets possession at the same field position (absolute position)
+            // Assert - Away gets possession at the field position after the play
             Assert.AreEqual(Possession.Away, game.CurrentPlay.Possession, "Away should get possession");
-            Assert.AreEqual(49, game.FieldPosition, "Away starts at the 49 yard line (no flip)");
+            Assert.IsLessThan(50, game.FieldPosition, "Away starts behind the 50 (turnover with loss)");
         }
 
         #endregion

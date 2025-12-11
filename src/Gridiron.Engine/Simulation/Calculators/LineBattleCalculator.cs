@@ -1,5 +1,6 @@
 using Gridiron.Engine.Domain;
 using Gridiron.Engine.Domain.Helpers;
+using Gridiron.Engine.Simulation.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,8 +53,9 @@ namespace Gridiron.Engine.Simulation.Calculators
             var rushers = CountRushers(defensivePlayers, isPassPlay);
 
             // Calculate skill differential impact
+            // Uses logarithmic curve for diminishing returns at skill extremes
             var skillDifferential = defensivePower - offensivePower;
-            var skillImpact = skillDifferential / 100.0; // -1.0 to +1.0 range typically
+            var skillImpact = AttributeModifier.FromDifferential(skillDifferential);
 
             // Calculate rusher count impact
             var rusherDifferential = rushers - STANDARD_RUSH_COUNT;

@@ -337,8 +337,9 @@ namespace Gridiron.Engine.Tests
             var pressure = LineBattleCalculator.CalculateDPressureFactor(offense, defense, isPassPlay: true);
 
             // Assert - Should be clamped at or below MAX_PRESSURE (2.5)
+            // With logarithmic curve, extreme blitz has diminishing returns but still high
             Assert.IsLessThanOrEqualTo(2.5, pressure);
-            Assert.IsGreaterThanOrEqualTo(2.0, pressure); // Should be high
+            Assert.IsGreaterThanOrEqualTo(1.5, pressure); // Should be elevated (logarithmic diminishing returns)
         }
 
         [TestMethod]

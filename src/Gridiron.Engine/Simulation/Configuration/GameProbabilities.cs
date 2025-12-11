@@ -30,6 +30,13 @@ namespace Gridiron.Engine.Simulation.Configuration
             public const double INTERCEPTION_PRESSURE_BONUS = 0.02;    // +2% interception chance when QB pressured
             public const double INTERCEPTION_MIN_CLAMP = 0.01;         // Minimum 1% interception rate
             public const double INTERCEPTION_MAX_CLAMP = 0.15;         // Maximum 15% interception rate
+            /// <summary>
+            /// Scale factor for logarithmic skill modifier on interception probability.
+            /// Set to 0.5 to keep interception probability in realistic range (typically 1%-5%).
+            /// Full modifier (1.0) would swing probability too dramatically for rare events like INTs.
+            /// Example: With 0.5 scale, a +40 skill differential adds ~12% instead of ~24%.
+            /// </summary>
+            public const double INTERCEPTION_SKILL_MODIFIER_SCALE = 0.5;
 
             // QB Pressure
             public const double QB_PRESSURE_BASE_PROBABILITY = 0.30;   // 30% base pressure rate

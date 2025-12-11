@@ -2,6 +2,7 @@
 using Gridiron.Engine.Domain.Helpers;
 using Gridiron.Engine.Simulation.BaseClasses;
 using Gridiron.Engine.Simulation.Configuration;
+using Gridiron.Engine.Simulation.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,11 +81,12 @@ namespace Gridiron.Engine.Simulation.SkillsChecks
 
             if (_offensiveLine.Count > 0 && bestRusher != null)
             {
+                // Uses logarithmic curve for diminishing returns at skill extremes
                 var avgBlocker = _offensiveLine.Average(p => p.Strength + p.Awareness);
                 var rusherSkill = (bestRusher.Strength + bestRusher.Speed) / 2.0;
                 var skillDifferential = rusherSkill - (avgBlocker / 2.0);
 
-                blockProbability += (skillDifferential / 10.0) * GameProbabilities.FieldGoals.FG_BLOCK_DEFENDER_SKILL_FACTOR;
+                blockProbability += AttributeModifier.FromDifferential(skillDifferential);
             }
 
             // Clamp to reasonable range

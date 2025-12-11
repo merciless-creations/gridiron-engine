@@ -115,10 +115,11 @@ namespace Gridiron.Engine.Tests
             // Act
             var pressure = LineBattleCalculator.CalculateDPressureFactor(emptyOffense, defense, isPassPlay: true);
 
-            // Assert - Defense has power 70, offense gets default 50, skill diff +20 = +0.2
+            // Assert - Defense has power 70, offense gets default 50, skill diff +20
+            // Logarithmic: sign(20) * log(1 + 20/10) * 0.15 ≈ 0.165
             // 4 rushers vs 4 standard = 0 rusher impact
-            // Base 1.0 + skill diff (+0.2) + rusher impact (0) = 1.2
-            Assert.AreEqual(1.2, pressure, 0.001, "Empty offense vs 70-power defense: 1.0 + 0.2 + 0 = 1.2");
+            // Base 1.0 + skill impact (~0.165) + rusher impact (0) ≈ 1.165
+            Assert.AreEqual(1.165, pressure, 0.01, "Empty offense vs 70-power defense: 1.0 + ~0.165 + 0 ≈ 1.165");
         }
 
         [TestMethod]
@@ -138,10 +139,11 @@ namespace Gridiron.Engine.Tests
             // Act
             var pressure = LineBattleCalculator.CalculateDPressureFactor(offense, emptyDefense, isPassPlay: true);
 
-            // Assert - Offense has power 70, defense gets default 50, skill diff -20 = -0.2
+            // Assert - Offense has power 70, defense gets default 50, skill diff -20
+            // Logarithmic: sign(-20) * log(1 + 20/10) * 0.15 ≈ -0.165
             // Plus 0 rushers vs 4 standard = -0.6 rusher impact
-            // Base 1.0 + skill diff (-0.2) + rusher impact (-0.6) = 0.2
-            Assert.AreEqual(0.2, pressure, 0.001, "70-power offense vs empty defense: 1.0 - 0.2 - 0.6 = 0.2");
+            // Base 1.0 + skill impact (~-0.165) + rusher impact (-0.6) ≈ 0.235
+            Assert.AreEqual(0.235, pressure, 0.01, "70-power offense vs empty defense: 1.0 - ~0.165 - 0.6 ≈ 0.235");
         }
 
         [TestMethod]
@@ -186,8 +188,9 @@ namespace Gridiron.Engine.Tests
 
             // Assert - QB/WR are not blockers, so offense gets default power (50)
             // Defense has power 70 (average of (70+70+70)/3 = 70), 4 rushers = standard
-            // Base 1.0 + skill diff (+0.2) + rusher impact (0) = 1.2
-            Assert.AreEqual(1.2, pressure, 0.001, "No blockers vs 70-power defense: 1.0 + 0.2 + 0 = 1.2");
+            // Logarithmic: sign(20) * log(1 + 20/10) * 0.15 ≈ 0.165
+            // Base 1.0 + skill impact (~0.165) + rusher impact (0) ≈ 1.165
+            Assert.AreEqual(1.165, pressure, 0.01, "No blockers vs 70-power defense: 1.0 + ~0.165 + 0 ≈ 1.165");
         }
 
         [TestMethod]
@@ -213,8 +216,9 @@ namespace Gridiron.Engine.Tests
 
             // Assert - DBs are not rushers, so defense gets default power (50)
             // Offense has power 70, 0 rushers vs 4 standard = -0.6
-            // Base 1.0 + skill diff (-0.2) + rusher impact (-0.6) = 0.2
-            Assert.AreEqual(0.2, pressure, 0.001, "70-power offense vs no rushers: 1.0 - 0.2 - 0.6 = 0.2");
+            // Logarithmic: sign(-20) * log(1 + 20/10) * 0.15 ≈ -0.165
+            // Base 1.0 + skill impact (~-0.165) + rusher impact (-0.6) ≈ 0.235
+            Assert.AreEqual(0.235, pressure, 0.01, "70-power offense vs no rushers: 1.0 - ~0.165 - 0.6 ≈ 0.235");
         }
 
         #endregion

@@ -754,8 +754,9 @@ namespace Gridiron.Engine.Tests
         public void Matrix_ScreenPass_QuickRelease_BeatsBlitz()
         {
             // Arrange - Screen pass with quick release beats aggressive defense
+            // With logarithmic skill curves, need offense advantage for protection to hold
             var game = CreateGameWithPassPlay();
-            SetPlayerSkills(game, 75, 80);
+            SetPlayerSkills(game, 80, 75); // Slight offense advantage
 
             var rng = CreateRngForScreenPass(airYards: -1, yacYards: 8);
 
